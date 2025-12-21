@@ -387,6 +387,10 @@ tr:hover {
       font-size: 1.5rem !important;
     }
   }
+
+  .hidden-mobile {
+    display: none !important;
+  }
 }
 
 @media (min-width: 769px) {

@@ -455,16 +455,9 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
           backgroundColor: 'var(--bg-secondary)'
         }}>
           <div>
-            <h2 className="modal-title" style={{ fontSize: '1.25rem' }}>Order #{safeOrder.id}</h2>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-              <span>{safeOrder.orderDate}</span>
-              <span>•</span>
-              <span style={{
-                color: safeOrder.status === 'Dispatched' ? 'var(--success)' :
-                  safeOrder.status === 'New Order' ? 'var(--accent-primary)' : 'var(--text-primary)'
-              }}>
-                {safeOrder.status}
-              </span>
+            <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 700 }}>Order #{safeOrder.id}</h2>
+            <div style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              {safeOrder.orderDate}
             </div>
           </div>
 
@@ -497,12 +490,7 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
         </div>
 
         {/* Scrollable Content Body */}
-        <div style={{
-          overflowY: 'auto',
-          padding: '2rem',
-          flex: 1,
-          '@media print': { padding: 0, overflow: 'visible' }
-        }}>
+        <div className="modal-body-scroll">
           {/* Invoice Header (Only visible in Print or heavily emphasized in view) */}
           <div className="print-only" style={{
             textAlign: 'center',
@@ -536,19 +524,23 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
                     onChange={(e) => handleStatusChange('status', e.target.value)}
                     className="form-input"
                     style={{
-                      padding: '0.25rem 0.5rem',
-                      fontSize: '0.8rem',
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.875rem',
                       width: 'auto',
-                      backgroundColor: safeOrder.status === 'Dispatched' ? 'var(--success)' : 'var(--bg-input)',
-                      color: safeOrder.status === 'Dispatched' ? '#fff' : 'var(--text-primary)'
+                      backgroundColor: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius)',
+                      cursor: 'pointer',
+                      outline: 'none'
                     }}
                   >
-                    <option value="New Order">New Order</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Packed">Packed</option>
-                    <option value="Dispatched">Dispatched</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
+                    <option value="New Order" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>New Order</option>
+                    <option value="Pending" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Pending</option>
+                    <option value="Packed" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Packed</option>
+                    <option value="Dispatched" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Dispatched</option>
+                    <option value="Delivered" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Delivered</option>
+                    <option value="Cancelled" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Cancelled</option>
                   </select>
                 </div>
 
@@ -559,15 +551,19 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
                     onChange={(e) => handleStatusChange('paymentStatus', e.target.value)}
                     className="form-input"
                     style={{
-                      padding: '0.25rem 0.5rem',
-                      fontSize: '0.8rem',
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.875rem',
                       width: 'auto',
-                      backgroundColor: safeOrder.paymentStatus === 'Paid' ? 'var(--success)' : 'var(--danger)',
-                      color: '#fff'
+                      backgroundColor: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius)',
+                      cursor: 'pointer',
+                      outline: 'none'
                     }}
                   >
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
+                    <option value="Pending" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Pending</option>
+                    <option value="Paid" style={{ backgroundColor: '#1a1a1a', color: '#fff' }}>Paid</option>
                   </select>
                 </div>
 
@@ -626,7 +622,8 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
 
           {/* Items Table */}
           {/* Items Table */}
-          <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
+          {/* Items Table - Desktop */}
+          <div className="items-table-desktop" style={{ overflowX: 'auto', marginBottom: '2rem' }}>
             <table style={{
               width: '100%',
               borderCollapse: 'collapse',
@@ -679,13 +676,57 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
             </table>
           </div>
 
+          {/* Items List - Mobile */}
+          <div className="items-card-mobile">
+            {orderItems.map((it, idx) => {
+              const catName = getCategoryName(it.categoryId)
+              const itName = getItemName(it.categoryId, it.itemId, it.customItemName)
+              const qty = Number(it.quantity) || 0
+              const price = Number(it.unitPrice) || 0
+              const amount = qty * price
+              const notes = (it.notes || '').toString().trim()
+              return (
+                <div key={`${idx}-mobile`} className="item-mobile-row">
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                    {catName} - {itName}
+                  </div>
+
+                  {it.image && (
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <img src={it.image} alt="Ref" style={{ width: '100%', maxWidth: '200px', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                    <span>Quantity:</span>
+                    <span>{qty}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                    <span>Unit Price:</span>
+                    <span>Rs. {price.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', fontWeight: 600, color: 'var(--accent-primary)', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span>Total:</span>
+                    <span>Rs. {amount.toFixed(2)}</span>
+                  </div>
+
+                  {notes && (
+                    <div style={{ marginTop: '0.75rem', padding: '0.5rem', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      <strong>Notes:</strong> {notes}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
           {/* Totals Section */}
           <div style={{
             display: 'flex',
             justifyContent: 'flex-end',
             marginBottom: '2rem'
           }}>
-            <div style={{ width: '300px', padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
+            <div className="totals-container">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
                 <span>Subtotal:</span>
                 <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>Rs. {totalPrice.toFixed(2)}</span>
@@ -741,6 +782,54 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
       </div>
 
       <style>{`
+        .modal-body-scroll {
+          overflow-y: auto;
+          padding: 2rem;
+          flex: 1;
+        }
+
+        .items-card-mobile {
+          display: none;
+          flex-direction: column;
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+
+        .item-mobile-row {
+          background: var(--bg-secondary);
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+        }
+
+        .totals-container {
+          width: 300px;
+          padding: 1rem;
+          background-color: var(--bg-secondary);
+          borderRadius: var(--radius);
+        }
+
+        @media (max-width: 600px) {
+          .modal-body-scroll {
+            padding: 1rem !important;
+          }
+          .items-table-desktop {
+            display: none !important;
+          }
+          .items-card-mobile {
+            display: flex !important;
+          }
+          .totals-container {
+            width: 100% !important;
+          }
+          .modal-header {
+            padding: 1rem !important;
+          }
+          .modal-header h2 {
+            font-size: 1.1rem !important;
+          }
+        }
+
         @media print {
           .modal-overlay {
             position: absolute; /* Reset fixed */
@@ -781,6 +870,16 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
             border: 1px solid #ddd !important;
             padding: 10px !important;
             background: none !important;
+          }
+          .modal-body-scroll {
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          .items-table-desktop {
+            display: table !important;
+          }
+          .items-card-mobile {
+            display: none !important;
           }
         }
       `}</style>
