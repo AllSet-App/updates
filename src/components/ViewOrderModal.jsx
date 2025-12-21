@@ -804,6 +804,13 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
                       fontSize: '1rem'
                     }}>
                       {catName} - {itName}
+                      {it.image && (
+                        <div style={{ marginTop: '0.5rem' }}>
+                          <a href={it.image} target="_blank" rel="noopener noreferrer">
+                            <img src={it.image} alt="Ref" style={{ height: '60px', borderRadius: '4px', border: '1px solid #374151' }} />
+                          </a>
+                        </div>
+                      )}
                       {notes && (
                         <div style={{ marginTop: '0.35rem', color: '#9CA3AF', fontWeight: 500, fontSize: '0.85rem' }}>
                           Notes: {notes}

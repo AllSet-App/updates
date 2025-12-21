@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
-import { X, Plus, Trash2 } from 'lucide-react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { X, Plus, Trash2, Paperclip, Image as ImageIcon, Loader, RefreshCw } from 'lucide-react'
 import { calculateNextOrderNumber, markTrackingNumberAsUsed, getProducts, getOrders, getOrderSources } from '../utils/storage'
+import { uploadOrderItemImage, deleteOrderItemImage } from '../utils/fileStorage'
 import { formatWhatsAppForStorage } from '../utils/whatsapp'
 import TrackingNumberInput from './TrackingNumberInput'
 
@@ -27,7 +28,8 @@ const OrderForm = ({ order, onClose, onSave }) => {
         customItemName: it.customItemName || '',
         quantity: it.quantity ?? 1,
         unitPrice: it.unitPrice ?? 0,
-        notes: it.notes || ''
+        notes: it.notes || '',
+        image: it.image || null
       }))
     }
     return [{
@@ -37,7 +39,8 @@ const OrderForm = ({ order, onClose, onSave }) => {
       customItemName: order?.customItemName || '',
       quantity: order?.quantity ?? 1,
       unitPrice: order?.unitPrice ?? 0,
-      notes: ''
+      notes: '',
+      image: null
     }]
   })
 
@@ -137,6 +140,60 @@ const OrderForm = ({ order, onClose, onSave }) => {
     return Math.max(0, subtotal - discountAmount)
   }, [subtotal, discountAmount])
 
+  // --- Image Upload Logic ---
+  const fileInputRef = useRef(null)
+  const [activeItemForUpload, setActiveItemForUpload] = useState(null)
+  const [uploadingItemIds, setUploadingItemIds] = useState(new Set())
+
+  const handleUploadClick = (itemId) => {
+    setActiveItemForUpload(itemId)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '' // Reset
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file || !activeItemForUpload) return
+
+    // Mark item as uploading
+    setUploadingItemIds(prev => new Set(prev).add(activeItemForUpload))
+
+    try {
+      // Use current order ID or a temp one if new
+      const oid = orderNumber || 'temp_' + Date.now()
+      const url = await uploadOrderItemImage(file, oid, activeItemForUpload)
+
+      if (url) {
+        updateItem(activeItemForUpload, { image: url })
+      } else {
+        alert("Failed to upload image. Please check your internet or try again.")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error uploading image")
+    } finally {
+      setUploadingItemIds(prev => {
+        const next = new Set(prev)
+        next.delete(activeItemForUpload)
+        return next
+      })
+      setActiveItemForUpload(null)
+    }
+  }
+
+  const handleRemoveImage = async (itemId, imageUrl) => {
+    if (!confirm("Are you sure you want to remove this image?")) return
+
+    // Optimistic update
+    updateItem(itemId, { image: null })
+
+    // Background delete
+    await deleteOrderItemImage(imageUrl)
+  }
+  // --------------------------
+
   const computedCod = useMemo(() => {
     const delivery = Number(formData.deliveryCharge) || 0
     return Math.max(0, computedTotal + delivery)
@@ -192,12 +249,25 @@ const OrderForm = ({ order, onClose, onSave }) => {
     setCodManuallyEdited(false)
   }
 
-  const removeItem = (id) => {
-    setOrderItems(prev => {
-      const next = prev.filter(it => it.id !== id)
-      return next.length ? next : prev
-    })
-    setCodManuallyEdited(false)
+  const removeItem = async (id) => {
+    const itemToRemove = orderItems.find(it => it.id === id)
+
+    if (itemToRemove?.image) {
+      if (confirm('This item has an attached image. Removing the item will permanently delete the image. Continue?')) {
+        await deleteOrderItemImage(itemToRemove.image)
+        setOrderItems(prev => {
+          const next = prev.filter(it => it.id !== id)
+          return next.length ? next : prev
+        })
+        setCodManuallyEdited(false)
+      }
+    } else {
+      setOrderItems(prev => {
+        const next = prev.filter(it => it.id !== id)
+        return next.length ? next : prev
+      })
+      setCodManuallyEdited(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -217,7 +287,8 @@ const OrderForm = ({ order, onClose, onSave }) => {
       customItemName: isCustomCategory(it.categoryId) ? (it.customItemName || '') : null,
       quantity: Number(it.quantity) || 0,
       unitPrice: Number(it.unitPrice) || 0,
-      notes: (it.notes || '').toString()
+      notes: (it.notes || '').toString(),
+      image: it.image || null
     }))
 
     const first = cleanedItems[0] || {}
@@ -503,6 +574,59 @@ const OrderForm = ({ order, onClose, onSave }) => {
                       placeholder="Item-specific instructions (e.g., engraving text, packaging notes)"
                     />
                   </div>
+
+                  {/* Image Upload UI */}
+                  <div className="form-group" style={{ marginTop: '0.75rem' }}>
+                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem' }}>
+                      Image Reference
+                    </label>
+
+                    {it.image ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-card)', padding: '0.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+                        <a href={it.image} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                          <img
+                            src={it.image}
+                            alt="Item"
+                            style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer' }}
+                            onMouseOver={e => e.currentTarget.style.transform = 'scale(1.5)'}
+                            onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                          />
+                        </a>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Attached</span>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleUploadClick(it.id)}
+                            title="Replace Image"
+                          >
+                            <RefreshCw size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleRemoveImage(it.id, it.image)}
+                            title="Remove Image"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleUploadClick(it.id)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                          disabled={uploadingItemIds.has(it.id)}
+                        >
+                          {uploadingItemIds.has(it.id) ? <Loader size={16} className="spin" /> : <Paperclip size={16} />}
+                          {uploadingItemIds.has(it.id) ? 'Uploading...' : 'Attach Image'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -665,6 +789,17 @@ const OrderForm = ({ order, onClose, onSave }) => {
             </select>
           </div>
 
+
+
+          {/* Hidden File Input for Item Images */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
@@ -674,8 +809,8 @@ const OrderForm = ({ order, onClose, onSave }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }
 

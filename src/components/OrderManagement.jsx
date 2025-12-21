@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Search, MessageCircle, Edit, Trash2, Eye, Download, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, Search, MessageCircle, Edit, Trash2, Eye, Download, ChevronUp, ChevronDown, Paperclip } from 'lucide-react'
 import OrderForm from './OrderForm'
 import DispatchModal from './DispatchModal'
 import ViewOrderModal from './ViewOrderModal'
 import TrackingNumberModal from './TrackingNumberModal'
 import ConfirmationModal from './ConfirmationModal'
 import { saveOrders, getProducts, getSettings } from '../utils/storage'
+import { deleteOrderItemImage } from '../utils/fileStorage'
 import { formatWhatsAppNumber, generateWhatsAppMessage } from '../utils/whatsapp'
 import * as XLSX from 'xlsx'
 import { useToast } from './Toast/ToastContext'
@@ -263,6 +264,18 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
   const handleDeleteOrder = (orderId) => {
     showConfirm('Delete Order', 'Are you sure you want to delete this order?', async () => {
       try {
+        const orderToDelete = orders.find(o => o.id === orderId)
+        // Cleanup images
+        if (orderToDelete && Array.isArray(orderToDelete.orderItems)) {
+          const imagesToDelete = orderToDelete.orderItems
+            .map(it => it.image)
+            .filter(Boolean)
+
+          if (imagesToDelete.length > 0) {
+            await Promise.all(imagesToDelete.map(url => deleteOrderItemImage(url)))
+          }
+        }
+
         const updatedOrders = orders.filter(order => order.id !== orderId)
         const saveSuccess = await saveOrders(updatedOrders)
         if (saveSuccess) {
@@ -1044,6 +1057,12 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                             fontSize: '0.875rem'
                           }}>
                             #{order.id}
+                            {Array.isArray(order.orderItems) && order.orderItems.some(it => it.image) && (
+                              <Paperclip
+                                size={14}
+                                style={{ marginLeft: '0.4rem', color: 'var(--text-muted)', display: 'inline' }}
+                              />
+                            )}
                           </div>
                           {(order.createdDate || order.orderDate) && (
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>

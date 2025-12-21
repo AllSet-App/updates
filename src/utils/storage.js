@@ -46,7 +46,8 @@ const transformOrderToDB = (order) => {
         customItemName: it.customItemName || null,
         quantity: it.quantity ?? 0,
         unitPrice: it.unitPrice ?? 0,
-        notes: it.notes || ''
+        notes: it.notes || '',
+        image: it.image || null
       }))
       : [],
     delivery_date: order.deliveryDate || null,
@@ -85,7 +86,8 @@ const transformOrderFromDB = (order) => {
       customItemName: it.customItemName || null,
       quantity: it.quantity ?? 0,
       unitPrice: it.unitPrice ?? 0,
-      notes: it.notes || ''
+      notes: it.notes || '',
+      image: it.image || null
     }))
     : [{
       categoryId: order.category_id || null,
