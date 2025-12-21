@@ -228,11 +228,6 @@ const OrderForm = ({ order, onClose, onSave }) => {
       setCodManuallyEdited(true)
     }
 
-    // Format WhatsApp number when it's entered or changed
-    if (name === 'whatsapp' && value) {
-      updatedData.whatsapp = formatWhatsAppForStorage(value)
-    }
-
     setFormData(updatedData)
   }
 
@@ -295,6 +290,7 @@ const OrderForm = ({ order, onClose, onSave }) => {
 
     const orderData = {
       ...formData,
+      whatsapp: formatWhatsAppForStorage(formData.whatsapp),
       id: finalOrderNumber,
       // legacy single-item fields for compatibility
       categoryId: first.categoryId || null,
@@ -405,6 +401,11 @@ const OrderForm = ({ order, onClose, onSave }) => {
                   className="form-input"
                   value={formData.whatsapp}
                   onChange={handleChange}
+                  onBlur={() => {
+                    if (formData.whatsapp) {
+                      setFormData(prev => ({ ...prev, whatsapp: formatWhatsAppForStorage(prev.whatsapp) }))
+                    }
+                  }}
                   placeholder="e.g., 0771234567"
                   required
                 />

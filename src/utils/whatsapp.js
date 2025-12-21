@@ -18,26 +18,36 @@ export const formatWhatsAppNumber = (phoneNumber) => {
   // Remove all non-digit characters
   const digitsOnly = phoneNumber.replace(/\D/g, '')
 
-  // Extract last 9 digits
-  const last9Digits = digitsOnly.slice(-9)
-
-  // If we have 9 digits, format as +94XXXXXXXXX
-  if (last9Digits.length === 9) {
-    return `+94${last9Digits}`
-  }
-
-  // If already starts with +94, return as is (after cleaning)
-  if (digitsOnly.startsWith('94') && digitsOnly.length >= 11) {
+  // If it's already a full international number starting with 94
+  if (digitsOnly.startsWith('94') && digitsOnly.length === 11) {
     return `+${digitsOnly}`
   }
 
-  // If starts with 0, remove it and add +94
+  // If it's a local number with 0 (e.g., 0771234567)
   if (digitsOnly.startsWith('0') && digitsOnly.length === 10) {
     return `+94${digitsOnly.slice(1)}`
   }
 
-  // Fallback: return cleaned number (might need manual correction)
-  return digitsOnly.length > 0 ? `+94${last9Digits}` : ''
+  // If it's a local number without 0 (e.g., 771234567)
+  if (digitsOnly.length === 9 && !digitsOnly.startsWith('0')) {
+    return `+94${digitsOnly}`
+  }
+
+  // If it's already formatted with +94
+  if (phoneNumber.startsWith('+94') && digitsOnly.length === 11) {
+    return `+${digitsOnly}`
+  }
+
+  // While typing or for other formats, return the digits or the original
+  // But if it's already longer than 11, it might be a different international number
+  // For now, let's keep it simple for the primary market (SL)
+
+  // If it's a partial number starting with 0, don't prepend +94 yet
+  if (digitsOnly.startsWith('0')) {
+    return digitsOnly
+  }
+
+  return phoneNumber
 }
 
 /**

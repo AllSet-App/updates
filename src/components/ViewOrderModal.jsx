@@ -125,7 +125,7 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
     customerName: localOrder.customerName || 'N/A',
     address: localOrder.address || '',
     phone: localOrder.phone || '',
-    whatsapp: localOrder.whatsapp || localOrder.phone || '',
+    whatsapp: localOrder.whatsapp || '',
     nearestCity: localOrder.nearestCity || '',
     district: localOrder.district || '',
     status: localOrder.status || 'Pending',
