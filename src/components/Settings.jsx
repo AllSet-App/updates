@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Settings as SettingsIcon, Save, AlertTriangle, Plus, Trash2, Edit2, Edit, Package, Search, ChevronDown, ChevronUp, Download, Upload, Trash, MessageCircle, X, LogOut, Database } from 'lucide-react'
-import { loadGoogleScript, initTokenClient, uploadFileToDrive } from '../utils/googleDrive'
-import { generateTrackingNumbersFromRange, getSettings, saveSettings, getOrders, getTrackingNumbers, saveTrackingNumbers, getProducts, getOrderCounter, saveOrderCounter, exportAllData, importAllData, clearAllData } from '../utils/storage'
+import { loadGoogleScript, initTokenClient, uploadFileToDrive, listFilesFromDrive, downloadFileFromDrive } from '../utils/googleDrive'
+import { generateTrackingNumbersFromRange, getSettings, saveSettings, getOrders, getTrackingNumbers, saveTrackingNumbers, getProducts, getOrderCounter, saveOrderCounter, exportAllData, importAllData, clearAllData, importAllDataFromObject } from '../utils/storage'
 import ProductsManagement from './ProductsManagement'
 import ExpenseManagement from './ExpenseManagement'
 import InventoryManagement from './InventoryManagement'
@@ -256,7 +256,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
         <>
           {/* Google Drive Backup Section */}
           <CollapsibleSection
-            title="Google Drive Backup"
+            title="Google Drive Cloud Backup & Restore"
             icon={Database}
             isExpanded={expandedSections.googleDrive}
             onToggle={() => toggleSection('googleDrive')}
@@ -271,12 +271,14 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
               trackingNumbers={trackingNumbers}
               orderCounter={orderCounter}
               showToast={addToast}
+              showConfirm={showConfirm}
+              onDataImported={onDataImported}
             />
           </CollapsibleSection>
 
           {/* Data Management Section (includes Health Check) */}
           <CollapsibleSection
-            title="Data Management"
+            title="Manual Backup & Restore"
             icon={Package}
             isExpanded={expandedSections.dataManagement}
             onToggle={() => toggleSection('dataManagement')}
@@ -1078,7 +1080,7 @@ const DataManagement = ({ orders, expenses, inventory, products, settings, track
           color: 'var(--text-primary)',
           marginBottom: '0.5rem'
         }}>
-          Export & Import Data
+          Export & Restore Data (Manual)
         </h3>
         <p style={{
           fontSize: '0.875rem',
@@ -1113,13 +1115,13 @@ const DataManagement = ({ orders, expenses, inventory, products, settings, track
 
           <div className="card" style={{ textAlign: 'center' }}>
             <Upload size={32} color="var(--success)" style={{ margin: '0 auto 0.5rem' }} />
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Import Data</h4>
+            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>Restore Data</h4>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-              Load data from a JSON file
+              Load data from a JSON backup file
             </p>
             <label className="btn btn-success" style={{ width: '100%', cursor: 'pointer', display: 'inline-block' }}>
               <Upload size={16} style={{ marginRight: '0.5rem' }} />
-              Import from File
+              Restore from File
               <input
                 type="file"
                 accept=".json"
@@ -1247,7 +1249,7 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
 }
 
 // Google Drive Backup Component
-const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory, products, trackingNumbers, orderCounter, showToast }) => {
+const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory, products, trackingNumbers, orderCounter, showToast, showConfirm, onDataImported }) => {
   const [clientId, setClientId] = useState(settings?.googleDrive?.clientId || '')
   const [isAutoBackupEnabled, setIsAutoBackupEnabled] = useState(settings?.googleDrive?.autoBackup || false)
   const [backupFrequency, setBackupFrequency] = useState(settings?.googleDrive?.frequency || 'daily')
@@ -1255,6 +1257,9 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
   const [tokenClient, setTokenClient] = useState(null)
   const [accessToken, setAccessToken] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(false)
+  const [driveFiles, setDriveFiles] = useState([])
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false)
   const [lastBackup, setLastBackup] = useState(settings?.googleDrive?.lastBackup || null)
 
   useEffect(() => {
@@ -1368,6 +1373,8 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
       setSettings(updatedSettings)
 
       showToast('Backup uploaded successfully!', 'success')
+      // Refresh file list if visible
+      if (driveFiles.length > 0) fetchDriveFiles()
     } catch (error) {
       console.error("Backup failed", error)
       showToast('Backup failed: ' + error.message, 'error')
@@ -1376,12 +1383,58 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
     }
   }
 
+  const fetchDriveFiles = async () => {
+    if (!accessToken) return
+    setIsLoadingFiles(true)
+    try {
+      const files = await listFilesFromDrive(accessToken)
+      setDriveFiles(files)
+    } catch (error) {
+      showToast('Failed to load backups from Drive', 'error')
+    } finally {
+      setIsLoadingFiles(false)
+    }
+  }
+
+  const handleRestoreFromDrive = (file) => {
+    showConfirm(
+      'Restore From Backup',
+      `Are you sure you want to restore from ${file.name}? This will overwrite all CURRENT data. We recommend making a manual backup first.`,
+      async () => {
+        setIsRestoring(true)
+        try {
+          const data = await downloadFileFromDrive(accessToken, file.id)
+          const result = await importAllDataFromObject(data)
+
+          if (result.success) {
+            showToast('Data restored successfully! The page will reload.', 'success')
+            if (onDataImported) onDataImported(result.data)
+            setTimeout(() => window.location.reload(), 1500)
+          } else {
+            showToast(result.message, 'error')
+          }
+        } catch (error) {
+          showToast('Failed to restore: ' + error.message, 'error')
+        } finally {
+          setIsRestoring(false)
+        }
+      },
+      'warning',
+      'Restore Now'
+    )
+  }
+
   return (
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem', lineHeight: '1.6' }}>
           Securely backup your business data to Google Drive. Requires a Google Cloud Client ID.
         </p>
+        {!isConnected && (
+          <p style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 500 }}>
+            Note: You must connect to Google Drive to see and restore available cloud backups.
+          </p>
+        )}
       </div>
 
       <div style={{
@@ -1462,6 +1515,63 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
           )}
         </div>
       </div>
+
+      {isConnected && (
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: 600 }}>Available Backups on Drive</h4>
+            <button
+              onClick={fetchDriveFiles}
+              className="btn btn-sm btn-secondary"
+              disabled={isLoadingFiles}
+            >
+              <Search size={14} style={{ marginRight: '0.4rem' }} />
+              Scan Drive
+            </button>
+          </div>
+
+          <div style={{
+            maxHeight: '200px',
+            overflowY: 'auto',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'var(--bg-secondary)'
+          }}>
+            {isLoadingFiles ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading files...</div>
+            ) : driveFiles.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No backups found in 'AOF_Backups' folder.</div>
+            ) : (
+              <table style={{ width: '100%', fontSize: '0.85rem' }}>
+                <thead style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '0.75rem' }}>Filename</th>
+                    <th style={{ textAlign: 'left', padding: '0.75rem' }}>Date</th>
+                    <th style={{ textAlign: 'right', padding: '0.75rem' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {driveFiles.map(file => (
+                    <tr key={file.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '0.75rem' }}>{file.name}</td>
+                      <td style={{ padding: '0.75rem' }}>{new Date(file.createdTime).toLocaleString()}</td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleRestoreFromDrive(file)}
+                          className="btn btn-sm btn-success"
+                          disabled={isRestoring}
+                        >
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
 
       <div style={{
         display: 'flex',

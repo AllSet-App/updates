@@ -96,13 +96,67 @@ export const uploadFileToDrive = async (accessToken, fileName, fileContent, mime
     }
 }
 
+/**
+* Lists files in the backup folder
+* @param {string} accessToken 
+* @returns {Promise<Array>}
+*/
+export const listFilesFromDrive = async (accessToken) => {
+    try {
+        const folderId = await getOrCreateBackupFolder(accessToken);
+
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents and trashed=false&fields=files(id, name, createdTime)&orderBy=createdTime desc`,
+            {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed to list files: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.files || [];
+    } catch (error) {
+        console.error('Drive List Error:', error);
+        throw error;
+    }
+}
+
+/**
+* Downloads a file's content
+* @param {string} accessToken 
+* @param {string} fileId 
+* @returns {Promise<object>}
+*/
+export const downloadFileFromDrive = async (accessToken, fileId) => {
+    try {
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed to download file: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Drive Download Error:', error);
+        throw error;
+    }
+}
+
 // Helper to find or create the backup folder
 const getOrCreateBackupFolder = async (accessToken) => {
     const folderName = 'AOF_Backups';
 
     // Search for folder
     const searchRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, // Fixed Q parameter
+        `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
         {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         }

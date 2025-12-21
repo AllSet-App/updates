@@ -241,6 +241,7 @@ function App() {
             onDataImported={(data) => {
               setOrders(data.orders || [])
               setExpenses(data.expenses || [])
+              setInventory(data.inventory || [])
             }}
             onUpdateInventory={updateInventory}
             onLogout={handleLogout}

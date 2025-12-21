@@ -1433,6 +1433,44 @@ export const exportAllData = async (orders, expenses, products, settings, tracki
   }
 }
 
+// Import data from a JSON object
+export const importAllDataFromObject = async (data) => {
+  try {
+    // Validate data structure
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid data format')
+    }
+
+    // Import data to Supabase
+    if (data.orders) await saveOrders(data.orders)
+    if (data.expenses) await saveExpenses(data.expenses)
+    if (data.inventory) await saveInventory(data.inventory)
+    if (data.products) await saveProducts(data.products)
+    if (data.settings) await saveSettings(data.settings)
+    if (data.trackingNumbers) await saveTrackingNumbers(data.trackingNumbers)
+    if (data.orderCounter !== undefined) await saveOrderCounter(data.orderCounter)
+    if (data.orderSources) await saveOrderSources(data.orderSources)
+
+    return {
+      success: true,
+      message: 'Data imported successfully!',
+      data: {
+        orders: data.orders || [],
+        expenses: data.expenses || [],
+        inventory: data.inventory || [],
+        products: data.products || { categories: [] },
+        settings: data.settings || {},
+        trackingNumbers: data.trackingNumbers || [],
+        orderCounter: data.orderCounter || null,
+        orderSources: data.orderSources || []
+      }
+    }
+  } catch (error) {
+    console.error('Error importing data:', error)
+    return { success: false, message: 'Failed to import data: ' + error.message }
+  }
+}
+
 // Import data from a JSON file
 export const importAllData = async (file) => {
   return new Promise((resolve, reject) => {
@@ -1441,36 +1479,12 @@ export const importAllData = async (file) => {
     reader.onload = async (e) => {
       try {
         const data = JSON.parse(e.target.result)
-
-        // Validate data structure
-        if (!data || typeof data !== 'object') {
-          throw new Error('Invalid file format')
+        const result = await importAllDataFromObject(data)
+        if (result.success) {
+          resolve(result)
+        } else {
+          reject(result)
         }
-
-        // Import data to Supabase
-        if (data.orders) await saveOrders(data.orders)
-        if (data.expenses) await saveExpenses(data.expenses)
-        if (data.inventory) await saveInventory(data.inventory)
-        if (data.products) await saveProducts(data.products)
-        if (data.settings) await saveSettings(data.settings)
-        if (data.trackingNumbers) await saveTrackingNumbers(data.trackingNumbers)
-        if (data.orderCounter !== undefined) await saveOrderCounter(data.orderCounter)
-        if (data.orderSources) await saveOrderSources(data.orderSources)
-
-        resolve({
-          success: true,
-          message: 'Data imported successfully!',
-          data: {
-            orders: data.orders || [],
-            expenses: data.expenses || [],
-            inventory: data.inventory || [],
-            products: data.products || { categories: [] },
-            settings: data.settings || {},
-            trackingNumbers: data.trackingNumbers || [],
-            orderCounter: data.orderCounter || null,
-            orderSources: data.orderSources || []
-          }
-        })
       } catch (error) {
         console.error('Error importing data:', error)
         reject({ success: false, message: 'Failed to import data: ' + error.message })
