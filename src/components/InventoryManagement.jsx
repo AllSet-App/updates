@@ -274,22 +274,110 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{
-          fontSize: '1.5rem',
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-          marginBottom: '0.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
-          <Package size={24} />
-          Inventory Management
-        </h2>
-        <p style={{ color: 'var(--text-muted)' }}>
-          Manage inventory categories and items with stock details
-        </p>
+      <style>{`
+        @media (max-width: 600px) {
+          .inventory-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .inventory-header div {
+            width: 100%;
+          }
+          .inventory-title {
+            font-size: 1.25rem !important;
+          }
+          .inventory-subtitle {
+            font-size: 0.85rem !important;
+          }
+          .inventory-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .category-header-flex {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .category-actions-flex {
+            width: 100% !important;
+            justify-content: flex-start !important;
+          }
+          .form-row {
+            flex-direction: column !important;
+            gap: 0 !important;
+          }
+          .form-row .form-group {
+            width: 100% !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .inventory-table-desktop {
+            display: none !important;
+          }
+          .inventory-mobile-list {
+            display: block !important;
+          }
+          .inventory-mobile-card {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+          }
+          .inventory-mobile-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.8125rem;
+            gap: 0.5rem;
+          }
+          .inventory-mobile-card-row span:first-child {
+            white-space: nowrap;
+          }
+          .inventory-mobile-card-row span:last-child {
+            text-align: right;
+            word-break: break-all;
+          }
+        }
+
+        @media (min-width: 481px) {
+          .inventory-mobile-list {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="header-container inventory-header" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem'
+      }}>
+        <div>
+          <h2 className="inventory-title" style={{
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            marginBottom: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <Package size={24} />
+            Inventory Management
+          </h2>
+          <p className="inventory-subtitle" style={{ color: 'var(--text-muted)' }}>
+            Manage inventory categories and items with stock details
+          </p>
+        </div>
+        <div className="header-actions">
+          <button onClick={handleAddCategory} className="btn btn-primary">
+            <Plus size={16} style={{ marginRight: '0.5rem' }} />
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Category Form */}
@@ -395,8 +483,8 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                 required
               />
             </div>
-            <div className="form-row">
-              <div className="form-group">
+            <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Current Stock</label>
                 <input
                   type="number"
@@ -407,7 +495,7 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                   step="0.01"
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Reorder Level *</label>
                 <input
                   type="number"
@@ -420,8 +508,8 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                 />
               </div>
             </div>
-            <div className="form-row">
-              <div className="form-group">
+            <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Unit Cost (Rs.)</label>
                 <input
                   type="number"
@@ -432,7 +520,7 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                   step="0.01"
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">Supplier</label>
                 <input
                   type="text"
@@ -470,14 +558,6 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
         </div>
       )}
 
-      {/* Categories List */}
-      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={handleAddCategory} className="btn btn-primary">
-          <Plus size={16} style={{ marginRight: '0.5rem' }} />
-          Add Category
-        </button>
-      </div>
-
       {inventoryCategories.categories.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
           <Package size={48} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
@@ -493,7 +573,7 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
 
             return (
               <div key={category.id} className="card">
-                <div style={{
+                <div className="category-header-flex" style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -518,23 +598,14 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                       {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'items'}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div className="category-actions-flex" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         handleAddItem(category.id)
                       }}
-                      style={{
-                        padding: '0.5rem',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius)',
-                        backgroundColor: 'var(--bg-card)',
-                        color: 'var(--text-primary)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '0.5rem' }}
                       title="Add Item"
                     >
                       <Plus size={16} />
@@ -544,17 +615,8 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                         e.stopPropagation()
                         handleEditCategory(category)
                       }}
-                      style={{
-                        padding: '0.5rem',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius)',
-                        backgroundColor: 'var(--bg-card)',
-                        color: 'var(--text-primary)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '0.5rem' }}
                       title="Edit Category"
                     >
                       <Edit2 size={16} />
@@ -564,17 +626,8 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                         e.stopPropagation()
                         handleDeleteCategory(category.id)
                       }}
-                      style={{
-                        padding: '0.5rem',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius)',
-                        backgroundColor: 'var(--bg-card)',
-                        color: 'var(--error)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: '0.5rem' }}
                       title="Delete Category"
                     >
                       <Trash2 size={16} />
@@ -584,12 +637,12 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
 
                 {isExpanded && categoryItems.length > 0 && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table className="inventory-table-desktop" style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                           <th style={{ padding: '0.75rem', textAlign: 'left', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Item Name</th>
                           <th style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Stock</th>
-                          <th style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Reorder Level</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Reorder</th>
                           <th style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Unit Cost</th>
                           <th style={{ padding: '0.75rem', textAlign: 'center', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.875rem' }}>Actions</th>
                         </tr>
@@ -598,7 +651,7 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                         {categoryItems.map(item => (
                           <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                             <td style={{ padding: '0.75rem', color: 'var(--text-primary)' }}>{item.itemName}</td>
-                            <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-primary)' }}>
+                            <td style={{ padding: '0.75rem', textAlign: 'right', color: item.currentStock <= item.reorderLevel ? 'var(--danger)' : 'var(--text-primary)' }}>
                               {item.currentStock.toLocaleString('en-IN')}
                             </td>
                             <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--text-secondary)' }}>
@@ -609,32 +662,10 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                             </td>
                             <td style={{ padding: '0.75rem', textAlign: 'center' }}>
                               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                <button
-                                  onClick={() => handleEditItem(item)}
-                                  style={{
-                                    padding: '0.25rem 0.5rem',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: 'var(--radius)',
-                                    backgroundColor: 'var(--bg-card)',
-                                    color: 'var(--text-primary)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.75rem'
-                                  }}
-                                >
+                                <button className="btn btn-secondary btn-sm" style={{ padding: '0.3rem' }} onClick={() => handleEditItem(item)}>
                                   <Edit2 size={14} />
                                 </button>
-                                <button
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  style={{
-                                    padding: '0.25rem 0.5rem',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: 'var(--radius)',
-                                    backgroundColor: 'var(--bg-card)',
-                                    color: 'var(--error)',
-                                    cursor: 'pointer',
-                                    fontSize: '0.75rem'
-                                  }}
-                                >
+                                <button className="btn btn-danger btn-sm" style={{ padding: '0.3rem' }} onClick={() => handleDeleteItem(item.id)}>
                                   <Trash2 size={14} />
                                 </button>
                               </div>
@@ -643,6 +674,36 @@ const InventoryManagement = ({ inventory, onUpdateInventory }) => {
                         ))}
                       </tbody>
                     </table>
+
+                    <div className="inventory-mobile-list">
+                      {categoryItems.map(item => (
+                        <div key={item.id + '-mobile'} className="inventory-mobile-card">
+                          <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.75rem', fontSize: '1rem' }}>{item.itemName}</div>
+                          <div className="inventory-mobile-card-row">
+                            <span style={{ color: 'var(--text-muted)' }}>Stock:</span>
+                            <span style={{ fontWeight: 600, color: item.currentStock <= item.reorderLevel ? 'var(--danger)' : 'var(--text-primary)' }}>
+                              {item.currentStock.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <div className="inventory-mobile-card-row">
+                            <span style={{ color: 'var(--text-muted)' }}>Reorder Level:</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>{item.reorderLevel.toLocaleString('en-IN')}</span>
+                          </div>
+                          <div className="inventory-mobile-card-row">
+                            <span style={{ color: 'var(--text-muted)' }}>Unit Cost:</span>
+                            <span style={{ color: 'var(--text-primary)' }}>Rs.{item.unitCost.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <button className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleEditItem(item)}>
+                              <Edit2 size={14} /> Edit
+                            </button>
+                            <button className="btn btn-danger btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleDeleteItem(item.id)}>
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

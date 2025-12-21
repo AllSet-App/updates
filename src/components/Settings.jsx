@@ -104,10 +104,36 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .settings-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .settings-header div {
+            width: 100%;
+          }
+          .settings-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .settings-tabs {
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            padding-bottom: 0.5rem !important;
+          }
+          .settings-tabs button {
+            padding: 0.75rem 1rem !important;
+            flex-shrink: 0 !important;
+          }
+        }
+      `}</style>
+
+      <div className="header-container settings-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{
-            fontSize: '2rem',
+            fontSize: '1.75rem',
             fontWeight: 700,
             color: 'var(--text-primary)',
             marginBottom: '0.5rem',
@@ -115,37 +141,40 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
             alignItems: 'center',
             gap: '0.75rem'
           }}>
-            <SettingsIcon size={32} />
+            <SettingsIcon size={28} />
             Settings
           </h1>
-          <p style={{ color: 'var(--text-muted)' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             Configure your application settings
           </p>
         </div>
-        <button
-          onClick={onLogout}
-          className="btn btn-secondary"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: 'var(--text-muted)'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
+        <div className="header-actions">
+          <button
+            onClick={onLogout}
+            className="btn btn-secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--text-muted)'
+            }}
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div style={{
+      <div className="settings-tabs" style={{
         display: 'flex',
         gap: '0.5rem',
         marginBottom: '1.5rem',
         borderBottom: '1px solid var(--border-color)',
-        flexWrap: 'wrap'
+        flexWrap: 'nowrap',
+        overflowX: 'auto',
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none'
       }}>
         {[
           { id: 'general', label: 'General' },
@@ -159,14 +188,15 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
             onClick={() => setActiveTab(tab.id)}
             style={{
               padding: '0.75rem 1.5rem',
-              backgroundColor: activeTab === tab.id ? 'var(--bg-card)' : 'transparent',
+              backgroundColor: 'transparent',
               color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
               border: 'none',
               borderBottom: activeTab === tab.id ? '2px solid var(--accent-primary)' : '2px solid transparent',
               cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: activeTab === tab.id ? 600 : 400,
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
             }}
           >
             {tab.label}
@@ -256,6 +286,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
               expenses={expenses}
               inventory={inventory}
               products={products}
+              settings={settings}
               trackingNumbers={trackingNumbers}
               orderCounter={orderCounter}
               onDataImported={onDataImported}
@@ -559,7 +590,62 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .tn-actions {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+          }
+          .tn-actions .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .tn-range-form {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 1rem !important;
+          }
+          .tn-range-form .form-group {
+            width: 100% !important;
+          }
+          .tn-range-form .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .tn-stats {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .tn-table-desktop {
+            display: none !important;
+          }
+          .tn-mobile-list {
+            display: block !important;
+          }
+          .tn-mobile-card {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+          }
+          .tn-mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+          }
+        }
+        
+        @media (min-width: 481px) {
+          .tn-mobile-list {
+            display: none !important;
+          }
+        }
+      `}</style>
+      <div className="tn-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <button
           onClick={() => setShowBulkAdd(!showBulkAdd)}
           className="btn btn-primary"
@@ -574,7 +660,7 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
           <Trash2 size={18} />
-          Delete by Range
+          Delete Range
         </button>
         <button
           onClick={handleBulkDeleteByStatus}
@@ -582,25 +668,25 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
           <Trash2 size={18} />
-          Delete by Status
+          Delete Status
         </button>
       </div>
 
       {/* Bulk Add Form */}
       {showBulkAdd && (
-        <div style={{
-          padding: '1rem',
+        <div className="card" style={{
+          padding: '1.25rem',
           backgroundColor: 'var(--bg-secondary)',
-          borderRadius: 'var(--radius)',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          border: '1px solid var(--border-color)'
         }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
             Add Tracking Numbers by Range
           </h3>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-            Enter range like: RM02818735 – RM02818900
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            Enter range like: <span style={{ color: 'var(--accent-primary)', fontWeight: 500 }}>RM02818735 – RM02818900</span>
           </p>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <div className="tn-range-form" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">Start Number</label>
               <input
@@ -611,7 +697,7 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
                 className="form-input"
               />
             </div>
-            <div style={{ paddingBottom: '0.5rem' }}>–</div>
+            <div className="hidden-mobile" style={{ paddingBottom: '0.75rem', color: 'var(--text-muted)' }}>–</div>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">End Number</label>
               <input
@@ -622,32 +708,33 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
                 className="form-input"
               />
             </div>
-            <button onClick={handleBulkAdd} className="btn btn-primary">
-              Add Range
-            </button>
-            <button onClick={() => setShowBulkAdd(false)} className="btn btn-secondary">
-              Cancel
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={handleBulkAdd} className="btn btn-primary" style={{ flex: 1 }}>
+                Add Range
+              </button>
+              <button onClick={() => setShowBulkAdd(false)} className="btn btn-secondary" style={{ flex: 1 }}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Bulk Delete by Range Form */}
       {showBulkDeleteRange && (
-        <div style={{
-          padding: '1rem',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          borderRadius: 'var(--radius)',
+        <div className="card" style={{
+          padding: '1.25rem',
+          backgroundColor: 'rgba(239, 68, 68, 0.05)',
           marginBottom: '1.5rem',
-          border: '1px solid rgba(239, 68, 68, 0.3)'
+          border: '1px solid var(--danger)'
         }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--danger)' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--danger)' }}>
             Delete Tracking Numbers by Range
           </h3>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-            Enter range like: RM02818735 – RM02818900
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            Enter range like: <span style={{ color: 'var(--danger)', fontWeight: 500 }}>RM02818735 – RM02818900</span>
           </p>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <div className="tn-range-form" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">Start Number</label>
               <input
@@ -658,7 +745,7 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
                 className="form-input"
               />
             </div>
-            <div style={{ paddingBottom: '0.5rem' }}>–</div>
+            <div className="hidden-mobile" style={{ paddingBottom: '0.75rem', color: 'var(--text-muted)' }}>–</div>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">End Number</label>
               <input
@@ -669,64 +756,51 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
                 className="form-input"
               />
             </div>
-            <button onClick={handleBulkDeleteByRange} className="btn btn-danger">
-              Delete Range
-            </button>
-            <button onClick={() => setShowBulkDeleteRange(false)} className="btn btn-secondary">
-              Cancel
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={handleBulkDeleteByRange} className="btn btn-danger" style={{ flex: 1 }}>
+                Delete Range
+              </button>
+              <button onClick={() => setShowBulkDeleteRange(false)} className="btn btn-secondary" style={{ flex: 1 }}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Summary Stats */}
-      <div style={{
-        display: 'flex',
+      <div className="tn-stats" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '1rem',
-        marginBottom: '1.5rem',
-        flexWrap: 'wrap'
+        marginBottom: '1.5rem'
       }}>
         <div style={{
-          padding: '0.75rem 1rem',
+          padding: '1rem',
           backgroundColor: 'var(--bg-secondary)',
           borderRadius: 'var(--radius)',
-          flex: 1,
-          minWidth: '150px'
+          border: '1px solid var(--border-color)'
         }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-            Total
-          </div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {trackingNumbers.length}
-          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem', fontWeight: 600, textTransform: 'uppercase' }}>Total</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{trackingNumbers.length}</div>
         </div>
         <div style={{
-          padding: '0.75rem 1rem',
+          padding: '1rem',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
           borderRadius: 'var(--radius)',
-          flex: 1,
-          minWidth: '150px'
+          border: '1px solid var(--success)'
         }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-            Available
-          </div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>
-            {availableCount}
-          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.25rem', fontWeight: 600, textTransform: 'uppercase' }}>Available</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{availableCount}</div>
         </div>
         <div style={{
-          padding: '0.75rem 1rem',
+          padding: '1rem',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           borderRadius: 'var(--radius)',
-          flex: 1,
-          minWidth: '150px'
+          border: '1px solid var(--danger)'
         }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-            Used
-          </div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--danger)' }}>
-            {usedCount}
-          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.25rem', fontWeight: 600, textTransform: 'uppercase' }}>Used</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger)' }}>{usedCount}</div>
         </div>
       </div>
 
@@ -734,7 +808,7 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
       <div style={{
         display: 'flex',
         gap: '1rem',
-        marginBottom: '1rem',
+        marginBottom: '1.5rem',
         flexWrap: 'wrap',
         alignItems: 'center'
       }}>
@@ -779,127 +853,150 @@ const TrackingNumberManagement = ({ trackingNumbers, setTrackingNumbers, showAle
       </div>
 
       {/* Tracking Numbers Table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {filteredNumbers.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p>No tracking numbers found. Add tracking numbers using the Bulk Add button.</p>
           </div>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>
-                  <input
-                    type="checkbox"
-                    checked={filteredNumbers.length > 0 && filteredNumbers.every(tn => selectedNumbers.has(tn.number))}
-                    onChange={toggleSelectAll}
-                  />
-                </th>
-                <th>Tracking Number</th>
-                <th>Status</th>
-                <th style={{ width: '120px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="tn-table-desktop" style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <th style={{ width: '50px', padding: '1rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={filteredNumbers.length > 0 && filteredNumbers.every(tn => selectedNumbers.has(tn.number))}
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
+                    <th style={{ textAlign: 'left', padding: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Tracking Number</th>
+                    <th style={{ textAlign: 'left', padding: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Status</th>
+                    <th style={{ textAlign: 'right', padding: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredNumbers.map((tn) => (
+                    <tr
+                      key={tn.number}
+                      style={{
+                        borderBottom: '1px solid var(--border-color)',
+                        backgroundColor: tn.status === 'used' ? 'rgba(239, 68, 68, 0.02)' : 'transparent'
+                      }}
+                    >
+                      <td style={{ padding: '1rem' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedNumbers.has(tn.number)}
+                          onChange={() => toggleSelect(tn.number)}
+                        />
+                      </td>
+                      <td style={{ padding: '1rem', fontWeight: 500, color: 'var(--text-primary)' }}>{tn.number}</td>
+                      <td style={{ padding: '1rem' }}>
+                        {editingNumber?.id === tn.id ? (
+                          <select
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="form-input"
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.8125rem',
+                              height: 'auto',
+                              width: '120px'
+                            }}
+                            autoFocus
+                          >
+                            <option value="available">Available</option>
+                            <option value="used">Used</option>
+                          </select>
+                        ) : (
+                          <span style={{
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '50px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            backgroundColor: tn.status === 'used' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                            color: tn.status === 'used' ? 'var(--danger)' : 'var(--success)'
+                          }}>
+                            {tn.status === 'used' ? 'Used' : 'Available'}
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+                        {editingNumber?.id === tn.id ? (
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                            <button onClick={handleSaveEdit} className="btn btn-sm btn-primary" style={{ padding: '0.3rem' }} title="Save">✓</button>
+                            <button onClick={handleCancelEdit} className="btn btn-sm btn-secondary" style={{ padding: '0.3rem' }} title="Cancel">✕</button>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => handleEdit(tn)} className="btn btn-sm btn-secondary" style={{ padding: '0.3rem' }} title="Edit"><Edit2 size={12} /></button>
+                            <button onClick={() => handleDelete(tn.number)} className="btn btn-sm btn-danger" style={{ padding: '0.3rem' }} title="Delete"><Trash2 size={12} /></button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="tn-mobile-list" style={{ padding: '0.5rem' }}>
               {filteredNumbers.map((tn) => (
-                <tr
-                  key={tn.number}
-                  style={{
-                    backgroundColor: tn.status === 'used' ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
-                  }}
-                >
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedNumbers.has(tn.number)}
-                      onChange={() => toggleSelect(tn.number)}
-                    />
-                  </td>
-                  <td style={{ fontWeight: 500 }}>{tn.number}</td>
-                  <td>
+                <div key={tn.number + '-mobile'} className="tn-mobile-card" style={{
+                  backgroundColor: tn.status === 'used' ? 'rgba(239, 68, 68, 0.02)' : 'var(--bg-card)'
+                }}>
+                  <div className="tn-mobile-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedNumbers.has(tn.number)}
+                        onChange={() => toggleSelect(tn.number)}
+                      />
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tn.number}</span>
+                    </div>
+                    {editingNumber?.id === tn.id ? (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={handleSaveEdit} className="btn btn-sm btn-primary" style={{ padding: '0.3rem 0.6rem' }}>Save</button>
+                        <button onClick={handleCancelEdit} className="btn btn-sm btn-secondary" style={{ padding: '0.3rem 0.6rem' }}>X</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleEdit(tn)} className="btn btn-sm btn-secondary" style={{ padding: '0.3rem' }}><Edit2 size={14} /></button>
+                        <button onClick={() => handleDelete(tn.number)} className="btn btn-sm btn-danger" style={{ padding: '0.3rem' }}><Trash2 size={14} /></button>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>Status</span>
                     {editingNumber?.id === tn.id ? (
                       <select
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            handleSaveEdit()
-                          } else if (e.key === 'Escape') {
-                            handleCancelEdit()
-                          }
-                        }}
                         className="form-input"
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          backgroundColor: editValue === 'used' ? 'var(--danger)' : 'var(--success)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: 'var(--radius)',
-                          cursor: 'pointer'
-                        }}
-                        autoFocus
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.8125rem', height: 'auto', width: 'auto' }}
                       >
                         <option value="available">Available</option>
                         <option value="used">Used</option>
                       </select>
                     ) : (
                       <span style={{
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: 'var(--radius)',
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '50px',
                         fontSize: '0.75rem',
-                        backgroundColor: tn.status === 'used' ? 'var(--danger)' : 'var(--success)',
-                        color: 'white'
+                        fontWeight: 600,
+                        backgroundColor: tn.status === 'used' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                        color: tn.status === 'used' ? 'var(--danger)' : 'var(--success)'
                       }}>
                         {tn.status === 'used' ? 'Used' : 'Available'}
                       </span>
                     )}
-                  </td>
-                  <td>
-                    {editingNumber?.id === tn.id ? (
-                      <div style={{ display: 'flex', gap: '0.25rem' }}>
-                        <button
-                          onClick={handleSaveEdit}
-                          className="btn btn-sm btn-primary"
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                          title="Save"
-                        >
-                          ✓
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="btn btn-sm btn-secondary"
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                          title="Cancel"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '0.25rem' }}>
-                        <button
-                          onClick={() => handleEdit(tn)}
-                          className="btn btn-sm btn-secondary"
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                          title="Edit"
-                        >
-                          <Edit2 size={12} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(tn.number)}
-                          className="btn btn-sm btn-danger"
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                          title="Delete"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -1042,41 +1139,6 @@ const DataManagement = ({ orders, expenses, inventory, products, settings, track
           </div>
         </div>
       </div>
-
-      <div style={{
-        padding: '1rem',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        border: '1px solid var(--danger)',
-        borderRadius: 'var(--radius)',
-        marginTop: '2rem'
-      }}>
-        <h4 style={{
-          fontSize: '1rem',
-          fontWeight: 600,
-          color: 'var(--danger)',
-          marginBottom: '0.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
-          <Trash size={18} />
-          Danger Zone
-        </h4>
-        <p style={{
-          fontSize: '0.875rem',
-          color: 'var(--text-secondary)',
-          marginBottom: '1rem'
-        }}>
-          Permanently delete all data from localStorage. Make sure you have exported your data before clearing!
-        </p>
-        <button
-          onClick={handleClear}
-          className="btn btn-danger"
-        >
-          <Trash size={16} style={{ marginRight: '0.5rem' }} />
-          Clear All Data
-        </button>
-      </div>
     </div>
   )
 }
@@ -1109,51 +1171,55 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
   return (
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          Customize the messages sent to customers via WhatsApp. Use the following placeholders:
-          <br />
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{order_id}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{order_date}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{tracking_number}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{customer_name}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{address}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{phone}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{whatsapp}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{city}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{district}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{item_details}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{subtotal}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{discount}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{total_price}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{delivery_charge}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{cod_amount}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{delivery_date}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{dispatch_date}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{status}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{payment_status}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{notes}}'}</code>,
-          <code style={{ color: 'var(--accent-primary)' }}>{'{{source}}'}</code>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          Customize messages sent to customers via WhatsApp. Hover over placeholders to see what they do.
         </p>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.4rem',
+          marginTop: '1rem',
+          padding: '0.75rem',
+          backgroundColor: 'var(--bg-secondary)',
+          borderRadius: 'var(--radius)',
+          border: '1px solid var(--border-color)'
+        }}>
+          {['order_id', 'order_date', 'tracking_number', 'customer_name', 'address', 'phone', 'whatsapp', 'city', 'district', 'item_details', 'subtotal', 'discount', 'total_price', 'delivery_charge', 'cod_amount', 'delivery_date', 'dispatch_date', 'status', 'payment_status', 'notes', 'source'].map(p => (
+            <code key={p} style={{
+              fontSize: '0.7rem',
+              padding: '0.2rem 0.4rem',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              color: 'var(--accent-primary)',
+              borderRadius: '4px',
+              border: '1px solid rgba(59, 130, 246, 0.2)'
+            }}>{`{{${p}}}`}</code>
+          ))}
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem', marginBottom: '1.5rem' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1.5rem',
+        marginBottom: '1.5rem'
+      }}>
         <div className="form-group">
-          <label className="form-label" style={{ fontWeight: 600 }}>View Order Page Template</label>
+          <label className="form-label" style={{ fontWeight: 600 }}>Order View Template</label>
           <textarea
             className="form-input"
             value={viewOrderTemplate}
             onChange={(e) => setViewOrderTemplate(e.target.value)}
-            style={{ height: '300px', fontFamily: 'monospace', fontSize: '0.875rem' }}
+            style={{ height: '250px', fontFamily: 'monospace', fontSize: '0.8125rem', lineHeight: '1.5' }}
             placeholder="Template for 'Send to WhatsApp' button in Order View..."
           />
         </div>
         <div className="form-group">
-          <label className="form-label" style={{ fontWeight: 600 }}>Quick Action Template (Table)</label>
+          <label className="form-label" style={{ fontWeight: 600 }}>Quick Action Template</label>
           <textarea
             className="form-input"
             value={quickActionTemplate}
             onChange={(e) => setQuickActionTemplate(e.target.value)}
-            style={{ height: '300px', fontFamily: 'monospace', fontSize: '0.875rem' }}
+            style={{ height: '250px', fontFamily: 'monospace', fontSize: '0.8125rem', lineHeight: '1.5' }}
             placeholder="Template for 'Send WhatsApp' quick action in table..."
           />
         </div>
@@ -1164,10 +1230,16 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
           onClick={handleSave}
           className="btn btn-primary"
           disabled={isSaving}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: window.innerWidth < 600 ? '100%' : 'auto', justifyContent: 'center' }}
         >
-          <Save size={18} />
-          {isSaving ? 'Saving...' : 'Save Templates'}
+          {isSaving ? (
+            'Saving...'
+          ) : (
+            <>
+              <Save size={18} />
+              Save Templates
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -1186,7 +1258,6 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
   const [lastBackup, setLastBackup] = useState(settings?.googleDrive?.lastBackup || null)
 
   useEffect(() => {
-    // Load setting on mount
     if (settings?.googleDrive) {
       setClientId(settings.googleDrive.clientId || '')
       setIsAutoBackupEnabled(settings.googleDrive.autoBackup || false)
@@ -1194,7 +1265,6 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
       setLastBackup(settings.googleDrive.lastBackup || null)
     }
 
-    // Load Google Script
     loadGoogleScript().catch(err => console.error("Failed to load Google Script", err))
   }, [settings])
 
@@ -1213,7 +1283,6 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
       setSettings(updatedSettings)
       showToast('Google Drive settings saved', 'success')
 
-      // Re-init token client if client ID changed
       if (clientId && window.google) {
         try {
           const client = initTokenClient(clientId, (tokenResponse) => {
@@ -1268,7 +1337,6 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
 
     setIsUploading(true)
     try {
-      // Prepare Data
       const exportData = {
         version: '1.0',
         timestamp: new Date().toISOString(),
@@ -1289,7 +1357,6 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
       const now = new Date().toISOString()
       setLastBackup(now)
 
-      // Update last backup time in settings
       const updatedSettings = {
         ...settings,
         googleDrive: {
@@ -1312,13 +1379,17 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
   return (
     <div>
       <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          Automatically backup your data to a secure folder in your Google Drive.
-          To set this up, you need a Google Cloud Client ID.
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          Securely backup your business data to Google Drive. Requires a Google Cloud Client ID.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '1.5rem' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '1.5rem',
+        marginBottom: '2rem'
+      }}>
         <div className="form-group">
           <label className="form-label" style={{ fontWeight: 600 }}>Google Client ID</label>
           <input
@@ -1326,58 +1397,86 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
             className="form-input"
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
-            placeholder="Search 'Google Cloud Console create OAuth client id'..."
+            placeholder="Enter your OAuth 2.0 Client ID"
           />
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Origin must be set to <code>{window.location.origin}</code>
+          <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Authorized JavaScript Origin: <code style={{ color: 'var(--accent-primary)' }}>{window.location.origin}</code>
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'flex-end' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={isAutoBackupEnabled}
-                onChange={(e) => setIsAutoBackupEnabled(e.target.checked)}
-              />
-              <span className="slider round"></span>
-            </label>
-            <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-              Enable Auto-Backup
-            </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '1rem',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--border-color)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={isAutoBackupEnabled}
+                  onChange={(e) => setIsAutoBackupEnabled(e.target.checked)}
+                />
+                <span className="slider round"></span>
+              </label>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                Auto-Backup
+              </span>
+            </div>
 
             {isAutoBackupEnabled && (
               <select
                 className="form-input"
                 value={backupFrequency}
                 onChange={(e) => setBackupFrequency(e.target.value)}
-                style={{ marginLeft: '1rem', width: 'auto', padding: '0.25rem 0.5rem', height: 'auto' }}
+                style={{ width: 'auto', padding: '0.2rem 0.5rem', height: 'auto', fontSize: '0.8125rem' }}
               >
                 <option value="hourly">Hourly</option>
-                <option value="6hours">Every 6 Hours</option>
-                <option value="12hours">Every 12 Hours</option>
+                <option value="6hours">6 Hours</option>
+                <option value="12hours">12 Hours</option>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
               </select>
             )}
           </div>
 
           {lastBackup && (
-            <p style={{ fontSize: '0.8rem', color: 'var(--success)' }}>
+            <div style={{
+              padding: '0.75rem 1rem',
+              backgroundColor: 'rgba(16, 185, 129, 0.05)',
+              borderRadius: 'var(--radius)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              fontSize: '0.8125rem',
+              color: 'var(--success)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <Database size={14} />
               Last Backup: {new Date(lastBackup).toLocaleString()}
-            </p>
+            </div>
           )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
+        paddingTop: '1rem',
+        borderTop: '1px solid var(--border-color)'
+      }}>
         <button
           onClick={handleSaveSettings}
           className="btn btn-secondary"
+          style={{ flex: window.innerWidth < 480 ? 1 : 'none' }}
         >
-          Save Settings
+          Save Config
         </button>
 
         {!isConnected ? (
@@ -1385,18 +1484,26 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
             onClick={handleConnect}
             className="btn btn-primary"
             disabled={!clientId}
+            style={{ flex: window.innerWidth < 480 ? 1 : 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
           >
-            <Database size={18} style={{ marginRight: '0.5rem' }} />
-            Connect Google Drive
+            <Database size={18} />
+            Connect
           </button>
         ) : (
           <button
             onClick={handleBackupNow}
             className="btn btn-primary"
             disabled={isUploading}
+            style={{ flex: window.innerWidth < 480 ? 1 : 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
           >
-            <Upload size={18} style={{ marginRight: '0.5rem' }} />
-            {isUploading ? 'Uploading...' : 'Backup Now'}
+            {isUploading ? (
+              'Uploading...'
+            ) : (
+              <>
+                <Upload size={18} />
+                Backup Now
+              </>
+            )}
           </button>
         )}
       </div>

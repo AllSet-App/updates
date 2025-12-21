@@ -149,7 +149,83 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .inventory-header h1 {
+            font-size: 1.5rem !important;
+          }
+          .inventory-filters {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .inventory-filters > div {
+            width: 100% !important;
+          }
+          .inventory-metrics-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .inventory-desktop-table {
+            display: none !important;
+          }
+          .inventory-mobile-cards {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+          }
+          .inventory-mobile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+          }
+          .inv-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+          }
+          .inv-card-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+          }
+          .inv-card-category {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+          }
+          .inv-card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius);
+          }
+          .inv-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+          }
+          .inv-stat-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+          }
+        }
+
+        @media (min-width: 481px) {
+          .inventory-mobile-cards {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="inventory-header" style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Inventory</h1>
         <p style={{ color: 'var(--text-muted)' }}>Manage and monitor your stock levels</p>
       </div>
@@ -165,7 +241,7 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
       )}
 
       {/* --- Summary Cards --- */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+      <div className="inventory-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
         <div className="card" style={{ padding: '1.25rem' }}>
           <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Inventory Value</h3>
           <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -194,13 +270,13 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
       </div>
 
       {/* --- Filters --- */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="inventory-filters" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
           <Filter size={18} color="var(--text-muted)" />
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            style={{ border: 'none', backgroundColor: 'transparent', color: 'var(--text-primary)', outline: 'none', minWidth: '100px' }}
+            style={{ border: 'none', backgroundColor: 'transparent', color: 'var(--text-primary)', outline: 'none', minWidth: '100px', width: '100%' }}
           >
             <option value="all">All Status</option>
             <option value="below">Critical Only</option>
@@ -213,7 +289,7 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{ border: 'none', backgroundColor: 'transparent', color: 'var(--text-primary)', outline: 'none', minWidth: '120px' }}
+            style={{ border: 'none', backgroundColor: 'transparent', color: 'var(--text-primary)', outline: 'none', minWidth: '120px', width: '100%' }}
           >
             <option value="all">All Categories</option>
             {getUniqueCategories().map(category => (
@@ -234,75 +310,130 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
         </div>
       </div>
 
-      {/* --- Inventory Table --- */}
+      {/* --- Inventory Table / Cards --- */}
       {filteredInventory.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
           <Package size={48} color="var(--text-muted)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>No items match your filter.</p>
         </div>
       ) : (
-        <div className="card" style={{ overflowX: 'auto', padding: 0 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Item</th>
-                <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Category</th>
-                <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Stock</th>
-                <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Value</th>
-                <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredInventory.map((item) => {
-                const status = getStockStatus(item)
-                const StatusIcon = status.icon
-                return (
-                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>{item.itemName}</td>
-                    <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{item.category || '-'}</td>
-                    <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600 }}>
-                      {item.currentStock.toLocaleString('en-IN')}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                      Rs.{(item.currentStock * (item.unitCost || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                        padding: '0.25rem 0.75rem', borderRadius: '999px',
-                        backgroundColor: status.bg, color: status.color,
-                        fontSize: '0.75rem', fontWeight: 600
-                      }}>
-                        <StatusIcon size={12} /> {status.label}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem', textAlign: 'right' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => setRestockConfig({ item, mode: 'remove' })}
-                          title="Deduct Stock"
-                          style={{ padding: '0.4rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /></svg>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-primary"
-                          onClick={() => setRestockConfig({ item, mode: 'add' })}
-                          title="Add Stock"
-                          style={{ padding: '0.4rem 0.8rem', display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}
-                        >
-                          <Plus size={14} /> Add
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="card inventory-desktop-table" style={{ overflowX: 'auto', padding: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Item</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Category</th>
+                  <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Stock</th>
+                  <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Value</th>
+                  <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInventory.map((item) => {
+                  const status = getStockStatus(item)
+                  const StatusIcon = status.icon
+                  return (
+                    <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>{item.itemName}</td>
+                      <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{item.category || '-'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        {item.currentStock.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)' }}>
+                        Rs.{(item.currentStock * (item.unitCost || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                          padding: '0.25rem 0.75rem', borderRadius: '999px',
+                          backgroundColor: status.bg, color: status.color,
+                          fontSize: '0.75rem', fontWeight: 600
+                        }}>
+                          <StatusIcon size={12} /> {status.label}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => setRestockConfig({ item, mode: 'remove' })}
+                            title="Deduct Stock"
+                            style={{ padding: '0.4rem', color: 'var(--error)', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /></svg>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => setRestockConfig({ item, mode: 'add' })}
+                            title="Add Stock"
+                            style={{ padding: '0.4rem 0.8rem', display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}
+                          >
+                            <Plus size={14} /> Add
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="inventory-mobile-cards">
+            {filteredInventory.map((item) => {
+              const status = getStockStatus(item)
+              const StatusIcon = status.icon
+              return (
+                <div key={item.id + '-mobile'} className="inventory-mobile-card">
+                  <div className="inv-card-header">
+                    <div>
+                      <h4 className="inv-card-title">{item.itemName}</h4>
+                      <p className="inv-card-category">{item.category || 'No Category'}</p>
+                    </div>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                      padding: '0.2rem 0.6rem', borderRadius: '999px',
+                      backgroundColor: status.bg, color: status.color,
+                      fontSize: '0.65rem', fontWeight: 600
+                    }}>
+                      <StatusIcon size={10} /> {status.label}
+                    </span>
+                  </div>
+
+                  <div className="inv-card-stats">
+                    <div>
+                      <p className="inv-stat-label">Stock</p>
+                      <p className="inv-stat-value" style={{ color: status.color }}>{item.currentStock.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p className="inv-stat-label">Value</p>
+                      <p className="inv-stat-value">Rs.{(item.currentStock * (item.unitCost || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => setRestockConfig({ item, mode: 'remove' })}
+                      style={{ flex: 1, justifyContent: 'center', color: 'var(--error)', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: 'none' }}
+                    >
+                      Deduct
+                    </button>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => setRestockConfig({ item, mode: 'add' })}
+                      style={{ flex: 2, justifyContent: 'center' }}
+                    >
+                      <Plus size={14} /> Add Stock
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </div>
   )

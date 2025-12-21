@@ -223,8 +223,61 @@ const ProductsManagement = () => {
 
   return (
     <div>
+      <style>{`
+        @media (max-width: 600px) {
+          .products-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .products-header div {
+            width: 100%;
+          }
+          .products-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .category-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .category-actions {
+            width: 100% !important;
+            display: flex !important;
+            gap: 0.5rem !important;
+          }
+          .category-actions .btn {
+            flex: 1 !important;
+            justify-content: center !important;
+            font-size: 0.7rem !important;
+            padding: 0.5rem !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .product-mobile-row {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            padding: 1rem !important;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+          }
+          .product-table-desktop {
+            display: none !important;
+          }
+        }
+        
+        @media (min-width: 481px) {
+          .product-mobile-list {
+            display: none !important;
+          }
+        }
+      `}</style>
+
       {/* Header with Add Category Button */}
-      <div style={{
+      <div className="header-container products-header" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -243,20 +296,22 @@ const ProductsManagement = () => {
             Manage categories and items with their prices
           </p>
         </div>
-        <button
-          onClick={handleAddCategory}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Plus size={18} />
-          Add Category
-        </button>
+        <div className="header-actions">
+          <button
+            onClick={handleAddCategory}
+            className="btn btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Plus size={18} />
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Category Form Modal */}
       {showCategoryForm && (
         <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%' }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -321,7 +376,7 @@ const ProductsManagement = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 <Save size={18} />
-                {editingCategory ? 'Update' : 'Add'} Category
+                {editingCategory ? 'Update' : 'Add'}
               </button>
             </div>
           </div>
@@ -331,7 +386,7 @@ const ProductsManagement = () => {
       {/* Item Form Modal */}
       {showItemForm && selectedCategory && (
         <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%' }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -339,7 +394,7 @@ const ProductsManagement = () => {
               marginBottom: '1.5rem'
             }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {editingItem ? 'Edit Item' : 'Add New Item'} - {selectedCategory.name}
+                {editingItem ? 'Edit Item' : 'Add New Item'}
               </h3>
               <button
                 onClick={() => {
@@ -412,7 +467,7 @@ const ProductsManagement = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 <Save size={18} />
-                {editingItem ? 'Update' : 'Add'} Item
+                {editingItem ? 'Update' : 'Add'}
               </button>
             </div>
           </div>
@@ -435,7 +490,7 @@ const ProductsManagement = () => {
           {products.categories.map((category) => (
             <div key={category.id} className="card">
               {/* Category Header */}
-              <div style={{
+              <div className="category-header" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -455,7 +510,9 @@ const ProductsManagement = () => {
                     padding: 0
                   }}
                 >
-                  <Package size={20} color="var(--accent-primary)" />
+                  <div style={{ padding: '0.5rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px' }}>
+                    <Package size={20} color="var(--accent-primary)" />
+                  </div>
                   <div>
                     <h3 style={{
                       fontSize: '1.125rem',
@@ -474,20 +531,19 @@ const ProductsManagement = () => {
                     </p>
                   </div>
                 </button>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div className="category-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <button
                     onClick={() => handleAddItem(category.id)}
                     className="btn btn-primary btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Add Item"
                   >
                     <Plus size={16} />
-                    Add Item
                   </button>
                   <button
                     onClick={() => handleEditCategory(category)}
                     className="btn btn-secondary btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Edit Category"
                   >
                     <Edit2 size={16} />
@@ -495,7 +551,7 @@ const ProductsManagement = () => {
                   <button
                     onClick={() => handleDeleteCategory(category.id)}
                     className="btn btn-danger btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Delete Category"
                   >
                     <Trash2 size={16} />
@@ -505,7 +561,7 @@ const ProductsManagement = () => {
 
               {/* Category Items */}
               {expandedCategories[category.id] && (
-                <div style={{ animation: 'fadeIn 0.2s ease', marginTop: '1rem' }}>
+                <div style={{ animation: 'fadeIn 0.2s ease', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
                   {category.items.length === 0 ? (
                     <div style={{
                       padding: '2rem',
@@ -526,45 +582,77 @@ const ProductsManagement = () => {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th style={{ width: '50%' }}>Item</th>
-                            <th style={{ width: '30%' }}>Price (Rs.)</th>
-                            <th style={{ width: '20%', textAlign: 'right' }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {category.items.map((item) => (
-                            <tr key={item.id}>
-                              <td style={{ fontWeight: 500 }}>{item.name}</td>
-                              <td>{item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                              <td style={{ textAlign: 'right' }}>
-                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                  <button
-                                    onClick={() => handleEditItem(category.id, item)}
-                                    className="btn btn-secondary btn-sm"
-                                    style={{ padding: '0.25rem 0.5rem' }}
-                                    title="Edit Item"
-                                  >
-                                    <Edit2 size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteItem(category.id, item.id)}
-                                    className="btn btn-danger btn-sm"
-                                    style={{ padding: '0.25rem 0.5rem' }}
-                                    title="Delete Item"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </td>
+                    <>
+                      <div className="product-table-desktop" style={{ overflowX: 'auto' }}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th style={{ width: '50%' }}>Item</th>
+                              <th style={{ width: '30%' }}>Price (Rs.)</th>
+                              <th style={{ width: '20%', textAlign: 'right' }}>Actions</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody>
+                            {category.items.map((item) => (
+                              <tr key={item.id}>
+                                <td style={{ fontWeight: 500 }}>{item.name}</td>
+                                <td>{item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                    <button
+                                      onClick={() => handleEditItem(category.id, item)}
+                                      className="btn btn-secondary btn-sm"
+                                      style={{ padding: '0.25rem 0.5rem' }}
+                                      title="Edit Item"
+                                    >
+                                      <Edit2 size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteItem(category.id, item.id)}
+                                      className="btn btn-danger btn-sm"
+                                      style={{ padding: '0.25rem 0.5rem' }}
+                                      title="Delete Item"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile View for Items */}
+                      <div className="product-mobile-list">
+                        {category.items.map((item) => (
+                          <div key={item.id + '-mobile'} className="product-mobile-row">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{item.name}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '0.95rem' }}>
+                                Rs. {item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => handleEditItem(category.id, item)}
+                                className="btn btn-secondary btn-sm"
+                                style={{ flex: 1, justifyContent: 'center' }}
+                              >
+                                <Edit2 size={14} /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteItem(category.id, item.id)}
+                                className="btn btn-danger btn-sm"
+                                style={{ flex: 1, justifyContent: 'center' }}
+                              >
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}

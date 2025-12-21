@@ -1,160 +1,116 @@
 import { useMemo } from 'react'
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { formatCurrency, calculateConsumptionTrends } from '../../utils/reportUtils'
+import { formatCurrency, calculateInventoryMetrics } from '../../utils/reportUtils'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
-const InventoryReports = ({ inventory, orders = [] }) => {
-    const stats = useMemo(() => {
-        let totalValue = 0
-        let lowStockCount = 0
-        let totalItems = 0
-
-        inventory.forEach(item => {
-            const value = (Number(item.price) || Number(item.unitCost) || 0) * (Number(item.currentStock) || 0)
-            // Prioritize cost for value if available, else price? Actually usually Value = Cost * Quantity.
-            // Let's use unitCost if available, else 0 (safest for "Book Value")
-            // Or if previous logic used price, we can stick to it, but Cost is better for Inventory Value.
-            // Let's use Cost as per previous Inventory.jsx logic.
-            const costVal = (Number(item.unitCost) || 0) * (Number(item.currentStock) || 0)
-
-            totalValue += costVal
-            totalItems += (Number(item.currentStock) || 0)
-
-            if (item.currentStock <= item.reorderLevel) {
-                lowStockCount++
-            }
-        })
-
-        return { totalValue, lowStockCount, totalItems }
-    }, [inventory])
-
-    const lowStockItems = useMemo(() => {
-        return inventory
-            .filter(item => item.currentStock <= item.reorderLevel)
-            .sort((a, b) => a.currentStock - b.currentStock)
-    }, [inventory])
-
-    const { chartData: consumptionData, topItems } = useMemo(() => calculateConsumptionTrends(orders), [orders])
-
-    // Safety check for consumption chart
-    const hasConsumptionData = consumptionData && consumptionData.length > 0;
+const InventoryReports = ({ inventory, isMobile }) => {
+    const { statusData, lowStockItems, totalValue, stockAlerts } = useMemo(() =>
+        calculateInventoryMetrics(inventory), [inventory]
+    )
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Top Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Inventory Value</h3>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{formatCurrency(stats.totalValue)}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Based on Unit Cost)</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1rem' : '1.5rem' }}>
+            <style>{`
+                .inventory-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+                    gap: 1rem;
+                    width: 100%;
+                }
+                @media (max-width: 768px) {
+                    .inventory-stats-grid { grid-template-columns: 1fr; }
+                    .inventory-desktop-table { display: none; }
+                    .inventory-mobile-list { display: flex !important; flex-direction: column; gap: 1rem; }
+                    .inventory-mobile-card {
+                        background: rgba(255, 255, 255, 0.03);
+                        border: 1px solid var(--border-color);
+                        border-radius: 12px;
+                        padding: 1rem;
+                    }
+                    .inventory-card-row {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 0.5rem;
+                        font-size: 0.85rem;
+                    }
+                }
+            `}</style>
+
+            <div className="inventory-stats-grid">
+                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Inventory Value</h3>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{formatCurrency(totalValue)}</p>
                 </div>
-                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Items to Reorder</h3>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger)' }}>{stats.lowStockCount}</p>
-                </div>
-                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Stock Quantity</h3>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{stats.totalItems}</p>
+                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>Low Stock Alerts</h3>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--error)' }}>{stockAlerts}</p>
                 </div>
             </div>
 
-            {/* Consumption Trends Chart */}
-            <div className="card" style={{ padding: '1.5rem' }}>
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.25rem' }}>Consumption Trends</h3>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                        Monthly usage history for top {topItems.length} items. Helps forecast demand.
-                    </p>
-                </div>
-
-                {hasConsumptionData ? (
-                    <div style={{ height: '300px', width: '100%' }}>
-                        <ResponsiveContainer>
-                            <AreaChart data={consumptionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                <defs>
-                                    {topItems.map((item, index) => (
-                                        <linearGradient key={`gradient-${index}`} id={`color-${index}`} x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0} />
-                                        </linearGradient>
-                                    ))}
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                                    itemStyle={{ color: 'var(--text-primary)' }}
-                                />
-                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                                {topItems.map((item, index) => (
-                                    <Area
-                                        key={item}
-                                        type="monotone"
-                                        dataKey={item}
-                                        stroke={COLORS[index % COLORS.length]}
-                                        fillOpacity={1}
-                                        fill={`url(#color-${index})`}
-                                        strokeWidth={2}
-                                        name={item}
-                                    />
+            <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Stock Status</h3>
+                <div style={{ height: '240px', width: '100%' }}>
+                    <ResponsiveContainer>
+                        <PieChart>
+                            <Pie
+                                data={statusData}
+                                cx="50%" cy="45%"
+                                innerRadius={50} outerRadius={70}
+                                paddingAngle={5} dataKey="value" stroke="none"
+                            >
+                                {statusData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                ) : (
-                    <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                        No sufficient order data to forecast trends yet.
-                    </div>
-                )}
+                            </Pie>
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                            />
+                            <Legend wrapperStyle={{ fontSize: '11px' }} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
-            {/* Low Stock Table */}
             <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        Low Stock Alerts
-                        {lowStockItems.length > 0 && (
-                            <span style={{ fontSize: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', padding: '0.125rem 0.5rem', borderRadius: '9999px' }}>{lowStockItems.length}</span>
-                        )}
-                    </h3>
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--error)' }}>Low Stock Alerts</h3>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+
+                <div className="inventory-desktop-table" style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                                <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: 600 }}>Item Name</th>
-                                <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: 600 }}>Category</th>
-                                <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'right' }}>Current Stock</th>
-                                <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'right' }}>Reorder Level</th>
-                                <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: 600, textAlign: 'right' }}>Status</th>
+                                <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Product</th>
+                                <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Category</th>
+                                <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', textAlign: 'right', fontSize: '0.8rem' }}>On Hand</th>
+                                <th style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', textAlign: 'right', fontSize: '0.8rem' }}>Min Required</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {lowStockItems.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                        All stock levels are healthy.
-                                    </td>
+                            {lowStockItems.map((item, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '0.75rem 1rem', fontWeight: 500, fontSize: '0.85rem' }}>{item.name}</td>
+                                    <td style={{ padding: '0.75rem 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{item.category}</td>
+                                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--error)', fontWeight: 600, fontSize: '0.85rem' }}>{item.quantity}</td>
+                                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{item.minStock || 10}</td>
                                 </tr>
-                            ) : (
-                                lowStockItems.map((item, idx) => (
-                                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                        <td style={{ padding: '1rem 1.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>{item.itemName}</td>
-                                        <td style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)' }}>{item.categoryName || item.category}</td>
-                                        <td style={{ padding: '1rem 1.5rem', textAlign: 'right', fontWeight: 700, color: 'var(--danger)' }}>{item.currentStock}</td>
-                                        <td style={{ padding: '1rem 1.5rem', textAlign: 'right', color: 'var(--text-secondary)' }}>{item.reorderLevel}</td>
-                                        <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                                            <span style={{ display: 'inline-block', fontSize: '0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', padding: '0.25rem 0.75rem', borderRadius: '999px', fontWeight: 600 }}>Critical</span>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
+                            ))}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="inventory-mobile-list" style={{ display: 'none', padding: '1rem' }}>
+                    {lowStockItems.map((item, idx) => (
+                        <div key={idx} className="inventory-mobile-card">
+                            <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{item.name}</div>
+                            <div className="inventory-card-row"><span>Category</span><span>{item.category}</span></div>
+                            <div className="inventory-card-row"><span>Current Stock</span><span style={{ color: 'var(--error)', fontWeight: 700 }}>{item.quantity}</span></div>
+                            <div className="inventory-card-row" style={{ marginBottom: 0 }}><span>Min Required</span><span>{item.minStock || 10}</span></div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

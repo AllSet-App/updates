@@ -177,41 +177,49 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
 
   return (
     <div className="dashboard-container">
-      <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: window.innerWidth < 600 ? '1.5rem' : '2.5rem' }}>
         <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 style={{
-              fontSize: '2.5rem',
+              fontSize: window.innerWidth < 600 ? '1.75rem' : '2.5rem',
               fontWeight: 800,
               color: 'var(--text-primary)',
-              marginBottom: '0.5rem',
+              marginBottom: '0.25rem',
               letterSpacing: '-0.02em'
             }}>
               Overview
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: window.innerWidth < 600 ? '0.85rem' : '1rem' }}>
               Real-time business performance metrics
             </p>
           </div>
 
-          <div className="header-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="header-actions" style={{
+            display: 'flex',
+            gap: '0.75rem',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            width: window.innerWidth < 600 ? '100%' : 'auto'
+          }}>
             {showDateFilter && (
               <div style={{
                 display: 'flex',
-                gap: '0.75rem',
+                gap: '0.5rem',
                 alignItems: 'center',
-                padding: '0.5rem 1rem',
+                padding: '0.5rem',
                 backgroundColor: 'var(--bg-card)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                border: '1px solid var(--border-color)'
+                border: '1px solid var(--border-color)',
+                width: window.innerWidth < 600 ? '100%' : 'auto',
+                justifyContent: 'space-between'
               }}>
                 <input
                   type="date"
                   value={dateFilter.startDate}
                   onChange={(e) => handleDateFilterChange('startDate', e.target.value)}
                   className="form-input"
-                  style={{ width: '140px', height: '36px' }}
+                  style={{ flex: 1, minWidth: '0', height: '36px', fontSize: '0.8rem', padding: '0.25rem' }}
                 />
                 <span style={{ color: 'var(--text-muted)' }}>—</span>
                 <input
@@ -219,7 +227,7 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
                   value={dateFilter.endDate}
                   onChange={(e) => handleDateFilterChange('endDate', e.target.value)}
                   className="form-input"
-                  style={{ width: '140px', height: '36px' }}
+                  style={{ flex: 1, minWidth: '0', height: '36px', fontSize: '0.8rem', padding: '0.25rem' }}
                 />
               </div>
             )}
@@ -232,7 +240,9 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
                 borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem'
+                gap: '0.75rem',
+                flex: window.innerWidth < 600 ? 1 : 'none',
+                justifyContent: 'center'
               }}
             >
               <Calendar size={18} />
@@ -245,8 +255,8 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
       {/* Top Section: Quick KPIs */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '1.5rem',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '1.25rem',
         marginBottom: '2.5rem'
       }}>
         <SummaryCard
@@ -285,13 +295,13 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
       {/* Middle Section: Deliveries and Alerts */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '2rem',
         marginBottom: '2.5rem'
       }}>
-        <div className="card" style={{ padding: '1.75rem' }}>
+        <div className="card" style={{ padding: window.innerWidth < 600 ? '1.25rem' : '1.75rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h3 style={{ fontSize: window.innerWidth < 600 ? '1.1rem' : '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Calendar size={20} color="var(--accent-primary)" />
               Scheduled Deliveries
             </h3>
@@ -316,7 +326,10 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
                   padding: '1rem',
                   backgroundColor: 'rgba(255, 255, 255, 0.03)',
                   borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.05)'
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  flexDirection: window.innerWidth < 400 ? 'column' : 'row',
+                  alignItems: window.innerWidth < 400 ? 'flex-start' : 'center',
+                  gap: window.innerWidth < 400 ? '0.75rem' : '0'
                 }}>
                   <div>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.25rem' }}>{delivery.customerName}</h4>
@@ -340,9 +353,9 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
           </div>
         </div>
 
-        <div className="card" style={{ padding: '1.75rem' }}>
+        <div className="card" style={{ padding: window.innerWidth < 600 ? '1.25rem' : '1.75rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h3 style={{ fontSize: window.innerWidth < 600 ? '1.1rem' : '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <AlertTriangle size={20} color="var(--warning)" />
               Low Stock Alerts
             </h3>
@@ -367,7 +380,10 @@ const Dashboard = ({ orders, expenses, inventory = [], onNavigate }) => {
                   padding: '1rem',
                   backgroundColor: 'rgba(239, 68, 68, 0.05)',
                   borderRadius: '12px',
-                  border: '1px solid rgba(239, 68, 68, 0.1)'
+                  border: '1px solid rgba(239, 68, 68, 0.1)',
+                  flexDirection: window.innerWidth < 400 ? 'column' : 'row',
+                  alignItems: window.innerWidth < 400 ? 'flex-start' : 'center',
+                  gap: window.innerWidth < 400 ? '0.75rem' : '0'
                 }}>
                   <div>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.25rem' }}>{item.itemName}</h4>

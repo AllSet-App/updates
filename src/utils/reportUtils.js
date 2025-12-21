@@ -305,3 +305,58 @@ export const calculateConsumptionTrends = (orders) => {
 
     return { chartData, topItems }
 }
+// --- Consolidated Aggregators for Reports ---
+
+export const calculateProfitabilityMetrics = (orders, expenses) => {
+    const { netProfit, margin, revenue, totalExpenses } = calculateProfitability(orders, expenses)
+    const { avgRevenuePerOrder, avgCostPerOrder, avgProfitPerOrder } = calculateAverageBusinessMetrics(orders, expenses)
+    const monthlyData = getMonthlyFinancials(orders, expenses)
+
+    const pieData = [
+        { name: 'Profit', value: Math.max(0, netProfit) },
+        { name: 'Expenses', value: totalExpenses }
+    ]
+
+    return {
+        monthlyData,
+        pieData,
+        netProfit,
+        margin,
+        avgRevenuePerOrder,
+        avgCostPerOrder,
+        avgProfitPerOrder
+    }
+}
+
+export const calculateInventoryMetrics = (inventory) => {
+    const totalValue = inventory.reduce((sum, item) => sum + (Number(item.currentStock || 0) * (Number(item.purchasePrice || 0))), 0)
+    const lowStockItems = inventory
+        .filter(item => (Number(item.currentStock) || 0) <= (Number(item.reorderLevel) || 10))
+        .map(i => ({
+            name: i.itemName,
+            category: i.category,
+            quantity: i.currentStock,
+            minStock: i.reorderLevel
+        }))
+        .sort((a, b) => a.quantity - b.quantity)
+
+    const stockAlerts = lowStockItems.length
+
+    const statusCounts = {
+        'In Stock': 0,
+        'Low Stock': 0,
+        'Out of Stock': 0
+    }
+
+    inventory.forEach(item => {
+        const qty = Number(item.currentStock) || 0
+        const min = Number(item.reorderLevel) || 10
+        if (qty <= 0) statusCounts['Out of Stock']++
+        else if (qty <= min) statusCounts['Low Stock']++
+        else statusCounts['In Stock']++
+    })
+
+    const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }))
+
+    return { statusData, lowStockItems, totalValue, stockAlerts }
+}

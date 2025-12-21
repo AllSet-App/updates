@@ -181,68 +181,129 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <div>
-            <h1 style={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              marginBottom: '0.5rem'
-            }}>
-              Expense Tracker
-            </h1>
-            <p style={{ color: 'var(--text-muted)' }}>
-              Track and manage business expenses
-            </p>
-          </div>
+      <style>{`
+        @media (max-width: 600px) {
+          .expense-tracker-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .expense-tracker-header div {
+            width: 100%;
+          }
+          .expense-tracker-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .filters-container {
+            flex-direction: column !important;
+            gap: 1rem !important;
+          }
+          .filters-container > div, .filters-container > select {
+            width: 100% !important;
+          }
+          .summary-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .expense-table-desktop {
+            display: none !important;
+          }
+          .expense-mobile-list {
+            display: block !important;
+          }
+          .expense-mobile-card {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+          }
+          .expense-mobile-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+          }
+        }
+
+        @media (min-width: 481px) {
+          .expense-mobile-list {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="header-container expense-tracker-header" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem'
+      }}>
+        <div>
+          <h1 style={{
+            fontSize: '1.75rem',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            marginBottom: '0.5rem'
+          }}>
+            Expense Tracker
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+            Track and manage business expenses
+          </p>
+        </div>
+        <div className="header-actions">
           <button
             className="btn btn-primary"
             onClick={() => {
               setEditingExpense(null)
               setShowForm(true)
             }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <Plus size={18} />
             Add Expense
           </button>
         </div>
+      </div>
 
-        {/* Filters */}
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Filter size={18} color="var(--text-muted)" />
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              style={{ minWidth: '150px' }}
-            >
-              <option value="all">All Categories</option>
-              <option value="Material">Material</option>
-              <option value="Operational">Operational</option>
-              <option value="Transport">Transport</option>
-              <option value="Utilities">Utilities</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+      <div className="filters-container" style={{
+        display: 'flex',
+        gap: '1rem',
+        marginBottom: '2rem',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: '150px' }}>
+          <Filter size={18} color="var(--text-muted)" />
           <select
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            style={{ minWidth: '150px' }}
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{ width: '100%' }}
           >
-            <option value="all">All Time</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
+            <option value="all">All Categories</option>
+            <option value="Material">Material</option>
+            <option value="Operational">Operational</option>
+            <option value="Transport">Transport</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Other">Other</option>
           </select>
         </div>
+        <select
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          style={{ flex: 1, minWidth: '150px' }}
+        >
+          <option value="all">All Time</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
       </div>
 
       {/* Summary Cards */}
-      <div style={{
+      <div className="summary-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1.5rem',
@@ -285,7 +346,7 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
       {/* Charts */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gridTemplateColumns: '1fr',
         gap: '1.5rem',
         marginBottom: '2rem'
       }}>
@@ -304,102 +365,140 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
               No expenses this month
             </p>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent, value }) => `${name} ${(percent * 100).toFixed(0)}% (Rs.${value.toLocaleString('en-IN')})`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius)',
-                    color: 'var(--text-primary)'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieChartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius)',
+                      color: 'var(--text-primary)'
+                    }}
+                    formatter={(value) => `Rs.${value.toLocaleString('en-IN')}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Expenses Table */}
+      {/* Expenses List */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {filteredExpenses.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p>No expenses found. Add your first expense to get started.</p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Item</th>
-                  <th>Category</th>
-                  <th>Qty</th>
-                  <th>Unit Cost</th>
-                  <th>Total</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredExpenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{new Date(expense.date).toLocaleDateString('en-IN')}</td>
-                    <td>{expense.item || expense.description}</td>
-                    <td>
-                      {expense.category && (
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: 'var(--radius)',
-                          fontSize: '0.75rem',
-                          backgroundColor: 'var(--bg-secondary)',
-                          color: 'var(--text-primary)'
-                        }}>
-                          {expense.category}
-                        </span>
-                      )}
-                    </td>
-                    <td>{expense.quantity || '-'}</td>
-                    <td>{expense.unitCost ? `Rs.${expense.unitCost.toLocaleString('en-IN')}` : '-'}</td>
-                    <td style={{ fontWeight: 600 }}>
-                      Rs.{(expense.total || expense.amount || 0).toLocaleString('en-IN')}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => handleEdit(expense)}
-                          title="Edit"
-                        >
-                          <Edit size={14} />
-                        </button>
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => handleDelete(expense.id)}
-                          title="Delete"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="expense-table-desktop" style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Qty</th>
+                    <th>Unit Cost</th>
+                    <th>Total</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredExpenses.map((expense) => (
+                    <tr key={expense.id}>
+                      <td>{new Date(expense.date).toLocaleDateString('en-IN')}</td>
+                      <td style={{ fontWeight: 500 }}>{expense.item || expense.description}</td>
+                      <td>
+                        {expense.category && (
+                          <span style={{
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: 'var(--radius)',
+                            fontSize: '0.75rem',
+                            backgroundColor: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)'
+                          }}>
+                            {expense.category}
+                          </span>
+                        )}
+                      </td>
+                      <td>{expense.quantity || '-'}</td>
+                      <td>{expense.unitCost ? `Rs.${expense.unitCost.toLocaleString('en-IN')}` : '-'}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>
+                        Rs.{(expense.total || expense.amount || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => handleEdit(expense)}
+                            title="Edit"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleDelete(expense.id)}
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="expense-mobile-list" style={{ padding: '1rem' }}>
+              {filteredExpenses.map((expense) => (
+                <div key={expense.id + '-mobile'} className="expense-mobile-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{expense.item || expense.description}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(expense.date).toLocaleDateString('en-IN')}</div>
+                  </div>
+                  <div className="expense-mobile-card-row">
+                    <span style={{ color: 'var(--text-muted)' }}>Category:</span>
+                    <span>{expense.category || '-'}</span>
+                  </div>
+                  {(expense.quantity || expense.unitCost) && (
+                    <div className="expense-mobile-card-row">
+                      <span style={{ color: 'var(--text-muted)' }}>Details:</span>
+                      <span>{expense.quantity || 1} x Rs.{(expense.unitCost || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                  <div className="expense-mobile-card-row" style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
+                    <span style={{ fontWeight: 600 }}>Total:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>Rs.{(expense.total || expense.amount || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                    <button className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleEdit(expense)}>
+                      <Edit size={14} /> Edit
+                    </button>
+                    <button className="btn btn-danger btn-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={() => handleDelete(expense.id)}>
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

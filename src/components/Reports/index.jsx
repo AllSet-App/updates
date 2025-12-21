@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, TrendingUp, DollarSign, ShoppingBag, Package, PieChart } from 'lucide-react'
 import SalesReports from './SalesReports'
 import ExpenseReports from './ExpenseReports'
@@ -8,6 +8,13 @@ import InventoryReports from './InventoryReports'
 
 const Reports = ({ orders, expenses, inventory }) => {
     const [activeTab, setActiveTab] = useState('sales')
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     const tabs = [
         { id: 'sales', label: 'Sales', icon: TrendingUp },
@@ -18,33 +25,89 @@ const Reports = ({ orders, expenses, inventory }) => {
     ]
 
     const renderContent = () => {
+        const props = { orders, expenses, inventory, isMobile }
         switch (activeTab) {
-            case 'sales':
-                return <SalesReports orders={orders} inventory={inventory} />
-            case 'expenses':
-                return <ExpenseReports expenses={expenses} />
-            case 'profitability':
-                return <ProfitabilityReports orders={orders} expenses={expenses} />
-            case 'orders':
-                return <OrdersReports orders={orders} />
-            case 'inventory':
-                return <InventoryReports inventory={inventory} orders={orders} />
-            default:
-                return <SalesReports orders={orders} inventory={inventory} />
+            case 'sales': return <SalesReports {...props} />
+            case 'expenses': return <ExpenseReports {...props} />
+            case 'profitability': return <ProfitabilityReports {...props} />
+            case 'orders': return <OrdersReports {...props} />
+            case 'inventory': return <InventoryReports {...props} />
+            default: return <SalesReports {...props} />
         }
     }
 
     return (
-        <div style={{ padding: '1.5rem', maxWidth: '1600px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-                <div>
-                    <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#fff', marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>Financial Reports</h1>
-                    <p style={{ color: 'var(--text-muted)' }}>Comprehensive analytics of your business performance</p>
-                </div>
+        <div style={{
+            padding: window.innerWidth < 450 ? '0.25rem' : (isMobile ? '0.75rem' : '1.5rem'),
+            maxWidth: '100%',
+            margin: '0 auto',
+            overflowX: 'hidden'
+        }}>
+            <style>{`
+                .reports-header h1 {
+                    font-size: 1.875rem;
+                    font-weight: 800;
+                    color: #fff;
+                    margin-bottom: 0.25rem;
+                    letter-spacing: -0.025em;
+                    line-height: 1.2;
+                }
+                .reports-header p {
+                    color: var(--text-muted);
+                    font-size: 1rem;
+                    line-height: 1.4;
+                }
+                @media (max-width: 600px) {
+                    .reports-header h1 { font-size: 1.35rem !important; }
+                    .reports-header p { font-size: 0.8rem !important; }
+                }
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                
+                .tab-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.55rem 1rem;
+                    border-radius: 0.5rem;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                    border: none;
+                    cursor: pointer;
+                    background: transparent;
+                    color: var(--text-muted);
+                    border-radius: 8px;
+                }
+                .tab-btn.active {
+                    background-color: var(--accent-primary);
+                    color: #fff;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+                }
+                .tab-btn:hover:not(.active) {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    color: #fff;
+                }
+            `}</style>
+
+            <div className="reports-header" style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
+                <h1>Financial Reports</h1>
+                <p>Comprehensive analytics of your business performance</p>
             </div>
 
             {/* Navigation Tabs */}
-            <div style={{ display: 'flex', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '1.5rem', gap: '0.5rem', borderBottom: '1px solid var(--border-color)' }} className="no-scrollbar">
+            <div style={{
+                display: 'flex',
+                overflowX: 'auto',
+                paddingBottom: '0.75rem',
+                marginBottom: '1.5rem',
+                gap: '0.4rem',
+                borderBottom: '1px solid var(--border-color)',
+                width: '100%',
+                maxWidth: '100%',
+                minWidth: 0
+            }} className="no-scrollbar">
                 {tabs.map((tab) => {
                     const Icon = tab.icon
                     const isActive = activeTab === tab.id
@@ -52,25 +115,9 @@ const Reports = ({ orders, expenses, inventory }) => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '0.5rem',
-                                fontSize: '0.875rem',
-                                fontWeight: 500,
-                                transition: 'all 0.2s',
-                                whiteSpace: 'nowrap',
-                                backgroundColor: isActive ? 'var(--accent-primary)' : 'transparent',
-                                color: isActive ? '#fff' : 'var(--text-muted)',
-                                border: 'none',
-                                cursor: 'pointer',
-                                boxShadow: isActive ? '0 4px 12px rgba(59, 130, 246, 0.2)' : 'none'
-                            }}
-                            className={!isActive ? 'hover-bg-white-5 hover-text-white' : ''}
+                            className={`tab-btn ${isActive ? 'active' : ''}`}
                         >
-                            <Icon size={18} />
+                            <Icon size={16} />
                             {tab.label}
                         </button>
                     )
@@ -78,7 +125,7 @@ const Reports = ({ orders, expenses, inventory }) => {
             </div>
 
             {/* Content Area */}
-            <div className="animate-fade-in">
+            <div className="animate-fade-in" style={{ paddingBottom: '2rem' }}>
                 {renderContent()}
             </div>
         </div>

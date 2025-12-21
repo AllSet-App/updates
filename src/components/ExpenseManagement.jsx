@@ -223,8 +223,44 @@ const ExpenseManagement = () => {
 
   return (
     <div>
+      <style>{`
+        @media (max-width: 520px) {
+          .expense-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .expense-header div {
+            width: 100%;
+          }
+          .expense-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .category-header-actions {
+            flex-wrap: wrap !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .items-table th:nth-child(2),
+          .items-table td:nth-child(2) {
+            width: auto !important;
+          }
+          .category-card-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .category-header-actions {
+            width: 100% !important;
+            justify-content: flex-start !important;
+          }
+        }
+      `}</style>
+
       {/* Header with Add Category Button */}
-      <div style={{
+      <div className="header-container expense-header" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -243,20 +279,22 @@ const ExpenseManagement = () => {
             Manage expense categories
           </p>
         </div>
-        <button
-          onClick={handleAddCategory}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Plus size={18} />
-          Add Category
-        </button>
+        <div className="header-actions">
+          <button
+            onClick={handleAddCategory}
+            className="btn btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Plus size={18} />
+            Add Category
+          </button>
+        </div>
       </div>
 
       {/* Category Form Modal */}
       {showCategoryForm && (
         <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', width: '90%' }}>
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -321,7 +359,7 @@ const ExpenseManagement = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 <Save size={18} />
-                {editingCategory ? 'Update' : 'Add'} Category
+                {editingCategory ? 'Update' : 'Add'}
               </button>
             </div>
           </div>
@@ -344,7 +382,7 @@ const ExpenseManagement = () => {
           {expenseCategories.categories.map((category) => (
             <div key={category.id} className="card">
               {/* Category Header */}
-              <div style={{
+              <div className="category-card-header" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -355,7 +393,9 @@ const ExpenseManagement = () => {
                   gap: '0.75rem',
                   flex: 1
                 }}>
-                  <DollarSign size={20} color="var(--accent-primary)" />
+                  <div style={{ padding: '0.5rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px' }}>
+                    <DollarSign size={20} color="var(--accent-primary)" />
+                  </div>
                   <div>
                     <h3 style={{
                       fontSize: '1.125rem',
@@ -367,11 +407,11 @@ const ExpenseManagement = () => {
                     </h3>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div className="category-header-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <button
                     onClick={() => toggleCategory(category.id)}
                     className="btn btn-secondary btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Show/Hide Items"
                   >
                     <Tag size={16} />
@@ -379,7 +419,7 @@ const ExpenseManagement = () => {
                   <button
                     onClick={() => handleEditCategory(category)}
                     className="btn btn-secondary btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Edit Category"
                   >
                     <Edit2 size={16} />
@@ -387,7 +427,7 @@ const ExpenseManagement = () => {
                   <button
                     onClick={() => handleDeleteCategory(category.id)}
                     className="btn btn-danger btn-sm"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    style={{ padding: '0.4rem' }}
                     title="Delete Category"
                   >
                     <Trash2 size={16} />
@@ -396,25 +436,25 @@ const ExpenseManagement = () => {
               </div>
 
               {expandedCategories[category.id] && (
-                <div style={{ marginTop: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.875rem' }}>
-                      Items (shown in Add Expense form)
+                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.875rem', fontWeight: 500 }}>
+                      CATEGORY ITEMS
                     </p>
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => handleAddItem(category.id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}
                     >
-                      <Plus size={16} />
+                      <Plus size={14} />
                       Add Item
                     </button>
                   </div>
 
                   {editingItem?.categoryId === category.id && (
-                    <div className="card" style={{ marginBottom: '1rem', backgroundColor: 'var(--bg-secondary)' }}>
-                      <div className="form-group">
-                        <label className="form-label">Item Name</label>
+                    <div className="card" style={{ marginBottom: '1rem', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--accent-primary)', padding: '1rem' }}>
+                      <div className="form-group" style={{ marginBottom: '1rem' }}>
+                        <label className="form-label" style={{ fontSize: '0.8rem' }}>Item Name</label>
                         <input
                           type="text"
                           className="form-input"
@@ -422,43 +462,44 @@ const ExpenseManagement = () => {
                           onChange={(e) => setItemFormData({ name: e.target.value })}
                           placeholder="e.g., FB Ads, Google Ads"
                           autoFocus
+                          style={{ fontSize: '0.9rem' }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveItem()
                             if (e.key === 'Escape') handleCancelItem()
                           }}
                         />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                        <button className="btn btn-secondary" onClick={handleCancelItem}>Cancel</button>
-                        <button className="btn btn-primary" onClick={handleSaveItem}>Save Item</button>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={handleCancelItem}>Cancel</button>
+                        <button className="btn btn-primary btn-sm" onClick={handleSaveItem}>Save</button>
                       </div>
                     </div>
                   )}
 
                   {(Array.isArray(category.items) ? category.items : []).length === 0 ? (
-                    <div style={{ color: 'var(--text-muted)', padding: '0.75rem', textAlign: 'center' }}>
-                      No items yet.
+                    <div style={{ color: 'var(--text-muted)', padding: '1.5rem', textAlign: 'center', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius)', fontSize: '0.875rem' }}>
+                      No items defined yet for this category.
                     </div>
                   ) : (
                     <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <table className="items-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                            <th style={{ padding: '0.75rem', textAlign: 'left' }}>Item</th>
-                            <th style={{ padding: '0.75rem', textAlign: 'right', width: '160px' }}>Actions</th>
+                            <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Item Name</th>
+                            <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right', width: '120px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {(Array.isArray(category.items) ? category.items : []).map(item => (
                             <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                              <td style={{ padding: '0.75rem', color: 'var(--text-primary)' }}>{item.name}</td>
-                              <td style={{ padding: '0.75rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                  <button className="btn btn-secondary btn-sm" onClick={() => handleEditItem(category.id, item)}>
-                                    <Edit2 size={16} />
+                              <td style={{ padding: '0.8rem 0.5rem', color: 'var(--text-primary)', fontSize: '0.9rem' }}>{item.name}</td>
+                              <td style={{ padding: '0.8rem 0.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                                  <button className="btn btn-secondary btn-sm" style={{ padding: '0.35rem' }} onClick={() => handleEditItem(category.id, item)}>
+                                    <Edit2 size={14} />
                                   </button>
-                                  <button className="btn btn-danger btn-sm" onClick={() => handleDeleteItem(category.id, item.id)}>
-                                    <Trash2 size={16} />
+                                  <button className="btn btn-danger btn-sm" style={{ padding: '0.35rem' }} onClick={() => handleDeleteItem(category.id, item.id)}>
+                                    <Trash2 size={14} />
                                   </button>
                                 </div>
                               </td>

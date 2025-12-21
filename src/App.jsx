@@ -306,7 +306,10 @@ function App() {
           padding: '1rem',
           marginLeft: '0',
           backgroundColor: 'transparent',
-          transition: 'margin-left 0.3s ease'
+          transition: 'margin-left 0.3s ease',
+          minWidth: 0,
+          width: '100%',
+          boxSizing: 'border-box'
         }}
           className="main-content"
         >

@@ -10,7 +10,7 @@ import * as XLSX from 'xlsx'
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
-const SalesReports = ({ orders, inventory }) => {
+const SalesReports = ({ orders, inventory, isMobile }) => {
     const [timeRange, setTimeRange] = useState('monthly') // weekly, monthly, yearly
     const [products, setProducts] = useState({ categories: [] })
 
@@ -58,42 +58,72 @@ const SalesReports = ({ orders, inventory }) => {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Revenue</h3>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{formatCurrency(metrics.revenue)}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1rem' : '1.5rem' }}>
+            <style>{`
+                .sales-stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+                    gap: 1rem;
+                }
+                .sales-charts-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+                    gap: 1.5rem;
+                }
+                @media (max-width: 768px) {
+                    .sales-stats-grid { grid-template-columns: 1fr; }
+                    .sales-charts-grid { grid-template-columns: 1fr; }
+                    .sales-desktop-table { display: none; }
+                    .sales-mobile-list { display: flex !important; flex-direction: column; gap: 1rem; }
+                }
+                .sales-mobile-card {
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid var(--border-color);
+                    border-radius: 12px;
+                    padding: 1rem;
+                }
+                .sales-card-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.85rem;
+                }
+            `}</style>
+
+            <div className="sales-stats-grid">
+                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Revenue</h3>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--accent-primary)' }}>{formatCurrency(metrics.revenue)}</p>
                 </div>
-                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <h3 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Orders (All Status)</h3>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{metrics.totalOrders}</p>
+                <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Orders</h3>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>{metrics.totalOrders}</p>
                 </div>
-                <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <button onClick={handleExport} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                        <Download size={18} /> Export Sales Data
+                <div className="card" style={{ padding: '0.75rem', display: 'flex', alignItems: 'center' }}>
+                    <button onClick={handleExport} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '100%' }}>
+                        <Download size={16} /> Export
                     </button>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+            <div className="sales-charts-grid">
                 {/* Revenue Trend Chart */}
-                {/* Revenue Trend Chart */}
-                <div className="card" style={{ padding: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>Revenue Trend</h3>
-                    <div style={{ height: '16rem', width: '100%' }}>
+                <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Revenue Trend</h3>
+                    <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
-                            <AreaChart data={chartData}>
+                            <AreaChart data={chartData} margin={{ left: -20, right: 10 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                                <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
-                                <YAxis stroke="#9ca3af" fontSize={12} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="date" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
                                     formatter={(value) => formatCurrency(value)}
                                 />
                                 <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" />
@@ -103,10 +133,9 @@ const SalesReports = ({ orders, inventory }) => {
                 </div>
 
                 {/* Sales by Channel */}
-                {/* Sales by Channel */}
-                <div className="card" style={{ padding: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>Sales by Channel</h3>
-                    <div style={{ height: '16rem', width: '100%' }}>
+                <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Sales by Channel</h3>
+                    <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
                                 <defs>
@@ -120,52 +149,72 @@ const SalesReports = ({ orders, inventory }) => {
                                 <Pie
                                     data={metrics.channelData}
                                     cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
+                                    cy="45%"
+                                    innerRadius={50}
+                                    outerRadius={70}
                                     paddingAngle={5}
                                     dataKey="value"
                                     stroke="none"
                                 >
                                     {metrics.channelData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={`url(#salesPieGradient${index % COLORS.length})`} />
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
                                 />
-                                <Legend />
+                                <Legend wrapperStyle={{ fontSize: '11px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
-            {/* Top Products Table */}
-            {/* Top Products Table */}
-            <div className="card" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>Top Selling Products</h3>
-                <div style={{ overflowX: 'auto' }}>
+            {/* Top Products */}
+            <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Top Selling Products</h3>
+
+                <div className="sales-desktop-table" style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                         <thead>
                             <tr>
-                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>Product Name</th>
-                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>Category</th>
-                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'right' }}>Units Sold</th>
-                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'right' }}>Revenue</th>
+                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Name</th>
+                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Category</th>
+                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'right', fontSize: '0.8rem' }}>Units</th>
+                                <th style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'right', fontSize: '0.8rem' }}>Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
                             {topProducts.map((p, idx) => (
                                 <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <td style={{ padding: '0.75rem', fontWeight: 500 }}>{p.name}</td>
-                                    <td style={{ padding: '0.75rem', color: 'var(--text-muted)' }}>{p.category}</td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'right' }}>{p.quantity}</td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--success)' }}>{formatCurrency(p.revenue)}</td>
+                                    <td style={{ padding: '0.75rem', fontWeight: 500, fontSize: '0.85rem' }}>{p.name}</td>
+                                    <td style={{ padding: '0.75rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.category}</td>
+                                    <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.85rem' }}>{p.quantity}</td>
+                                    <td style={{ padding: '0.75rem', textAlign: 'right', color: 'var(--success)', fontWeight: 600, fontSize: '0.85rem' }}>{formatCurrency(p.revenue)}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="sales-mobile-list" style={{ display: 'none' }}>
+                    {topProducts.map((p, idx) => (
+                        <div key={idx} className="sales-mobile-card">
+                            <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{p.name}</div>
+                            <div className="sales-card-row">
+                                <span style={{ color: 'var(--text-muted)' }}>Category:</span>
+                                <span>{p.category}</span>
+                            </div>
+                            <div className="sales-card-row">
+                                <span style={{ color: 'var(--text-muted)' }}>Units:</span>
+                                <span>{p.quantity}</span>
+                            </div>
+                            <div className="sales-card-row" style={{ marginBottom: 0 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Revenue:</span>
+                                <span style={{ color: 'var(--success)', fontWeight: 700 }}>{formatCurrency(p.revenue)}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

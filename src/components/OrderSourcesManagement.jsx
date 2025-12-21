@@ -150,20 +150,68 @@ const OrderSourcesManagement = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+      <style>{`
+        @media (max-width: 520px) {
+          .sources-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+          }
+          .sources-header div {
+            width: 100%;
+          }
+          .sources-header .btn {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .sources-table-desktop {
+            display: none !important;
+          }
+          .source-mobile-row {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            padding: 1rem !important;
+            border-bottom: 1px solid var(--border-color);
+          }
+          .source-mobile-actions {
+            display: flex !important;
+            gap: 0.5rem !important;
+          }
+          .source-mobile-actions .btn {
+            flex: 1 !important;
+            justify-content: center !important;
+          }
+        }
+        
+        @media (min-width: 481px) {
+          .sources-mobile-list {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="header-container sources-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '1rem' }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', flex: 1 }}>
           Manage the list of order sources used in the New Order form and future reports.
         </div>
-        <button className="btn btn-primary" onClick={startAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Plus size={18} />
-          Add Source
-        </button>
+        <div className="header-actions">
+          <button className="btn btn-primary" onClick={startAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Plus size={18} />
+            Add Source
+          </button>
+        </div>
       </div>
 
       {showForm && (
         <div className="card" style={{ marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-            <Tag size={18} color="var(--text-muted)" />
+            <div style={{ padding: '0.4rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderRadius: '6px' }}>
+              <Tag size={18} color="var(--accent-primary)" />
+            </div>
             <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
               {editingId ? 'Edit Source' : 'New Source'}
             </div>
@@ -176,6 +224,7 @@ const OrderSourcesManagement = () => {
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
               placeholder="e.g., Ads, Organic, Marketplace, Referral"
+              autoFocus
             />
           </div>
 
@@ -198,11 +247,11 @@ const OrderSourcesManagement = () => {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="sources-table-desktop" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '0.9rem 1rem', textAlign: 'left' }}>Source</th>
-                <th style={{ padding: '0.9rem 1rem', textAlign: 'right', width: '160px' }}>Actions</th>
+                <th style={{ padding: '0.9rem 1rem', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Source Name</th>
+                <th style={{ padding: '0.9rem 1rem', textAlign: 'right', width: '200px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -213,12 +262,12 @@ const OrderSourcesManagement = () => {
                   </td>
                   <td style={{ padding: '0.9rem 1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                      <button className="btn btn-secondary" onClick={() => startEdit(s)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Edit2 size={16} />
+                      <button className="btn btn-secondary btn-sm" onClick={() => startEdit(s)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Edit2 size={14} />
                         Edit
                       </button>
-                      <button className="btn btn-danger" onClick={() => remove(s)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Trash2 size={16} />
+                      <button className="btn btn-danger btn-sm" onClick={() => remove(s)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <Trash2 size={14} />
                         Delete
                       </button>
                     </div>
@@ -227,6 +276,22 @@ const OrderSourcesManagement = () => {
               ))}
             </tbody>
           </table>
+
+          <div className="sources-mobile-list">
+            {sortedSources.map((s) => (
+              <div key={s.id + '-mobile'} className="source-mobile-row">
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</div>
+                <div className="source-mobile-actions">
+                  <button className="btn btn-secondary btn-sm" onClick={() => startEdit(s)}>
+                    <Edit2 size={14} /> Edit
+                  </button>
+                  <button className="btn btn-danger btn-sm" onClick={() => remove(s)}>
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       <ConfirmationModal
