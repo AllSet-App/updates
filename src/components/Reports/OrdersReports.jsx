@@ -38,9 +38,10 @@ const OrdersReports = ({ orders, isMobile }) => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                <Legend wrapperStyle={{ fontSize: '12px', color: '#e5e7eb' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -52,10 +53,11 @@ const OrdersReports = ({ orders, isMobile }) => {
                         <ResponsiveContainer>
                             <BarChart data={statusData} layout="vertical" margin={{ left: -10, right: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis type="number" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
-                                <YAxis dataKey="name" type="category" width={80} stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                                <XAxis type="number" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
+                                <YAxis dataKey="name" type="category" width={80} stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
                                 />
                                 <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>

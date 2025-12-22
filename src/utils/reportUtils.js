@@ -21,22 +21,76 @@ export const filterByDateRange = (data, dateField, startDate, endDate) => {
 
 // --- Sales Calculations ---
 
-export const calculateSalesMetrics = (orders) => {
+export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => {
     const paidOrders = orders.filter(o => o.paymentStatus === 'Paid')
     const revenue = paidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
     const totalOrders = orders.length
 
-    // Group by channel
-    const salesByChannel = orders.reduce((acc, order) => {
-        const source = (order.orderSource || 'Organic').trim()
-        acc[source] = (acc[source] || 0) + 1
-        return acc
-    }, {})
+    // Create inventory lookup map
+    const inventoryMap = {}
+    inventory.forEach(item => {
+        if (item.id) inventoryMap[String(item.id)] = item
+    })
+
+    // 1. Source Distribution (Volume) - All Orders
+    const sourceStats = {}
+    orders.forEach(order => {
+        const source = (order.orderSource || 'Ad').trim() // Default to 'Ad' to match Dashboard
+        if (!sourceStats[source]) {
+            sourceStats[source] = { name: source, orders: 0, revenue: 0, cost: 0, adsExpense: 0 }
+        }
+        sourceStats[source].orders += 1
+    })
+
+    // 2. Financial Metrics - Paid Orders Only
+    paidOrders.forEach(order => {
+        const source = (order.orderSource || 'Ad').trim()
+        if (!sourceStats[source]) {
+            sourceStats[source] = { name: source, orders: 0, revenue: 0, cost: 0, adsExpense: 0 }
+        }
+
+        const orderRevenue = Number(order.totalPrice) || 0
+        sourceStats[source].revenue += orderRevenue
+
+        let orderCost = 0
+        const items = order.orderItems || []
+        items.forEach(it => {
+            const invItem = inventoryMap[String(it.itemId)]
+            if (invItem) {
+                const cost = Number(invItem.unitCost) || 0
+                orderCost += (Number(it.quantity) || 0) * cost
+            }
+        })
+        sourceStats[source].cost += orderCost
+    })
+
+    // 3. Subtract Ad Expenses - Category "Ads", match item name to source
+    expenses.forEach(exp => {
+        if (exp.category === 'Ads') {
+            const item = (exp.item || exp.description || '').trim().toLowerCase()
+            // Find a source that matches this name (case-insensitive)
+            Object.keys(sourceStats).forEach(sourceName => {
+                if (sourceName.toLowerCase() === item) {
+                    sourceStats[sourceName].adsExpense += Number(exp.amount || exp.total || 0)
+                }
+            })
+        }
+    })
 
     // Transform for Recharts
-    const channelData = Object.entries(salesByChannel).map(([name, value]) => ({ name, value }))
+    const sourceData = Object.values(sourceStats)
+        .map(s => ({ name: s.name, value: s.orders }))
+        .filter(d => d.value > 0)
 
-    return { revenue, totalOrders, channelData }
+    const profitabilityData = Object.values(sourceStats)
+        .map(s => ({
+            name: s.name,
+            revenue: s.revenue,
+            profit: s.revenue - s.cost - s.adsExpense
+        }))
+        .filter(d => d.revenue > 0 || d.profit !== 0)
+
+    return { revenue, totalOrders, sourceData, profitabilityData }
 }
 
 export const getTopSellingProducts = (orders, inventory = [], products = { categories: [] }) => {

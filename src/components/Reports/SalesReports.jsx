@@ -3,14 +3,13 @@ import {
     BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts'
-import { Download, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { formatCurrency, calculateSalesMetrics, getTopSellingProducts } from '../../utils/reportUtils'
 import { getProducts } from '../../utils/storage'
-import * as XLSX from 'xlsx'
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
-const SalesReports = ({ orders, inventory, isMobile }) => {
+const SalesReports = ({ orders, inventory, expenses, isMobile }) => {
     const [timeRange, setTimeRange] = useState('monthly') // weekly, monthly, yearly
     const [products, setProducts] = useState({ categories: [] })
 
@@ -18,7 +17,7 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
         getProducts().then(setProducts)
     }, [])
 
-    const metrics = useMemo(() => calculateSalesMetrics(orders), [orders])
+    const metrics = useMemo(() => calculateSalesMetrics(orders, inventory, expenses), [orders, inventory, expenses])
     const topProducts = useMemo(() => getTopSellingProducts(orders, inventory, products), [orders, inventory, products])
 
     // Prepare Chart Data (Revenue over time)
@@ -43,19 +42,6 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
             .sort((a, b) => a.date.localeCompare(b.date))
     }, [orders, timeRange])
 
-    const handleExport = () => {
-        const ws = XLSX.utils.json_to_sheet(orders.map(o => ({
-            ID: o.id,
-            Date: o.orderDate,
-            Customer: o.customerName,
-            Amount: o.totalPrice,
-            Status: o.status,
-            Source: o.orderSource
-        })))
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, "Sales Data")
-        XLSX.writeFile(wb, "Sales_Report.xlsx")
-    }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1rem' : '1.5rem' }}>
@@ -99,11 +85,6 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
                     <h3 style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>Total Orders</h3>
                     <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>{metrics.totalOrders}</p>
                 </div>
-                <div className="card" style={{ padding: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                    <button onClick={handleExport} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '100%' }}>
-                        <Download size={16} /> Export
-                    </button>
-                </div>
             </div>
 
             <div className="sales-charts-grid">
@@ -120,10 +101,12 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
+                                    labelStyle={{ color: '#9ca3af', marginBottom: '0.25rem' }}
                                     formatter={(value) => formatCurrency(value)}
                                 />
                                 <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" />
@@ -132,9 +115,9 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
                     </div>
                 </div>
 
-                {/* Sales by Channel */}
+                {/* Sales by Source */}
                 <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Sales by Channel</h3>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Sales by Source</h3>
                     <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
@@ -147,7 +130,7 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
                                     ))}
                                 </defs>
                                 <Pie
-                                    data={metrics.channelData}
+                                    data={metrics.sourceData}
                                     cx="50%"
                                     cy="45%"
                                     innerRadius={50}
@@ -156,14 +139,55 @@ const SalesReports = ({ orders, inventory, isMobile }) => {
                                     dataKey="value"
                                     stroke="none"
                                 >
-                                    {metrics.channelData.map((entry, index) => (
+                                    {metrics.sourceData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Profit by Source */}
+                <div className="card" style={{ padding: isMobile ? '1rem' : '1.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Profit by Source</h3>
+                    <div style={{ height: '240px', width: '100%' }}>
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <defs>
+                                    {COLORS.map((color, index) => (
+                                        <linearGradient key={index} id={`profitPieGradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor={color} stopOpacity={1} />
+                                            <stop offset="100%" stopColor={color} stopOpacity={0.4} />
+                                        </linearGradient>
+                                    ))}
+                                </defs>
+                                <Pie
+                                    data={metrics.profitabilityData}
+                                    cx="50%"
+                                    cy="45%"
+                                    innerRadius={50}
+                                    outerRadius={70}
+                                    paddingAngle={5}
+                                    dataKey="profit"
+                                    nameKey="name"
+                                    stroke="none"
+                                >
+                                    {metrics.profitabilityData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
+                                    formatter={(value) => formatCurrency(value)}
+                                />
+                                <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

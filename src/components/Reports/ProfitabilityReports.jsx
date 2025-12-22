@@ -77,13 +77,13 @@ const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
                         <ResponsiveContainer>
                             <ComposedChart data={monthlyData} margin={{ left: -20, right: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
+                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '12px' }}
-                                    formatter={(value) => formatCurrency(value)}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }} />
+                                <Legend wrapperStyle={{ fontSize: '12px', color: '#e5e7eb', paddingTop: '10px' }} />
                                 <Bar dataKey="revenue" stackId="a" fill="#3b82f6" name="Revenue" radius={[2, 2, 0, 0]} barSize={16} />
                                 <Bar dataKey="expenses" stackId="a" fill="#ef4444" name="Expenses" radius={[2, 2, 0, 0]} barSize={16} />
                                 <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} dot={{ r: 3, fill: '#10b981' }} name="Profit" />
@@ -110,10 +110,11 @@ const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
                                     formatter={(value) => formatCurrency(value)}
                                 />
-                                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '10px' }} />
+                                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px', color: '#e5e7eb' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

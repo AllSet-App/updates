@@ -69,9 +69,10 @@ const InventoryReports = ({ inventory, isMobile }) => {
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                itemStyle={{ color: '#e5e7eb' }}
                             />
-                            <Legend wrapperStyle={{ fontSize: '11px' }} />
+                            <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>

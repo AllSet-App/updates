@@ -41,10 +41,12 @@ const ExpenseReports = ({ expenses, isMobile }) => {
                         <ResponsiveContainer>
                             <BarChart data={metrics.categoryData} layout="vertical" margin={{ left: -10, right: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis type="number" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
-                                <YAxis dataKey="name" type="category" width={80} stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                                <XAxis type="number" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
+                                <YAxis dataKey="name" type="category" width={80} stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
+                                    labelStyle={{ color: '#9ca3af', marginBottom: '0.25rem' }}
                                     formatter={(value) => formatCurrency(value)}
                                 />
                                 <Bar dataKey="value" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
@@ -60,10 +62,12 @@ const ExpenseReports = ({ expenses, isMobile }) => {
                         <ResponsiveContainer>
                             <BarChart data={trendData} margin={{ left: -20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
+                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
+                                    itemStyle={{ color: '#e5e7eb' }}
+                                    labelStyle={{ color: '#9ca3af', marginBottom: '0.25rem' }}
                                     formatter={(value) => formatCurrency(value)}
                                 />
                                 <Bar dataKey="amount" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={20} />

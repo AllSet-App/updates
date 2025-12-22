@@ -793,13 +793,15 @@ const OrderForm = ({ order, onClose, onSave }) => {
 
           {/* Order Source - Stored internally, not displayed in reports/views */}
           <div className="form-group">
-            <label className="form-label">Order Source</label>
+            <label className="form-label">Order Source *</label>
             <select
               name="orderSource"
               className="form-input"
               value={formData.orderSource}
               onChange={handleChange}
+              required
             >
+              <option value="">Select a source</option>
               {(orderSources.length > 0 ? orderSources : [{ id: 'Ad', name: 'Ad' }, { id: 'Organic', name: 'Organic' }]).map(src => (
                 <option key={src.id} value={src.name}>{src.name}</option>
               ))}
