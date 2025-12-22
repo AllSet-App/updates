@@ -31,12 +31,10 @@ const AutoBackupHandler = ({ session, dataLoading }) => {
                 if (freq === 'monthly') backupInterval = 30 * 24 * 60 * 60 * 1000
 
                 if (lastBackup && (now - new Date(lastBackup).getTime() < backupInterval)) {
-                    console.log("Auto-backup skipped: Too soon.")
                     return
                 }
 
                 // 4. Notify User
-                console.log("Backup is due! Notifying user.")
                 addToast("Cloud Backup is due. Please visit Settings -> Backup to sync.", "info", 6000)
 
             } catch (e) {

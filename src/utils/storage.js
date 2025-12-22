@@ -4,7 +4,7 @@
 import { supabase } from './supabase'
 
 // Bump version to invalidate any previous cached compat modes that might be too strict.
-const ORDERS_SCHEMA_CACHE_KEY = 'aof_orders_schema_missing_cols_v2'
+const ORDERS_SCHEMA_CACHE_KEY = 'aof_orders_schema_missing_cols_v3'
 const ORDER_SOURCES_WARNED_KEY = 'aof_warned_missing_order_sources_v1'
 // Debug/verification helper: confirm multi-item orders really persisted
 const ORDERS_MULTIITEM_VERIFY_KEY = 'aof_orders_multiitem_verify_v1'
@@ -1523,3 +1523,88 @@ export const clearAllData = async () => {
     return { success: false, message: 'Failed to clear data: ' + error.message }
   }
 }
+
+// ===== INVENTORY LOGS =====
+
+export const getInventoryLogs = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory_logs')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(100) // Fetch last 100 logs by default
+
+    if (error) {
+      if (error.code === '42P01') { // table does not exist
+        return []
+      }
+      console.error('Error fetching inventory logs:', error)
+      return []
+    }
+
+    return (data || []).map(log => ({
+      id: log.id,
+      inventoryItemId: log.inventory_item_id,
+      itemName: log.item_name,
+      category: log.category,
+      transactionType: log.transaction_type,
+      quantityChange: parseFloat(log.quantity_change || 0),
+      balanceAfter: parseFloat(log.balance_after || 0),
+      date: log.date,
+      notes: log.notes
+    }))
+  } catch (error) {
+    console.error('Error reading inventory logs:', error)
+    return []
+  }
+}
+
+
+export const addInventoryLog = async (logData) => {
+  try {
+    const dbLog = {
+      inventory_item_id: logData.inventoryItemId,
+      item_name: logData.itemName,
+      category: logData.category,
+      transaction_type: logData.transactionType,
+      quantity_change: logData.quantityChange,
+      balance_after: logData.balanceAfter,
+      date: new Date().toISOString(),
+      notes: logData.notes || ''
+    }
+
+    const { error } = await supabase
+      .from('inventory_logs')
+      .insert([dbLog])
+
+    if (error) {
+      console.error('Error adding inventory log:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error adding inventory log:', error)
+    return false
+  }
+}
+
+export const deleteInventoryLog = async (logId) => {
+  try {
+    const { error } = await supabase
+      .from('inventory_logs')
+      .delete()
+      .eq('id', logId)
+
+    if (error) {
+      console.error('Error deleting inventory log:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error deleting inventory log:', error)
+    return false
+  }
+}
+

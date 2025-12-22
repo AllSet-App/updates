@@ -190,6 +190,11 @@ textarea {
   transition: all 0.2s ease;
 }
 
+option {
+  background-color: #1a1a1a;
+  color: var(--text-primary);
+}
+
 input:focus,
 select:focus,
 textarea:focus {

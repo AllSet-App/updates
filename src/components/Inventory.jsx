@@ -1,20 +1,26 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Package, Filter, Search, AlertTriangle, CheckCircle, Plus, X, Save } from 'lucide-react'
-import { getInventory, getInventoryCategories, saveInventory } from '../utils/storage'
-import { addInventoryLog } from '../utils/inventoryLogs'
+import { Package, Filter, Search, AlertTriangle, CheckCircle, Plus, X, Save, History, ArrowDownLeft, ArrowUpRight, Trash2 } from 'lucide-react'
+import { getInventory, getInventoryCategories, saveInventory, addInventoryLog, getInventoryLogs, deleteInventoryLog } from '../utils/storage'
+
+
 
 // --- Quick Restock Modal ---
 const QuickRestockModal = ({ item, mode = 'add', onClose, onConfirm }) => {
   const [quantity, setQuantity] = useState('')
+  const [transactionType, setTransactionType] = useState(mode === 'add' ? 'Restock' : 'Used in Order')
+
+  const isRemove = mode === 'remove'
 
   const handleSubmit = (e) => {
     e.preventDefault()
     const qty = parseFloat(quantity)
     if (!qty || qty <= 0) return
-    onConfirm(item.id, qty, mode)
+    onConfirm(item.id, qty, mode, transactionType)
   }
 
-  const isRemove = mode === 'remove'
+  const typeOptions = isRemove
+    ? ['Used in Order', 'Damaged', 'Expired', 'Correction (-)', 'Other']
+    : ['Restock', 'Return', 'Correction (+)', 'Other']
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -43,6 +49,21 @@ const QuickRestockModal = ({ item, mode = 'add', onClose, onConfirm }) => {
               required
             />
           </div>
+
+          <div className="form-group">
+            <label className="form-label">Reason / Type</label>
+            <select
+              className="form-select"
+              value={transactionType}
+              onChange={(e) => setTransactionType(e.target.value)}
+              required
+            >
+              {typeOptions.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem' }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className={`btn ${isRemove ? 'btn-danger' : 'btn-primary'}`}>
@@ -60,6 +81,8 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [inventoryCategories, setInventoryCategories] = useState({ categories: [] })
   const [restockConfig, setRestockConfig] = useState(null) // { item, mode }
+  const [recentLogs, setRecentLogs] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -67,7 +90,13 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
       setInventoryCategories(categories)
     }
     loadCategories()
+    loadLogs()
   }, [])
+
+  const loadLogs = async () => {
+    const logs = await getInventoryLogs()
+    setRecentLogs(logs)
+  }
 
   useEffect(() => {
     if (initialFilter) setFilter(initialFilter)
@@ -122,22 +151,24 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
     return { totalItems, totalValue, lowStockCount }
   }, [inventory])
 
-  const handleRestock = async (itemId, quantity, mode) => {
-    // Log the action
-    const item = inventory.find(i => i.id === itemId)
-    if (item) {
-      await addInventoryLog({
-        itemId: item.id,
-        itemName: item.itemName,
-        action: mode === 'remove' ? 'Deduct' : 'Restock',
-        quantity: quantity
-      })
-    }
+  const handleRestock = async (itemId, quantity, mode, transactionType) => {
 
     const updatedInventory = inventory.map(item => {
       if (item.id === itemId) {
         const adjustment = mode === 'remove' ? -quantity : quantity
-        return { ...item, currentStock: Math.max(0, item.currentStock + adjustment) }
+        const newStock = Math.max(0, item.currentStock + adjustment)
+
+        // Log the transaction
+        addInventoryLog({
+          inventoryItemId: item.id,
+          itemName: item.itemName,
+          category: item.category,
+          transactionType: transactionType, // e.g., 'Restock', 'Used'
+          quantityChange: adjustment,
+          balanceAfter: newStock
+        }).then(() => loadLogs()) // Refresh logs in background
+
+        return { ...item, currentStock: newStock }
       }
       return item
     })
@@ -156,6 +187,13 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
       return { label: 'Low', color: 'var(--warning)', bg: 'rgba(245, 158, 11, 0.1)', icon: AlertTriangle }
     } else {
       return { label: 'Good', color: 'var(--success)', bg: 'rgba(16, 185, 129, 0.1)', icon: CheckCircle }
+    }
+  }
+
+  const handleDeleteLog = async (logId) => {
+    if (window.confirm('Are you sure you want to delete this log entry?')) {
+      await deleteInventoryLog(logId)
+      loadLogs()
     }
   }
 
@@ -281,6 +319,97 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
         </div>
       </div>
 
+
+
+
+      {/* --- Usage History Toggle --- */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'none', border: 'none', color: 'var(--accent-primary)',
+            fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: 0
+          }}
+        >
+          <History size={16} />
+          {showHistory ? 'Hide Usage History' : 'Show Usage History'}
+        </button>
+      </div>
+
+      {showHistory && (
+        <div className="card" style={{ marginBottom: '2rem', padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Recent Transactions</h3>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+              <thead>
+                <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Date</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Item</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Type</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Qty Change</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Balance</th>
+                  <th style={{ padding: '0.75rem 1rem', width: '40px' }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No history available yet.</td>
+                  </tr>
+                ) : (
+                  recentLogs.map(log => {
+                    const isPositive = log.quantityChange > 0
+                    return (
+                      <tr key={log.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                          {new Date(log.date).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', fontWeight: 500 }}>
+                          {log.itemName}
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{log.category}</div>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.85rem' }}>
+                          <span style={{
+                            padding: '0.2rem 0.6rem', borderRadius: '4px',
+                            backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '0.75rem'
+                          }}>
+                            {log.transactionType}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: 600, color: isPositive ? 'var(--success)' : 'var(--error)' }}>
+                          {isPositive ? '+' : ''}{log.quantityChange}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                          {log.balanceAfter}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                          <button
+                            onClick={() => handleDeleteLog(log.id)}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: 'var(--text-muted)', padding: '4px', opacity: 0.7,
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => { e.target.style.color = 'var(--error)'; e.target.style.opacity = 1 }}
+                            onMouseLeave={e => { e.target.style.color = 'var(--text-muted)'; e.target.style.opacity = 0.7 }}
+                            title="Delete Log"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* --- Filters --- */}
       <div className="inventory-filters" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', padding: '0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
@@ -336,6 +465,7 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
                 <tr style={{ backgroundColor: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-color)' }}>
                   <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Item</th>
                   <th style={{ padding: '1rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Category</th>
+                  <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Reorder</th>
                   <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Stock</th>
                   <th style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Value</th>
                   <th style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>Status</th>
@@ -350,6 +480,7 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>{item.itemName}</td>
                       <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{item.category || '-'}</td>
+                      <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-secondary)' }}>{item.reorderLevel}</td>
                       <td style={{ padding: '1rem', textAlign: 'right', color: 'var(--text-primary)', fontWeight: 600 }}>
                         {item.currentStock.toLocaleString('en-IN')}
                       </td>
@@ -380,9 +511,9 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
                             className="btn btn-sm btn-primary"
                             onClick={() => setRestockConfig({ item, mode: 'add' })}
                             title="Add Stock"
-                            style={{ padding: '0.4rem 0.8rem', display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}
+                            style={{ padding: '0.4rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                           >
-                            <Plus size={14} /> Add
+                            <Plus size={14} />
                           </button>
                         </div>
                       </td>
@@ -447,8 +578,14 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
           </div>
         </>
       )}
+
     </div>
   )
 }
 
+
+
+
+
 export default Inventory
+

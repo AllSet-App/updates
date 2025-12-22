@@ -268,6 +268,9 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
     end.setHours(23, 59, 59, 999)
 
     return (orders || []).filter(o => {
+      // Exclude orders that are already processed/dispatched
+      if (['Dispatched', 'returned', 'refund', 'cancelled'].includes(o.status)) return false
+
       const d = o.deliveryDate
       if (!d) return false
       const dt = new Date(d)

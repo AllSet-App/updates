@@ -370,7 +370,7 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
 }
 
 export const calculateInventoryMetrics = (inventory) => {
-    const totalValue = inventory.reduce((sum, item) => sum + (Number(item.currentStock || 0) * (Number(item.purchasePrice || 0))), 0)
+    const totalValue = inventory.reduce((sum, item) => sum + (Number(item.currentStock || 0) * (Number(item.unitCost || 0))), 0)
     const lowStockItems = inventory
         .filter(item => (Number(item.currentStock) || 0) <= (Number(item.reorderLevel) || 10))
         .map(i => ({

@@ -181,18 +181,31 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
   const codAmount = localOrder.codAmount || Math.max(0, finalPrice + deliveryCharge)
 
   const handleDownloadInvoice = () => {
+    // Basic HTML escaping to prevent XSS in the generated invoice window
+    const escapeHtml = (unsafe) => {
+      if (unsafe === null || unsafe === undefined) return ''
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+    }
+
     const invoiceRows = orderItems.map(it => {
-      const catName = getCategoryName(it.categoryId)
-      const itName = getItemName(it)
+      const catName = escapeHtml(getCategoryName(it.categoryId))
+      const itName = escapeHtml(getItemName(it))
       const qty = Number(it.quantity) || 0
       const price = Number(it.unitPrice) || 0
       const amount = qty * price
-      const notes = (it.notes || '').toString().trim()
+      const rawNotes = (it.notes || '').toString().trim()
+      const notes = rawNotes ? escapeHtml(rawNotes) : ''
+
       return `
         <tr>
           <td>
             <strong>${catName} - ${itName}</strong>
-            ${notes ? `<div style="margin-top:4px;color:#666;font-size:0.85em;">Notes: ${notes.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</div>` : ''}
+            ${notes ? `<div style="margin-top:4px;color:#666;font-size:0.85em;">Notes: ${notes}</div>` : ''}
           </td>
           <td class="text-right">${qty}</td>
           <td class="text-right">Rs. ${price.toFixed(2)}</td>
@@ -206,7 +219,7 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Invoice - Order #${order.id}</title>
+  <title>Invoice - Order #${escapeHtml(order.id)}</title>
   <style>
     @media print {
       body { margin: 0; padding: 20px; }
@@ -293,18 +306,18 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
   <div class="invoice-info">
     <div class="info-section">
       <h3>Invoice Details</h3>
-      <p><strong>Order Number:</strong> #${safeOrder.id}</p>
-      <p><strong>Date:</strong> ${safeOrder.orderDate}</p>
-      <p><strong>Status:</strong> ${safeOrder.status}</p>
-      <p><strong>Payment Status:</strong> ${safeOrder.paymentStatus}</p>
-      ${safeOrder.trackingNumber ? `<p><strong>Tracking Number:</strong> ${safeOrder.trackingNumber}</p>` : ''}
+      <p><strong>Order Number:</strong> #${escapeHtml(safeOrder.id)}</p>
+      <p><strong>Date:</strong> ${escapeHtml(safeOrder.orderDate)}</p>
+      <p><strong>Status:</strong> ${escapeHtml(safeOrder.status)}</p>
+      <p><strong>Payment Status:</strong> ${escapeHtml(safeOrder.paymentStatus)}</p>
+      ${safeOrder.trackingNumber ? `<p><strong>Tracking Number:</strong> ${escapeHtml(safeOrder.trackingNumber)}</p>` : ''}
     </div>
     <div class="info-section">
       <h3>Customer Information</h3>
-      <p><strong>Name:</strong> ${safeOrder.customerName}</p>
-      ${safeOrder.whatsapp ? `<p><strong>WhatsApp:</strong> ${formatWhatsAppNumber(safeOrder.whatsapp)}</p>` : ''}
-      ${safeOrder.phone ? `<p><strong>Phone:</strong> ${safeOrder.phone}</p>` : ''}
-      <p><strong>Address:</strong> ${safeOrder.address || 'N/A'}</p>
+      <p><strong>Name:</strong> ${escapeHtml(safeOrder.customerName)}</p>
+      ${safeOrder.whatsapp ? `<p><strong>WhatsApp:</strong> ${escapeHtml(formatWhatsAppNumber(safeOrder.whatsapp))}</p>` : ''}
+      ${safeOrder.phone ? `<p><strong>Phone:</strong> ${escapeHtml(safeOrder.phone)}</p>` : ''}
+      <p><strong>Address:</strong> ${escapeHtml(safeOrder.address || 'N/A')}</p>
     </div>
   </div>
 
@@ -346,7 +359,7 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
   ${order.notes ? `
   <div style="margin-top: 30px;">
     <h3>Notes</h3>
-    <p>${order.notes}</p>
+    <p>${escapeHtml(order.notes)}</p>
   </div>
   ` : ''}
 
@@ -360,13 +373,17 @@ const ViewOrderModal = ({ order, onClose, onSave, onRequestTrackingNumber, onReq
 
     // Open invoice in new window
     const printWindow = window.open('', '_blank')
-    printWindow.document.write(invoiceHTML)
-    printWindow.document.close()
+    if (printWindow) {
+      printWindow.document.write(invoiceHTML)
+      printWindow.document.close()
 
-    // Wait for content to load, then trigger print
-    setTimeout(() => {
-      printWindow.print()
-    }, 250)
+      // Wait for content to load, then trigger print
+      setTimeout(() => {
+        printWindow.print()
+      }, 250)
+    } else {
+      addToast('Popup blocked. Please allow popups for this site.', 'error')
+    }
   }
 
   const handleSendInvoiceWhatsApp = () => {
