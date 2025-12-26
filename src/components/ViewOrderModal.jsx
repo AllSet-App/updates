@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Download, MessageCircle, Star } from 'lucide-react'
 import { getProducts, getSettings } from '../utils/storage'
 import { formatWhatsAppNumber, generateWhatsAppMessage } from '../utils/whatsapp'
-import { curfoxService } from '../utils/curfox'
+
 import TrackingNumberModal from './TrackingNumberModal'
 import DispatchModal from './DispatchModal'
 import ConfirmationModal from './ConfirmationModal'
@@ -16,8 +16,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
   const [showDispatchModal, setShowDispatchModal] = useState(false)
   const [pendingStatus, setPendingStatus] = useState('Packed')
   const [settings, setSettings] = useState(null)
-  const [trackingHistory, setTrackingHistory] = useState([])
-  const [loadingTracking, setLoadingTracking] = useState(false)
+
 
   // Modal State
   const [modalConfig, setModalConfig] = useState({
@@ -75,16 +74,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
     }
   }, [order])
 
-  // Fetch Tracking
-  useEffect(() => {
-    if (localOrder?.trackingNumber && settings?.curfox?.enabled) {
-      setLoadingTracking(true)
-      curfoxService.getTracking(localOrder.trackingNumber)
-        .then(history => setTrackingHistory(Array.isArray(history) ? history : []))
-        .catch(err => console.error(err))
-        .finally(() => setLoadingTracking(false))
-    }
-  }, [localOrder?.trackingNumber, settings])
+
 
   // Safety check
   if (!localOrder) {
@@ -785,32 +775,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
             })}
           </div>
 
-          {/* Tracking History Card - Only if enabled and has data/loading */}
-          {(loadingTracking || trackingHistory.length > 0) && (
-            <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                Tracking History
-              </h3>
-              {loadingTracking ? (
-                <div style={{ color: 'var(--text-muted)' }}>Loading tracking updates...</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {trackingHistory.map((event, idx) => (
-                    <div key={idx} style={{ position: 'relative', paddingLeft: '1rem', borderLeft: '2px solid var(--border-color)' }}>
-                      <div style={{ position: 'absolute', left: '-5px', top: '0', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: idx === 0 ? 'var(--accent-primary)' : 'var(--text-muted)' }}></div>
-                      <div style={{ fontWeight: 600, color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                        {event.status || event.status_code || 'Update'}
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {event.location ? `${event.location} - ` : ''} {new Date(event.updated_at || event.created_at || event.timestamp).toLocaleString()}
-                      </div>
-                      {event.comment && <div style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--text-secondary)' }}>{event.comment}</div>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+
 
           {/* Totals Section */}
           <div style={{
@@ -1014,7 +979,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

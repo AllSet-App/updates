@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Settings as SettingsIcon, Save, AlertTriangle, Plus, Trash2, Edit2, Edit, Package, Search, ChevronDown, ChevronUp, Download, Upload, Trash, MessageCircle, X, LogOut, Database, Truck } from 'lucide-react'
 import { loadGoogleScript, initTokenClient, uploadFileToDrive, listFilesFromDrive, downloadFileFromDrive } from '../utils/googleDrive'
-import { curfoxService } from '../utils/curfox'
+
 import { generateTrackingNumbersFromRange, getSettings, saveSettings, getOrders, getTrackingNumbers, saveTrackingNumbers, getProducts, getOrderCounter, saveOrderCounter, exportAllData, importAllData, clearAllData, importAllDataFromObject } from '../utils/storage'
 import ProductsManagement from './ProductsManagement'
 import ExpenseManagement from './ExpenseManagement'
@@ -22,7 +22,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
     orderSources: false,
     googleDrive: false,
     whatsappTemplates: false,
-    curfoxIntegration: false
+
   })
   const [products, setProducts] = useState({ categories: [] })
   const [trackingNumbers, setTrackingNumbers] = useState([])
@@ -226,18 +226,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
           </CollapsibleSection>
 
           {/* Curfox Integration Section */}
-          <CollapsibleSection
-            title="Curfox Courier Integration"
-            icon={Truck}
-            isExpanded={expandedSections.curfoxIntegration}
-            onToggle={() => toggleSection('curfoxIntegration')}
-          >
-            <CurfoxSettings
-              settings={settings}
-              setSettings={setSettings}
-              showToast={addToast}
-            />
-          </CollapsibleSection>
+
 
           {/* WhatsApp Templates Section */}
           <CollapsibleSection
@@ -1161,164 +1150,7 @@ const DataManagement = ({ orders, expenses, inventory, products, settings, track
   )
 }
 
-// Curfox Settings Component
-const CurfoxSettings = ({ settings, setSettings, showToast }) => {
-  const [email, setEmail] = useState(settings?.curfox?.email || '')
-  const [password, setPassword] = useState(settings?.curfox?.password || '')
-  const [tenant, setTenant] = useState(settings?.curfox?.tenant || 'developers')
-  const [isEnabled, setIsEnabled] = useState(settings?.curfox?.enabled || false)
-  const [isTesting, setIsTesting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
-  const handleTestConnection = async () => {
-    setIsTesting(true)
-    try {
-      if (!email || !password || !tenant) {
-        showToast('Please enter Email, Password, and Tenant', 'warning')
-        setIsTesting(false)
-        return
-      }
-
-      const success = await curfoxService.login(email, password, tenant)
-      if (success) {
-        showToast('Connection Successful! Token retrieved.', 'success')
-      } else {
-        showToast('Connection Failed. Check credentials.', 'error')
-      }
-    } catch (error) {
-      showToast('Connection Error: ' + error.message, 'error')
-    }
-    setIsTesting(false)
-  }
-
-  const handleSave = async () => {
-    setIsSaving(true)
-    const updatedSettings = {
-      ...settings,
-      curfox: {
-        email,
-        password,
-        tenant,
-        enabled: isEnabled
-      }
-    }
-
-    // cache districts if enabled
-    if (isEnabled) {
-      try {
-        // If we have credentials, try to login and cache districts immediately
-        if (email && password && tenant) {
-          await curfoxService.login(email, password, tenant)
-          const districts = await curfoxService.getDistricts()
-          localStorage.setItem('curfox_districts', JSON.stringify(districts))
-          const cities = await curfoxService.getCities()
-          localStorage.setItem('curfox_cities', JSON.stringify(cities))
-        }
-      } catch (e) {
-        console.error("Failed to cache Curfox resources on save", e)
-      }
-    }
-
-    const success = await saveSettings(updatedSettings)
-    if (success) {
-      setSettings(updatedSettings)
-      showToast('Curfox settings saved successfully!', 'success')
-    } else {
-      showToast('Failed to save settings.', 'error')
-    }
-    setIsSaving(false)
-  }
-
-  return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-          Connect to Curfox Courier API to enable automatic waybill generation and address validation.
-        </p>
-      </div>
-
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={isEnabled}
-            onChange={(e) => setIsEnabled(e.target.checked)}
-          />
-          <span className="slider round"></span>
-        </label>
-        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-          {isEnabled ? 'Integration Enabled' : 'Integration Disabled'}
-        </span>
-      </div>
-
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '1.5rem',
-        opacity: isEnabled ? 1 : 0.6,
-        pointerEvents: isEnabled ? 'auto' : 'none'
-      }}>
-        <div className="form-group">
-          <label className="form-label">Merchant Email</label>
-          <input
-            type="email"
-            className="form-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="merchant@example.com"
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Password</label>
-          <input
-            type="password"
-            className="form-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your Curfox password"
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Tenant Name ID</label>
-          <input
-            type="text"
-            className="form-input"
-            value={tenant}
-            onChange={(e) => setTenant(e.target.value)}
-            placeholder="e.g. developers"
-          />
-          <small style={{ color: 'var(--text-muted)' }}>Found in your Curfox URL or account settings.</small>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-        <button
-          onClick={handleTestConnection}
-          className="btn btn-secondary"
-          disabled={isTesting || !isEnabled}
-        >
-          {isTesting ? 'Testing...' : 'Test Connection'}
-        </button>
-        <button
-          onClick={handleSave}
-          className="btn btn-primary"
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            'Saving...'
-          ) : (
-            <>
-              <Save size={18} />
-              Save Settings
-            </>
-          )}
-        </button>
-      </div>
-    </div>
-  )
-}
 
 // WhatsApp Templates Management Component
 const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, showToast }) => {

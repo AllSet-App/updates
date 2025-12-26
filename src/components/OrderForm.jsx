@@ -18,9 +18,7 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
   const [products, setProducts] = useState({ categories: [] })
   const [orderSources, setOrderSources] = useState([])
   const [districts, setDistricts] = useState(SRI_LANKAN_DISTRICTS)
-  const [citiesByDistrict, setCitiesByDistrict] = useState({}) // { DistrictName: [City1, City2, ...] }
-  const [availableCities, setAvailableCities] = useState([])
-  const [isCurfoxEnabled, setIsCurfoxEnabled] = useState(false)
+
   const [codManuallyEdited, setCodManuallyEdited] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [discountType, setDiscountType] = useState(order?.discountType || 'Rs')
@@ -87,80 +85,6 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
       } else {
         setOrderNumber(order.id)
       }
-
-      // Load Settings to check Curfox
-      const settings = await getSettings()
-      if (settings?.curfox?.enabled) {
-        setIsCurfoxEnabled(true)
-
-        // Load cached districts
-        const cachedDistricts = localStorage.getItem('curfox_districts')
-        let districtIdMap = {}
-
-        if (cachedDistricts) {
-          try {
-            const parsed = JSON.parse(cachedDistricts)
-            console.log('Curfox Districts Loaded:', parsed.length)
-
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              const formatted = parsed.map(d => {
-                let name = 'Unknown'
-                if (typeof d === 'string') {
-                  name = d
-                } else {
-                  name = d.name_en || d.name || d.district_name || 'Unknown'
-                  // Map ID to Name if available
-                  if (d.id) districtIdMap[d.id] = name
-                }
-                return name
-              }).filter(n => n !== 'Unknown').sort()
-
-              setDistricts(formatted)
-            }
-          } catch (e) {
-            console.error('Error parsing curfox districts', e)
-          }
-        }
-
-        // Load cached cities
-        const cachedCities = localStorage.getItem('curfox_cities')
-        if (cachedCities) {
-          try {
-            const parsed = JSON.parse(cachedCities)
-            console.log('Curfox Cities Loaded:', parsed.length)
-
-            if (Array.isArray(parsed)) {
-              // Organize cities by district
-              const mapped = {}
-              parsed.forEach(c => {
-                // Map State to District (Curfox uses 'state' for SL districts)
-                let dName = c.state?.name || c.state?.name_en || c.district_name
-
-                // Try to resolve by ID if name is missing (using state_id)
-                if (!dName && c.state_id && districtIdMap[c.state_id]) {
-                  dName = districtIdMap[c.state_id]
-                }
-
-                // Fallback/Cleanup
-                if (!dName) dName = 'Other'
-
-                const cName = c.name_en || c.name || c.city_name
-                if (cName) {
-                  if (!mapped[dName]) mapped[dName] = []
-                  mapped[dName].push(cName)
-                }
-              })
-              // Sort cities within each district
-              Object.keys(mapped).forEach(k => mapped[k].sort())
-              console.log('Cities mapped by district:', Object.keys(mapped))
-              setCitiesByDistrict(mapped)
-            }
-          } catch (e) {
-            console.error('Error parsing curfox cities', e)
-          }
-        }
-      }
-
     }
     loadData()
   }, [])
@@ -318,28 +242,12 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
     }
 
     // Update available cities when district changes
-    if (name === 'district' && isCurfoxEnabled) {
-      if (value && citiesByDistrict[value]) {
-        setAvailableCities(citiesByDistrict[value])
-        // Clear city if it doesn't belong to new district? Maybe keep as custom text (user choice)
-        // But usually better to clear to avoid mismatch
-        if (!citiesByDistrict[value].includes(updatedData.nearestCity)) {
-          updatedData.nearestCity = ''
-        }
-      } else {
-        setAvailableCities([])
-      }
-    }
+
 
     setFormData(updatedData)
   }
 
-  // Effect to set initial available cities if editing an existing order
-  useEffect(() => {
-    if (isCurfoxEnabled && formData.district && citiesByDistrict[formData.district]) {
-      setAvailableCities(citiesByDistrict[formData.district])
-    }
-  }, [isCurfoxEnabled, formData.district, citiesByDistrict])
+
 
   const updateItem = (id, patch) => {
     setOrderItems(prev => prev.map(it => it.id === id ? { ...it, ...patch } : it))
@@ -579,17 +487,9 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
                   className="form-input"
                   value={formData.nearestCity}
                   onChange={handleChange}
-                  placeholder={isCurfoxEnabled && formData.district ? `Select city in ${formData.district}` : "e.g., Colombo"}
-                  list={isCurfoxEnabled ? "city-options" : undefined}
+                  placeholder="e.g., Colombo"
                   autoComplete="off"
                 />
-                {isCurfoxEnabled && availableCities.length > 0 && (
-                  <datalist id="city-options">
-                    {availableCities.map(city => (
-                      <option key={city} value={city} />
-                    ))}
-                  </datalist>
-                )}
               </div>
             </div>
           </div>
