@@ -123,27 +123,17 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
 
   // --- Chart Data Transformations ---
 
-  // 1. Trend Data: Daily Revenue vs Expenses
+  // 1. Trend Data: Daily Orders
   const trendData = useMemo(() => {
     const dataMap = {}
 
-    // Group Revenue by Date
     filteredOrders.forEach(order => {
-      if (order.paymentStatus !== 'Paid') return
       const date = order.orderDate || order.createdDate || ''
       if (!date) return
       const dateKey = date.split('T')[0]
-      if (!dataMap[dateKey]) dataMap[dateKey] = { date: dateKey, revenue: 0, expenses: 0 }
+      if (!dataMap[dateKey]) dataMap[dateKey] = { date: dateKey, orders: 0, revenue: 0 }
+      dataMap[dateKey].orders += 1
       dataMap[dateKey].revenue += Number(order.totalPrice || order.totalAmount || 0)
-    })
-
-    // Group Expenses by Date
-    filteredExpenses.forEach(expense => {
-      const date = expense.date || ''
-      if (!date) return
-      const dateKey = date.split('T')[0]
-      if (!dataMap[dateKey]) dataMap[dateKey] = { date: dateKey, revenue: 0, expenses: 0 }
-      dataMap[dateKey].expenses += Number(expense.amount || 0)
     })
 
     // Convert map to sorted array
@@ -154,7 +144,7 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
         // Format date for display: Dec 15
         displayName: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       }))
-  }, [filteredOrders, filteredExpenses])
+  }, [filteredOrders])
 
   // 2. Source Distribution: Ad vs Organic
   const sourceData = useMemo(() => {
@@ -229,9 +219,15 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
             return (
               <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 <p style={{ margin: 0, color: entry.color, fontSize: '0.85rem', fontWeight: 600 }}>
-                  {entry.name}: {isCurrency ? 'Rs. ' : ''}{value.toLocaleString()}{!isCurrency ? ' Units' : ''}
+                  {entry.name}: {isCurrency ? 'Rs. ' : ''}{value.toLocaleString()}{!isCurrency && entry.name !== 'Orders' ? ' Units' : ''}
                 </p>
-                {revenue && !isCurrency && (
+                {/* For Daily Orders chart, payload has 'revenue' property we added */}
+                {entry.name === 'Orders' && revenue !== undefined && (
+                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                    Value: Rs. {revenue.toLocaleString()}
+                  </p>
+                )}
+                {revenue && !isCurrency && entry.name !== 'Orders' && (
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>
                     Revenue: Rs. {revenue.toLocaleString()}
                   </p>
@@ -619,46 +615,33 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
         gap: '2rem',
         marginBottom: '2.5rem'
       }}>
-        {/* Trend Area Chart */}
+        {/* Daily Orders Area Chart */}
         <div className="card" style={{ padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Activity size={18} color="var(--accent-primary)" />
-            Profit Trend
+            Daily Orders
           </h3>
           <div style={{ height: '300px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--danger)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--danger)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                 <XAxis dataKey="displayName" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
-                  dataKey="revenue"
+                  dataKey="orders"
                   stroke="var(--accent-primary)"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#colorRevenue)"
-                  name="Revenue"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expenses"
-                  stroke="var(--danger)"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorExpenses)"
-                  name="Expenses"
+                  fill="url(#colorOrders)"
+                  name="Orders"
                 />
               </AreaChart>
             </ResponsiveContainer>

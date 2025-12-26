@@ -38,6 +38,10 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
   const [settings, setSettings] = useState(null)
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
+
   // Modal State
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -239,7 +243,25 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
     })
 
     return filtered
+    return filtered
   }, [orders, searchTerm, statusFilter, paymentFilter, scheduledDeliveriesOnly, products, sortField, sortDirection])
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter, paymentFilter, scheduledDeliveriesOnly, sortField, sortDirection])
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const paginatedOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber)
+    // Scroll to top of list
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   // Calculate customer statistics for repeat buyer recognition
   const customerStats = useMemo(() => {
@@ -1086,7 +1108,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => {
+                {paginatedOrders.map((order) => {
                   // Check if order is selected (status match OR manually selected)
                   const matchesStatus = selectMode === 'status' && !manuallyDeselectedOrders.has(order.id) && (
                     (orderStatusSelectFilter === 'all' || order.status === orderStatusSelectFilter) &&
@@ -1236,11 +1258,11 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                             >
                               {order.status}
                             </span>
-                            {order.status === 'Dispatched' && order.dispatchDate && (
+                            {order.status?.toLowerCase() === 'dispatched' && order.dispatchDate ? (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                                 {order.dispatchDate}
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         )}
                       </td>
@@ -1353,7 +1375,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
             <p>No orders found.</p>
           </div>
         ) : (
-          filteredOrders.map(order => {
+          paginatedOrders.map(order => {
             // Helper logic for mobile view
             const { categoryName, itemName, totalQuantity } = getCategoryItemNames(order)
             const statusColor = getStatusColor(order.status)
@@ -1452,21 +1474,28 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                         <option value="cancelled">Cancelled</option>
                       </select>
                     ) : (
-                      <span
-                        className="badge"
-                        onClick={(e) => { e.stopPropagation(); handleStatusClick(order.id, 'status', e); }}
-                        style={{
-                          backgroundColor: getStatusColor(order.status),
-                          color: '#fff',
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '6px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {order.status}
-                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <span
+                          className="badge"
+                          onClick={(e) => { e.stopPropagation(); handleStatusClick(order.id, 'status', e); }}
+                          style={{
+                            backgroundColor: getStatusColor(order.status),
+                            color: '#fff',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {order.status}
+                        </span>
+                        {order.status?.toLowerCase() === 'dispatched' && order.dispatchDate && (
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                            {order.dispatchDate}
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     {/* Payment Status */}
@@ -1544,6 +1573,80 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
           })
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {filteredOrders.length > 0 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '1.5rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid var(--border-color)',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            Showing <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{indexOfFirstItem + 1}</span> to <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{Math.min(indexOfLastItem, filteredOrders.length)}</span> of <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{filteredOrders.length}</span> orders
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{
+                padding: '0.4rem 0.8rem',
+                fontSize: '0.875rem',
+                opacity: currentPage === 1 ? 0.5 : 1,
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Previous
+            </button>
+            <div style={{ display: 'flex', gap: '0.25rem' }}>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                // Logic to show a window of pages around current page
+                let startPage = Math.max(1, currentPage - 2)
+                if (startPage + 4 > totalPages) {
+                  startPage = Math.max(1, totalPages - 4)
+                }
+                const pageNum = startPage + i
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.875rem',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: currentPage === pageNum ? 'var(--accent-primary)' : 'transparent',
+                      color: currentPage === pageNum ? 'white' : 'var(--text-primary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+            </div>
+            <button
+              className="btn btn-secondary"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{
+                padding: '0.4rem 0.8rem',
+                fontSize: '0.875rem',
+                opacity: currentPage === totalPages ? 0.5 : 1,
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
 
       <style>{`
         @media (max-width: 768px) {
