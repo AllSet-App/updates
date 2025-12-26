@@ -34,8 +34,8 @@ const AutoBackupHandler = ({ session, dataLoading }) => {
                     return
                 }
 
-                // 4. Notify User
-                addToast("Cloud Backup is due. Please visit Settings -> Backup to sync.", "info", 6000)
+                // 4. Notify User (User requested to remove this toast)
+                // addToast("Cloud Backup is due. Please visit Settings -> Backup to sync.", "info", 6000)
 
             } catch (e) {
                 console.error("Auto Backup check failed", e)
