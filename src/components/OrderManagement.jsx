@@ -4,6 +4,7 @@ import OrderForm from './OrderForm'
 import DispatchModal from './DispatchModal'
 import ViewOrderModal from './ViewOrderModal'
 import TrackingNumberModal from './TrackingNumberModal'
+import CurfoxTrackingModal from './CurfoxTrackingModal'
 import ConfirmationModal from './ConfirmationModal'
 import { saveOrders, getProducts, getSettings } from '../utils/storage'
 import { deleteOrderItemImage } from '../utils/fileStorage'
@@ -39,11 +40,12 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
   const [settings, setSettings] = useState(null)
 
-  const [isCurfoxEnabled, setIsCurfoxEnabled] = useState(false)
   const [showWaybillModal, setShowWaybillModal] = useState(false)
   const [waybillTargetOrder, setWaybillTargetOrder] = useState(null)
   const [isDispatching, setIsDispatching] = useState(false)
   const [dispatchProgress, setDispatchProgress] = useState({ current: 0, total: 0 })
+  const [showTrackingStatusModal, setShowTrackingStatusModal] = useState(false)
+  const [trackingStatusOrder, setTrackingStatusOrder] = useState(null)
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
@@ -100,13 +102,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
   }, [])
 
-  useEffect(() => {
-    getSettings().then(settings => {
-      if (settings?.curfox?.enabled) {
-        setIsCurfoxEnabled(true)
-      }
-    })
-  }, [])
+
 
   // Sync filters when navigation passes new initialFilters (e.g., dashboard cards)
   useEffect(() => {
@@ -371,8 +367,6 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
     // If status changed to Packed and tracking number isn't set, prompt for tracking number
     if (field === 'status' && newValue === 'Packed' && order) {
-      // Regardless of Curfox enabled/disabled, use the internal Tracking Number Management
-      // This allows picking from the pre-loaded specific tracking number list.
       if (!order.trackingNumber) {
         setTrackingOrder(order)
         setTrackingTargetStatus('Packed')
@@ -380,6 +374,13 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
         setEditingStatus(null)
         return
       }
+    }
+
+    // If status changed to Dispatched and Curfox is enabled, trigger API dispatch
+    if (field === 'status' && newValue === 'Dispatched' && settings?.curfox?.enabled && order) {
+      handleCurfoxDispatch(order)
+      setEditingStatus(null)
+      return
     }
 
     // If status changed to Dispatched and tracking number isn't set, use Dispatch modal (captures dispatch date + tracking)
@@ -417,6 +418,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
     try {
       setIsDispatching(true)
+      setWaybillTargetOrder(order)
       const currentSettings = await getSettings()
       const { email, password, tenant } = currentSettings?.curfox || {}
 
@@ -465,6 +467,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
       addToast('Curfox Dispatch Failed: ' + error.message, 'error')
     } finally {
       setIsDispatching(false)
+      setWaybillTargetOrder(null)
     }
   }
 
@@ -473,58 +476,86 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
     const packedWithWaybill = selected.filter(o => o.status === 'Packed' && o.trackingNumber)
 
     if (packedWithWaybill.length === 0) {
-      addToast('No "Packed" orders with Waybill IDs selected.', 'warning')
+      addToast('No "Packed" orders with Waybill IDs selected for dispatch.', 'warning')
       return
     }
 
-    showConfirm('Confirm Bulk Dispatch', `Dispatch ${packedWithWaybill.length} orders to Curfox?`, async () => {
+    try {
+      const currentSettings = await getSettings()
+      const { email, password, tenant } = currentSettings?.curfox || {}
+
+      if (!email || !password || !tenant) {
+        addToast('Curfox credentials missing. Please check Settings.', 'error')
+        return
+      }
+
+      if (!currentSettings.curfox.originCity || !currentSettings.curfox.originDistrict) {
+        addToast('Missing Origin Location. Please go to Settings > Curfox and set Pickup City/District.', 'error')
+        return
+      }
+
+      // Authenticate ONCE
       setIsDispatching(true)
-      setDispatchProgress({ current: 0, total: packedWithWaybill.length })
+      const authResponse = await curfoxService.login(email, password, tenant)
+      if (!authResponse || !authResponse.token) {
+        addToast('Curfox Authentication Failed', 'error')
+        setIsDispatching(false)
+        return
+      }
 
-      let successCount = 0
-      let failedCount = 0
-      const today = new Date().toISOString().split('T')[0]
-      let newOrders = [...orders] // Clone to update incrementally or all at once? Better to update all at once at end to avoid flicker, or iteratively.
+      const authPayload = {
+        ...currentSettings.curfox,
+        token: authResponse.token,
+        businessId: currentSettings.curfox.businessId || authResponse.businessId,
+        merchantRefNo: authResponse.user?.merchant?.ref_no,
+        user: authResponse.user
+      }
 
-      // We'll update the 'orders' list in memory then save once? Or save iteratively?
-      // For safety, let's create a map of updates
-      const updates = {}
+      showConfirm('Confirm Bulk Dispatch', `Dispatch ${packedWithWaybill.length} orders to Curfox?`, async () => {
+        setDispatchProgress({ current: 0, total: packedWithWaybill.length })
 
-      for (const order of packedWithWaybill) {
-        try {
-          // Pass settings.curfox implicitly? Ideally curfoxService handles looking up if not passed, 
-          // but seeing our implementation it relies on arguments. We need to pass auth data if service doesn't store it.
-          // Service implementation in previous step didn't load settings itself. 
-          // We need to pass settings.curfox here!
-          await curfoxService.createOrder(order, order.trackingNumber, settings?.curfox)
+        let successCount = 0
+        let failedCount = 0
+        const today = new Date().toISOString().split('T')[0]
+        const updates = {}
 
-          updates[order.id] = { status: 'Dispatched', dispatchDate: today }
-          successCount++
-        } catch (error) {
-          console.error(`Failed to dispatch order ${order.id}`, error)
-          failedCount++
+        for (const order of packedWithWaybill) {
+          try {
+            await curfoxService.createOrder(order, order.trackingNumber, authPayload)
+            updates[order.id] = { status: 'Dispatched', dispatchDate: today }
+            successCount++
+          } catch (error) {
+            console.error(`Failed to dispatch order ${order.id}`, error)
+            failedCount++
+          }
+          setDispatchProgress(prev => ({ ...prev, current: prev.current + 1 }))
         }
-        setDispatchProgress(prev => ({ ...prev, current: prev.current + 1 }))
-      }
 
-      if (successCount > 0) {
-        const finalOrders = newOrders.map(o => updates[o.id] ? { ...o, ...updates[o.id] } : o)
-        await saveOrders(finalOrders)
-        onUpdateOrders(finalOrders)
-      }
+        if (successCount > 0) {
+          const updatedOrdersList = orders.map(o => updates[o.id] ? { ...o, ...updates[o.id] } : o)
+          await saveOrders(updatedOrdersList)
+          onUpdateOrders(updatedOrdersList)
 
+          // Clear successful selections
+          const remainingSelection = new Set([...selectedOrders].filter(id => !updates[id]))
+          setSelectedOrders(remainingSelection)
+        }
+
+        setIsDispatching(false)
+        setDispatchProgress({ current: 0, total: 0 })
+
+        if (failedCount === 0) {
+          addToast(`Successfully dispatched ${successCount} orders to Curfox!`, 'success')
+        } else {
+          addToast(`Dispatched ${successCount} orders. ${failedCount} failed to send.`, 'warning')
+        }
+      }, 'primary', 'Dispatch Orders')
+
+    } catch (error) {
+      console.error(error)
+      addToast('Bulk Dispatch Error: ' + error.message, 'error')
       setIsDispatching(false)
-      setDispatchProgress({ current: 0, total: 0 })
-
-      if (failedCount === 0) {
-        addToast(`Successfully dispatched ${successCount} orders!`, 'success')
-        // Deselect successful ones?
-        const remainingSelection = new Set([...selectedOrders].filter(id => !updates[id]))
-        setSelectedOrders(remainingSelection)
-      } else {
-        addToast(`Dispatched ${successCount} orders. ${failedCount} failed.`, 'warning')
-      }
-    })
+    }
   }
 
   const handleStatusClick = (orderId, field, e) => {
@@ -725,12 +756,34 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
       return
     }
 
+    // Special handling for Dispatched status when Curfox is enabled
+    if (newStatus === 'Dispatched' && settings.curfox?.enabled) {
+      const eligibleForCurfox = ordersToUpdate.some(o => o.status === 'Packed' && o.trackingNumber)
+
+      if (eligibleForCurfox) {
+        // Redirect to Curfox bulk dispatch flow
+        handleBulkCurfoxDispatch()
+        return
+      } else {
+        addToast('No selected orders are eligible for Curfox Dispatch (Must be "Packed" with a Waybill ID).', 'warning')
+        // Proceed with regular status change for these non-eligible orders if user wants?
+        // Let's just proceed with regular change but show warning.
+      }
+    }
+
     showConfirm('Confirm Status Change', `Are you sure you want to change order status to "${newStatus}" for ${ordersToUpdate.length} order(s)?`, async () => {
       try {
         const orderIdsToUpdate = new Set(ordersToUpdate.map(o => o.id))
+        const today = new Date().toISOString().split('T')[0]
+
         const updatedOrders = orders.map(order => {
           if (orderIdsToUpdate.has(order.id)) {
-            return { ...order, status: newStatus }
+            const updates = { status: newStatus }
+            // Auto-generate dispatch date if setting status to Dispatched
+            if (newStatus === 'Dispatched') {
+              updates.dispatchDate = today
+            }
+            return { ...order, ...updates }
           }
           return order
         })
@@ -1192,7 +1245,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                   <option value="">Change Payment Status...</option>
                   <option value="Pending">Pending</option>
                   <option value="Paid">Paid</option>
-                  {isCurfoxEnabled && (
+                  {settings?.curfox?.enabled && (
                     <option value="curfox_dispatch">Dispatch (Curfox)</option>
                   )}
                 </select>
@@ -1328,16 +1381,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                               </span>
                             )}
                           </div>
-                          {order.trackingNumber && (
-                            <div style={{
-                              fontSize: '0.7rem',
-                              color: 'var(--text-muted)',
-                              fontFamily: 'monospace',
-                              marginTop: '2px'
-                            }}>
-                              {order.trackingNumber}
-                            </div>
-                          )}
+
                           {order.whatsapp && (
                             <div style={{ fontSize: '0.75rem', color: '#25D366', marginTop: '0.25rem' }}>
                               {formatWhatsAppNumber(order.whatsapp)}
@@ -1466,9 +1510,43 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                       </td>
                       <td>
                         {order.trackingNumber ? (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {order.trackingNumber}
-                          </span>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--text-secondary)',
+                            fontFamily: 'monospace',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            alignItems: 'flex-start'
+                          }}>
+                            <span style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                              {order.trackingNumber}
+                            </span>
+                            {settings?.curfox?.enabled && order.status === 'Dispatched' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setTrackingStatusOrder(order)
+                                  setShowTrackingStatusModal(true)
+                                }}
+                                className="btn-link"
+                                style={{
+                                  fontSize: '0.65rem',
+                                  fontWeight: 600,
+                                  padding: '2px 6px',
+                                  height: 'auto',
+                                  backgroundColor: 'var(--accent-primary)',
+                                  color: 'white',
+                                  borderRadius: '4px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                }}
+                              >
+                                Track Order
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>—</span>
                         )}
@@ -1513,22 +1591,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                           >
                             <Trash2 size={14} />
                           </button>
-                          {isCurfoxEnabled && order.status === 'Packed' && (
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => handleCurfoxDispatch(order)}
-                              title="Send to Curfox"
-                              disabled={isDispatching}
-                              style={{
-                                backgroundColor: 'var(--accent-secondary)',
-                                color: 'white',
-                                marginLeft: '0.25rem',
-                                border: '1px solid rgba(255,255,255,0.2)'
-                              }}
-                            >
-                              {isDispatching && waybillTargetOrder?.id === order.id ? <Loader size={14} className="spin" /> : <Truck size={14} />}
-                            </button>
-                          )}
+
                         </div>
                       </td>
                     </tr>
@@ -1616,16 +1679,39 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                       </div>
                       {order.trackingNumber && (
                         <div style={{
-                          fontSize: '0.75rem',
-                          color: 'var(--text-color)',
-                          marginTop: '0.2rem',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-secondary)',
+                          marginTop: '0.5rem',
                           fontFamily: 'monospace',
-                          backgroundColor: 'rgba(0,0,0,0.05)',
-                          padding: '2px 4px',
-                          borderRadius: '4px',
-                          display: 'inline-block'
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          flexWrap: 'wrap'
                         }}>
-                          {order.trackingNumber}
+                          <span style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '3px 8px', borderRadius: '4px' }}>
+                            {order.trackingNumber}
+                          </span>
+                          {settings?.curfox?.enabled && order.status === 'Dispatched' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setTrackingStatusOrder(order)
+                                setShowTrackingStatusModal(true)
+                              }}
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                padding: '4px 10px',
+                                backgroundColor: 'var(--accent-primary)',
+                                color: 'white',
+                                borderRadius: '6px',
+                                border: 'none',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                              }}
+                            >
+                              Track Order
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -2019,6 +2105,16 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
             <p>{dispatchProgress.current} / {dispatchProgress.total}</p>
           </div>
         </div>
+      )}
+      {/* Curfox Tracking Modal */}
+      {showTrackingStatusModal && trackingStatusOrder && (
+        <CurfoxTrackingModal
+          order={trackingStatusOrder}
+          onClose={() => {
+            setShowTrackingStatusModal(false)
+            setTrackingStatusOrder(null)
+          }}
+        />
       )}
     </div>
   )

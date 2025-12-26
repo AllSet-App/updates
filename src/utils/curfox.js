@@ -266,6 +266,8 @@ export const curfoxService = {
                 headers: curfoxService.getHeaders(tenant, token)
             })
 
+            console.log(`Tracking Response Status: ${response.status} for ${waybill}`)
+
             if (!response.ok) {
                 // If 405 Method Not Allowed, maybe it IS a POST?
                 if (response.status === 405) {
@@ -275,12 +277,17 @@ export const curfoxService = {
                         headers: curfoxService.getHeaders(tenant, token),
                         body: JSON.stringify({ waybill_number: waybill })
                     })
-                    if (postResp.ok) return (await postResp.json()).data || []
+                    if (postResp.ok) {
+                        const postData = await postResp.json()
+                        console.log('Post Tracking Data:', postData)
+                        return postData.data || []
+                    }
                 }
                 return []
             }
 
             const data = await response.json()
+            console.log('Tracking JSON:', data)
             return data.data || [] // Returns array of history
         } catch (error) {
             console.error("Tracking Fetch Error:", error)
