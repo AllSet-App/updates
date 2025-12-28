@@ -155,7 +155,9 @@ export const getOrders = async () => {
     }
 
     // Transform from database format to frontend format
-    return (data || []).map(transformOrderFromDB)
+    const transformed = (data || []).map(transformOrderFromDB)
+    console.log(`storage: getOrders - Fetched ${data?.length} rows, transformed into ${transformed.length} orders.`)
+    return transformed
   } catch (error) {
     console.error('Error reading orders:', error)
     return []
@@ -327,6 +329,7 @@ export const saveOrders = async (orders) => {
 
           if (!fullProbeErr) {
             // DB accepts full payload now; stop stripping and clear cache.
+            console.log('storage: DB accepts full payload. Clearing cached compat mode.')
             clearCachedSchemaMode()
             if (multiItemOrderFromUI) {
               await verifyMultiItemsPersisted(multiItemOrderFromUI.id)
@@ -527,7 +530,7 @@ export const getExpenses = async () => {
     }
 
     // Transform from database format to frontend format
-    return (data || []).map(expense => ({
+    const transformed = (data || []).map(expense => ({
       id: expense.id,
       description: expense.description || expense.item || '',
       item: expense.item || expense.description || '',
@@ -541,6 +544,8 @@ export const getExpenses = async () => {
       payment_method: expense.payment_method || null,
       notes: expense.notes || null,
     }))
+    console.log(`storage: getExpenses - Fetched ${data?.length} rows.`)
+    return transformed
   } catch (error) {
     console.error('Error reading expenses:', error)
     return []
@@ -831,7 +836,9 @@ export const getInventory = async () => {
       return []
     }
 
-    return (data || []).map(transformInventoryFromDB)
+    const transformed = (data || []).map(transformInventoryFromDB)
+    console.log(`storage: getInventory - Fetched ${data?.length} rows.`)
+    return transformed
   } catch (error) {
     console.error('Error reading inventory:', error)
     return []
@@ -1211,6 +1218,7 @@ export const getProducts = async () => {
     }
 
     if (data && data.data && data.data.categories && data.data.categories.length > 0) {
+      console.log(`storage: getProducts - Loaded ${data.data.categories.length} categories from DB.`)
       return data.data
     }
 

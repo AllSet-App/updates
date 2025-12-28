@@ -21,7 +21,12 @@ function App() {
   const [session, setSession] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(false)
-  const [activeView, setActiveView] = useState('dashboard')
+  const [activeView, setActiveView] = useState(() => {
+    const savedView = localStorage.getItem('aof_active_view')
+    // Validate if saved view is valid, otherwise default to dashboard
+    const validViews = ['dashboard', 'orders', 'inventory', 'expenses', 'reports', 'settings']
+    return validViews.includes(savedView) ? savedView : 'dashboard'
+  })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [orders, setOrders] = useState([])
   const [inventory, setInventory] = useState([])
@@ -40,7 +45,8 @@ function App() {
     })
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(`App: Auth State Change Event: ${event}`)
       setSession(session)
       setAuthLoading(false)
     })
@@ -52,6 +58,7 @@ function App() {
   useEffect(() => {
     if (!session) return
     const loadData = async () => {
+      console.log('App: Starting to load data...')
       setDataLoading(true)
       try {
         const [ordersData, expensesData, inventoryData, productsData] = await Promise.all([
@@ -60,19 +67,25 @@ function App() {
           getInventory(),
           getProducts()
         ])
+        console.log(`App: Data loaded successfully. Orders: ${ordersData?.length}, Expenses: ${expensesData?.length}`)
         setOrders(ordersData)
         setExpenses(expensesData)
         setInventory(inventoryData)
         setProducts(productsData)
       } catch (error) {
-        console.error('Error loading data:', error)
+        console.error('App: Error loading data:', error)
       } finally {
         setDataLoading(false)
       }
     }
     loadData()
-  }, [session])
+  }, [session?.user?.id]) // Use user ID for stability across token refreshes
 
+
+  // Persist active view to localStorage
+  useEffect(() => {
+    localStorage.setItem('aof_active_view', activeView)
+  }, [activeView])
 
   // Live-sync: if Order Sources were renamed in Settings, update current in-memory orders immediately
   useEffect(() => {
@@ -210,7 +223,11 @@ function App() {
     }
   }
 
-  if (authLoading || dataLoading) {
+  // Only show the full-page loader if we haven't loaded any data yet.
+  // This prevents the entire app from unmounting and clearing forms during background refreshes.
+  const isInitialLoad = (authLoading || dataLoading) && orders.length === 0
+
+  if (isInitialLoad) {
     return (
       <div style={{
         height: '100vh',

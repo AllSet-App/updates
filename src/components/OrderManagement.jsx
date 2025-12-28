@@ -23,10 +23,13 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
   const [editingOrder, setEditingOrder] = useState(null)
   const [trackingOrder, setTrackingOrder] = useState(null)
   const [trackingTargetStatus, setTrackingTargetStatus] = useState('Packed')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState(initialFilters.statusFilter || 'all')
-  const [paymentFilter, setPaymentFilter] = useState(initialFilters.paymentFilter || 'all')
-  const [scheduledDeliveriesOnly, setScheduledDeliveriesOnly] = useState(!!initialFilters.scheduledDeliveries)
+  const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem('aof_orders_search') || '')
+  const [statusFilter, setStatusFilter] = useState(() => initialFilters.statusFilter || localStorage.getItem('aof_orders_status_filter') || 'all')
+  const [paymentFilter, setPaymentFilter] = useState(() => initialFilters.paymentFilter || localStorage.getItem('aof_orders_payment_filter') || 'all')
+  const [scheduledDeliveriesOnly, setScheduledDeliveriesOnly] = useState(() => {
+    if (initialFilters.scheduledDeliveries !== undefined) return !!initialFilters.scheduledDeliveries
+    return localStorage.getItem('aof_orders_scheduled_only') === 'true'
+  })
   const [editingStatus, setEditingStatus] = useState(null) // { orderId, field: 'status' | 'paymentStatus' }
   const [products, setProducts] = useState({ categories: [] })
   const [selectedOrders, setSelectedOrders] = useState(new Set()) // Set of order IDs
@@ -48,8 +51,33 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
   const [trackingStatusOrder, setTrackingStatusOrder] = useState(null)
 
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem('aof_orders_page')
+    const parsed = parseInt(saved, 10)
+    return isNaN(parsed) ? 1 : parsed
+  })
   const itemsPerPage = 20
+
+  // Persistence effects
+  useEffect(() => {
+    localStorage.setItem('aof_orders_search', searchTerm)
+  }, [searchTerm])
+
+  useEffect(() => {
+    localStorage.setItem('aof_orders_status_filter', statusFilter)
+  }, [statusFilter])
+
+  useEffect(() => {
+    localStorage.setItem('aof_orders_payment_filter', paymentFilter)
+  }, [paymentFilter])
+
+  useEffect(() => {
+    localStorage.setItem('aof_orders_scheduled_only', scheduledDeliveriesOnly.toString())
+  }, [scheduledDeliveriesOnly])
+
+  useEffect(() => {
+    localStorage.setItem('aof_orders_page', currentPage.toString())
+  }, [currentPage])
 
   // Modal State
   const [modalConfig, setModalConfig] = useState({
@@ -1687,6 +1715,23 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1.1rem' }}>#{order.id}</span>
+                        {order.scheduledDeliveryDate && (
+                          (() => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const deliveryDate = new Date(order.scheduledDeliveryDate);
+                            const isOverdue = deliveryDate < today && !['Dispatched', 'returned', 'refund', 'cancelled'].includes(order.status);
+
+                            return (
+                              <Calendar
+                                size={16}
+                                style={{
+                                  color: isOverdue ? 'var(--danger)' : '#ebb434',
+                                }}
+                              />
+                            );
+                          })()
+                        )}
                         {getCustomerOrderCount(order) > 1 && (
                           <span
                             style={{

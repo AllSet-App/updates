@@ -162,29 +162,51 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
   const today = new Date().toISOString().split('T')[0]
   const [orderNumber, setOrderNumber] = useState(order?.id || '')
 
-  const [formData, setFormData] = useState({
-    customerName: order?.customerName || '',
-    address: order?.address || '',
-    phone: order?.phone || '',
-    whatsapp: order?.whatsapp || '',
-    nearestCity: order?.nearestCity || '',
-    district: order?.district || '',
-    // legacy fields are derived from orderItems on submit
-    totalPrice: order?.totalPrice || 0,
-    discount: order?.discount || 0,
-    codAmount: order?.codAmount || 0,
-    deliveryCharge: order?.deliveryCharge ?? deliveryChargeDefault,
-    notes: order?.notes || '',
-    status: order?.status || 'New Order',
-    paymentStatus: order?.paymentStatus || 'Pending',
-    dispatchDate: order?.dispatchDate || '',
-    trackingNumber: order?.trackingNumber || '',
-    orderDate: order?.orderDate || today,
-    scheduledDeliveryDate: order?.scheduledDeliveryDate || order?.deliveryDate || '',
-    orderSource: order?.orderSource || 'Ad', // Default to 'Ad'
-    advancePayment: order?.advancePayment || 0,
-    paymentMethod: order?.paymentMethod || 'COD'
+  const [formData, setFormData] = useState(() => {
+    // Attempt to restore drafted data for new orders
+    if (!order) {
+      try {
+        const draft = sessionStorage.getItem('aof_order_form_draft')
+        if (draft) return JSON.parse(draft)
+      } catch (e) {
+        console.warn('Failed to restore order draft', e)
+      }
+    }
+
+    return {
+      customerName: order?.customerName || '',
+      address: order?.address || '',
+      phone: order?.phone || '',
+      whatsapp: order?.whatsapp || '',
+      nearestCity: order?.nearestCity || '',
+      district: order?.district || '',
+      // legacy fields are derived from orderItems on submit
+      totalPrice: order?.totalPrice || 0,
+      discount: order?.discount || 0,
+      codAmount: order?.codAmount || 0,
+      deliveryCharge: order?.deliveryCharge ?? deliveryChargeDefault,
+      notes: order?.notes || '',
+      status: order?.status || 'New Order',
+      paymentStatus: order?.paymentStatus || 'Pending',
+      dispatchDate: order?.dispatchDate || '',
+      trackingNumber: order?.trackingNumber || '',
+      orderDate: order?.orderDate || today,
+      scheduledDeliveryDate: order?.scheduledDeliveryDate || order?.deliveryDate || '',
+      orderSource: order?.orderSource || 'Ad', // Default to 'Ad'
+      advancePayment: order?.advancePayment || 0,
+      paymentMethod: order?.paymentMethod || 'COD'
+    }
   })
+
+  // Draft persistence logic
+  useEffect(() => {
+    if (!order) {
+      sessionStorage.setItem('aof_order_form_draft', JSON.stringify(formData))
+    }
+  }, [formData, order])
+
+  // Clear draft on successful save or close
+  const clearDraft = () => sessionStorage.removeItem('aof_order_form_draft')
 
   const subtotal = useMemo(() => {
     return (orderItems || []).reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0)
@@ -470,10 +492,9 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
             await markTrackingNumberAsUsed(orderData.trackingNumber)
           } catch (error) {
             console.error('Error marking tracking number as used:', error)
-            // We don't block the whole process if this small metadata update fails, 
-            // but the order is already safe.
           }
         }
+        clearDraft()
         onClose()
       }
     } catch (error) {
