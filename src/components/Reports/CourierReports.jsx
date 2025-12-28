@@ -407,7 +407,7 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
             const matchesStatus = statusFilter === 'All' || status === statusFilter
 
             return matchesSearch && matchesStatus
-        })
+        }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
     }, [dateFilteredOrders, searchQuery, statusFilter])
 
     // Pagination
