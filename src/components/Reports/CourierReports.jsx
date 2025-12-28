@@ -8,7 +8,7 @@ import { curfoxService } from '../../utils/curfox'
 import { getSettings, saveOrders } from '../../utils/storage'
 import { formatCurrency } from '../../utils/reportUtils'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }) => {
     const [loading, setLoading] = useState(true)
@@ -679,22 +679,25 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                     <div style={{ height: '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
+                                <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                                 <Pie
                                     data={shipmentStatusData}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
+                                    cx="50%" cy="50%"
+                                    {...chartTheme.donut}
                                     dataKey="value"
-                                    stroke="none"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {shipmentStatusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Total"
+                                    value={dateFilteredOrders.length}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '11px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -706,23 +709,25 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                     <div style={{ height: '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
+                                <Tooltip content={<CustomTooltip formatter={(val) => formatCurrency(val)} />} />
                                 <Pie
                                     data={codMetrics.chartData}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
+                                    cx="50%" cy="50%"
+                                    {...chartTheme.donut}
                                     dataKey="value"
-                                    stroke="none"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {codMetrics.chartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#f59e0b'} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    formatter={(val) => formatCurrency(val)}
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Collected"
+                                    value={formatCurrency(codMetrics.chartData[0].value)}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '11px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -738,9 +743,7 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
                                     <XAxis type="number" hide />
                                     <YAxis dataKey="name" type="category" width={120} axisLine={false} tickLine={false} style={{ fontSize: '0.75rem' }} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '12px' }}
-                                    />
+                                    <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                                     <Bar dataKey="value" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
                                 </BarChart>
                             </ResponsiveContainer>

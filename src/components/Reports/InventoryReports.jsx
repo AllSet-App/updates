@@ -4,8 +4,7 @@ import {
 } from 'recharts'
 import { formatCurrency, calculateInventoryMetrics } from '../../utils/reportUtils'
 
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const InventoryReports = ({ inventory, isMobile }) => {
     const { statusData, lowStockItems, totalValue, stockAlerts } = useMemo(() =>
@@ -58,21 +57,25 @@ const InventoryReports = ({ inventory, isMobile }) => {
                 <div style={{ height: '240px', width: '100%' }}>
                     <ResponsiveContainer>
                         <PieChart>
+                            <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                             <Pie
                                 data={statusData}
-                                cx="50%" cy="45%"
-                                innerRadius={50} outerRadius={70}
-                                paddingAngle={5} dataKey="value" stroke="none"
+                                cx="50%" cy="50%"
+                                {...chartTheme.donut}
+                                dataKey="value"
+                                label={renderDonutLabel}
+                                labelLine={false}
                             >
                                 {statusData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                itemStyle={{ color: '#e5e7eb' }}
+                            <DonutCenterText
+                                cx="50%"
+                                cy="50%"
+                                label="Total Items"
+                                value={statusData.reduce((acc, curr) => acc + curr.value, 0)}
                             />
-                            <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>

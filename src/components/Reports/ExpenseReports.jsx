@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import { formatCurrency, calculateExpenseMetrics } from '../../utils/reportUtils'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const ExpenseReports = ({ expenses, orders, isMobile }) => {
     const metrics = useMemo(() => calculateExpenseMetrics(expenses, orders), [expenses, orders])
@@ -85,21 +85,25 @@ const ExpenseReports = ({ expenses, orders, isMobile }) => {
                     <div style={{ height: '260px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
+                                <Tooltip content={<CustomTooltip />} />
                                 <Pie
                                     data={metrics.categoryData}
-                                    cx="50%" cy="45%"
-                                    innerRadius={55} outerRadius={80}
-                                    paddingAngle={3} dataKey="value" stroke="none"
+                                    cx="50%" cy="50%"
+                                    {...chartTheme.donut}
+                                    dataKey="value"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {metrics.categoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    formatter={(value) => formatCurrency(value)}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Total Spend"
+                                    value={formatCurrency(metrics.total)}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '12px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -111,14 +115,10 @@ const ExpenseReports = ({ expenses, orders, isMobile }) => {
                     <div style={{ height: '260px', width: '100%' }}>
                         <ResponsiveContainer>
                             <BarChart data={metrics.categoryData} layout="vertical" margin={{ left: -10, right: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis type="number" stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis dataKey="name" type="category" width={80} stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                    formatter={(value) => formatCurrency(value)}
-                                />
+                                <CartesianGrid {...chartTheme.grid} />
+                                <XAxis type="number" {...chartTheme.axis} />
+                                <YAxis dataKey="name" type="category" width={80} {...chartTheme.axis} />
+                                <Tooltip content={<CustomTooltip />} />
                                 <Bar dataKey="value" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -132,14 +132,10 @@ const ExpenseReports = ({ expenses, orders, isMobile }) => {
                 <div style={{ height: '220px', width: '100%' }}>
                     <ResponsiveContainer>
                         <BarChart data={trendData} margin={{ left: -20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                            <XAxis dataKey="date" stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                itemStyle={{ color: '#e5e7eb' }}
-                                formatter={(value) => formatCurrency(value)}
-                            />
+                            <CartesianGrid {...chartTheme.grid} />
+                            <XAxis dataKey="date" {...chartTheme.axis} />
+                            <YAxis {...chartTheme.axis} tickFormatter={(val) => `${val / 1000}k`} />
+                            <Tooltip content={<CustomTooltip />} />
                             <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -184,7 +180,7 @@ const ExpenseReports = ({ expenses, orders, isMobile }) => {
                     </table>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

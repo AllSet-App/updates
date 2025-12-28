@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import { calculateOrderMetrics, formatCurrency } from '../../utils/reportUtils'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const OrdersReports = ({ orders, isMobile }) => {
     const {
@@ -78,13 +78,10 @@ const OrdersReports = ({ orders, isMobile }) => {
                                         <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                />
+                                <CartesianGrid {...chartTheme.grid} />
+                                <XAxis dataKey="date" {...chartTheme.axis} />
+                                <YAxis {...chartTheme.axis} />
+                                <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                                 <Area type="monotone" dataKey="count" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorVolume)" />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -97,14 +94,10 @@ const OrdersReports = ({ orders, isMobile }) => {
                     <div style={{ height: '260px', width: '100%' }}>
                         <ResponsiveContainer>
                             <BarChart data={topDistrictsChart} layout="vertical" margin={{ left: -10, right: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis type="number" stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis dataKey="name" type="category" width={90} stroke="#e5e7eb" fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                />
+                                <CartesianGrid {...chartTheme.grid} />
+                                <XAxis type="number" {...chartTheme.axis} />
+                                <YAxis dataKey="name" type="category" width={90} {...chartTheme.axis} />
+                                <Tooltip content={<CustomTooltip formatter={(val) => val} />} cursor={chartTheme.tooltipCursor} />
                                 <Bar dataKey="value" fill="#ec4899" radius={[0, 4, 4, 0]} barSize={18} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -118,21 +111,25 @@ const OrdersReports = ({ orders, isMobile }) => {
                 <div style={{ height: '300px', width: '100%' }}>
                     <ResponsiveContainer>
                         <PieChart>
+                            <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                             <Pie
                                 data={statusData}
                                 cx="50%" cy="50%"
-                                innerRadius={60} outerRadius={100}
-                                paddingAngle={3} dataKey="value" stroke="none"
+                                {...chartTheme.donut}
+                                dataKey="value"
+                                label={renderDonutLabel}
+                                labelLine={false}
                             >
                                 {statusData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                itemStyle={{ color: '#e5e7eb' }}
+                            <DonutCenterText
+                                cx="50%"
+                                cy="50%"
+                                label="Total Orders"
+                                value={totalOrders}
                             />
-                            <Legend wrapperStyle={{ fontSize: '12px', color: '#e5e7eb' }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>

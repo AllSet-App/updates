@@ -7,7 +7,7 @@ import { Calendar } from 'lucide-react'
 import { formatCurrency, calculateSalesMetrics, getTopSellingProducts, getTopRevenueProducts } from '../../utils/reportUtils'
 import { getProducts } from '../../utils/storage'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const SalesReports = ({ orders, inventory, expenses, isMobile }) => {
     const [timeRange, setTimeRange] = useState('monthly') // weekly, monthly, yearly
@@ -101,15 +101,10 @@ const SalesReports = ({ orders, inventory, expenses, isMobile }) => {
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                    labelStyle={{ color: '#9ca3af', marginBottom: '0.25rem' }}
-                                    formatter={(value) => formatCurrency(value)}
-                                />
+                                <CartesianGrid {...chartTheme.grid} />
+                                <XAxis dataKey="date" {...chartTheme.axis} />
+                                <YAxis {...chartTheme.axis} />
+                                <Tooltip content={<CustomTooltip />} />
                                 <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRevenue)" />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -122,33 +117,26 @@ const SalesReports = ({ orders, inventory, expenses, isMobile }) => {
                     <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
-                                <defs>
-                                    {COLORS.map((color, index) => (
-                                        <linearGradient key={index} id={`salesPieGradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor={color} stopOpacity={1} />
-                                            <stop offset="100%" stopColor={color} stopOpacity={0.4} />
-                                        </linearGradient>
-                                    ))}
-                                </defs>
+                                <Tooltip content={<CustomTooltip />} />
                                 <Pie
                                     data={metrics.sourceData}
                                     cx="50%"
-                                    cy="45%"
-                                    innerRadius={50}
-                                    outerRadius={70}
-                                    paddingAngle={5}
+                                    cy="50%"
+                                    {...chartTheme.donut}
                                     dataKey="value"
-                                    stroke="none"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {metrics.sourceData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Total Sales"
+                                    value={metrics.sourceData.reduce((acc, curr) => acc + curr.value, 0)}
                                 />
-                                <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -251,7 +239,7 @@ const SalesReports = ({ orders, inventory, expenses, isMobile }) => {
                     ))}
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

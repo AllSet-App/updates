@@ -3,7 +3,9 @@ import { Plus, Edit, Trash2, Filter } from 'lucide-react'
 import ExpenseForm from './ExpenseForm'
 import { saveExpenses } from '../utils/storage'
 import { getMonthlyExpenses, getCategoryBreakdown } from '../utils/calculations'
+import { formatCurrency } from '../utils/reportUtils'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './Reports/ChartConfig'
 import ConfirmationModal from './ConfirmationModal'
 import { useToast } from './Toast/ToastContext'
 
@@ -102,7 +104,7 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
     value: parseFloat(value.toFixed(2))
   }))
 
-  const COLORS = ['var(--accent-primary)', 'var(--success)', 'var(--warning)', 'var(--danger)', '#8b5cf6', '#ec4899']
+
 
   const handleSaveExpense = async (expenseData) => {
     try {
@@ -368,28 +370,25 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
             <div style={{ width: '100%', height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
+                  <Tooltip content={<CustomTooltip />} />
                   <Pie
                     data={pieChartData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
+                    {...chartTheme.donut}
                     dataKey="value"
+                    label={renderDonutLabel}
+                    labelLine={false}
                   >
                     {pieChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--bg-card)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius)',
-                      color: 'var(--text-primary)'
-                    }}
-                    formatter={(value) => `Rs.${value.toLocaleString('en-IN')}`}
+                  <DonutCenterText
+                    cx="50%"
+                    cy="50%"
+                    label="Monthly Total"
+                    value={formatCurrency(monthlyTotal)}
                   />
                 </PieChart>
               </ResponsiveContainer>

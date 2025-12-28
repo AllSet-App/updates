@@ -4,7 +4,7 @@ import {
 } from 'recharts'
 import { formatCurrency, calculateProfitabilityMetrics } from '../../utils/reportUtils'
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+import { COLORS, CustomTooltip, chartTheme, DonutCenterText, renderDonutLabel } from './ChartConfig'
 
 const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
     const { monthlyData, pieData, netProfit, margin, avgRevenuePerOrder, avgCostPerOrder, avgProfitPerOrder, profitabilityBySource } = useMemo(() =>
@@ -76,14 +76,11 @@ const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
                     <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <ComposedChart data={monthlyData} margin={{ left: -20, right: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                <XAxis dataKey="date" stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#e5e7eb" fontSize={14} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                />
-                                <Legend wrapperStyle={{ fontSize: '12px', color: '#e5e7eb', paddingTop: '10px' }} />
+                                <CartesianGrid {...chartTheme.grid} />
+                                <XAxis dataKey="date" {...chartTheme.axis} />
+                                <YAxis {...chartTheme.axis} tickFormatter={(val) => `${val / 1000}k`} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
                                 <Bar dataKey="revenue" stackId="a" fill="#3b82f6" name="Revenue" radius={[2, 2, 0, 0]} barSize={16} />
                                 <Bar dataKey="expenses" stackId="a" fill="#ef4444" name="Expenses" radius={[2, 2, 0, 0]} barSize={16} />
                                 <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} dot={{ r: 3, fill: '#10b981' }} name="Profit" />
@@ -98,23 +95,25 @@ const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
                     <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
+                                <Tooltip content={<CustomTooltip />} />
                                 <Pie
                                     data={pieData}
-                                    cx="50%" cy="45%"
-                                    innerRadius={50} outerRadius={70}
-                                    paddingAngle={2} dataKey="value"
-                                    stroke="none"
+                                    cx="50%" cy="50%"
+                                    {...chartTheme.donut}
+                                    dataKey="value"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {pieData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                    formatter={(value) => formatCurrency(value)}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Margin"
+                                    value={`${margin.toFixed(1)}%`}
                                 />
-                                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px', color: '#e5e7eb' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -126,23 +125,25 @@ const ProfitabilityReports = ({ orders, expenses, isMobile }) => {
                     <div style={{ height: '240px', width: '100%' }}>
                         <ResponsiveContainer>
                             <PieChart>
+                                <Tooltip content={<CustomTooltip />} />
                                 <Pie
                                     data={profitabilityBySource}
-                                    cx="50%" cy="45%"
-                                    innerRadius={50} outerRadius={70}
-                                    paddingAngle={2} dataKey="value" nameKey="name"
-                                    stroke="none"
+                                    cx="50%" cy="50%"
+                                    {...chartTheme.donut}
+                                    dataKey="value" nameKey="name"
+                                    label={renderDonutLabel}
+                                    labelLine={false}
                                 >
                                     {profitabilityBySource.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', fontSize: '13px', color: '#f3f4f6' }}
-                                    itemStyle={{ color: '#e5e7eb' }}
-                                    formatter={(value) => formatCurrency(value)}
+                                <DonutCenterText
+                                    cx="50%"
+                                    cy="50%"
+                                    label="Net Profit"
+                                    value={formatCurrency(netProfit)}
                                 />
-                                <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px', color: '#e5e7eb' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

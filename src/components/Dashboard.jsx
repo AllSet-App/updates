@@ -11,6 +11,7 @@ import {
   getPendingDispatch
 } from '../utils/calculations'
 import { getTopSellingProducts, formatCurrency } from '../utils/reportUtils'
+import { COLORS, CustomTooltip, chartTheme, tooltipStyle, DonutCenterText, renderDonutLabel } from './Reports/ChartConfig'
 
 const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) => {
   // --- Filter State ---
@@ -165,81 +166,13 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
     return getTopSellingProducts(orders, inventory, products)
   }, [orders, inventory, products])
 
-  // Custom Label for Pie Chart (Donut Style)
-  const renderCustomizedLabel = (props) => {
-    const { cx, cy, midAngle, innerRadius, outerRadius, value, name, fill } = props
-    const RADIAN = Math.PI / 180
-    const sin = Math.sin(-midAngle * RADIAN)
-    const cos = Math.cos(-midAngle * RADIAN)
-    const sx = cx + (outerRadius + 0) * cos
-    const sy = cy + (outerRadius + 0) * sin
-    const mx = cx + (outerRadius + 30) * cos
-    const my = cy + (outerRadius + 30) * sin
-    const ex = mx + (cos >= 0 ? 1 : -1) * 20
-    const ey = my
-    const textAnchor = cos >= 0 ? 'start' : 'end'
-
-    return (
-      <g>
-        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
-        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-        <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={-6} textAnchor={textAnchor} fill={fill} style={{ fontWeight: 700, fontSize: '14px' }}>
-          {value}
-        </text>
-        <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={14} textAnchor={textAnchor} fill="var(--text-muted)" style={{ fontSize: '12px' }}>
-          {name}
-        </text>
-      </g>
-    )
-  }
+  // Removed local renderCustomizedLabel in favor of shared renderDonutLabel from ChartConfig
 
   // Calculate Total Orders into a value for the center text
   const totalOrdersCount = sourceData.reduce((sum, item) => sum + item.value, 0)
 
 
-  const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{
-          backgroundColor: 'rgba(20, 20, 20, 0.95)',
-          padding: '12px',
-          border: '1px solid var(--border-color)',
-          borderRadius: '12px',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}>
-          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', marginBottom: '8px', color: 'var(--text-primary)' }}>{label}</p>
-          {payload.map((entry, index) => {
-            const isCurrency = ['Revenue', 'Expenses', 'Value'].includes(entry.name);
-            const value = entry.value;
-            const revenue = entry.payload?.revenue;
-
-            return (
-              <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <p style={{ margin: 0, color: entry.color, fontSize: '0.85rem', fontWeight: 600 }}>
-                  {entry.name}: {isCurrency ? 'Rs. ' : ''}{value.toLocaleString()}{!isCurrency && entry.name !== 'Orders' ? ' Units' : ''}
-                </p>
-                {/* For Daily Orders chart, payload has 'revenue' property we added */}
-                {entry.name === 'Orders' && revenue !== undefined && (
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                    Value: Rs. {revenue.toLocaleString()}
-                  </p>
-                )}
-                {revenue && !isCurrency && entry.name !== 'Orders' && (
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                    Revenue: Rs. {revenue.toLocaleString()}
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )
-    }
-    return null
-  }
 
   // Calculate Total Orders for Current Month using Reports ROI logic
   const getOrdersCountBySource = () => {
@@ -639,10 +572,10 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
                     <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="displayName" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip content={<CustomTooltip />} />
+                <CartesianGrid {...chartTheme.grid} />
+                <XAxis dataKey="displayName" {...chartTheme.axis} />
+                <YAxis {...chartTheme.axis} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                 <Area
                   type="monotone"
                   dataKey="orders"
@@ -666,37 +599,28 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
           <div style={{ height: '300px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
+                <Tooltip content={<CustomTooltip formatter={(val) => val} />} />
                 <Pie
                   data={sourceData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel}
-                  innerRadius={80}
-                  outerRadius={100}
-                  paddingAngle={5}
+                  labelLine={true}
+                  label={renderDonutLabel}
+                  {...chartTheme.donut}
                   dataKey="value"
-                  stroke="rgba(255,255,255,0.05)"
-                  strokeWidth={2}
                 >
                   {sourceData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={CHART_COLORS[index % CHART_COLORS.length]}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
-                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-                  <tspan x="50%" dy="-0.5em" fontSize="24" fontWeight="bold" fill="var(--text-primary)">
-                    {totalOrdersCount}
-                  </tspan>
-                  <tspan x="50%" dy="1.5em" fontSize="14" fill="var(--text-muted)">
-                    Total Orders
-                  </tspan>
-                </text>
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', border: '1px solid var(--border-color)', borderRadius: '12px', backdropFilter: 'blur(10px)' }}
-                  itemStyle={{ fontSize: '0.85rem' }}
+                <DonutCenterText
+                  cx="50%"
+                  cy="50%"
+                  label="Total Orders"
+                  value={totalOrdersCount}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -717,14 +641,14 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
                 margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
               >
                 <defs>
-                  {CHART_COLORS.map((color, index) => (
+                  {COLORS.map((color, index) => (
                     <linearGradient key={`barGrad-${index}`} id={`barGrad-${index}`} x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor={color} stopOpacity={0.8} />
                       <stop offset="100%" stopColor={color} stopOpacity={0.3} />
                     </linearGradient>
                   ))}
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid {...chartTheme.grid} horizontal={false} />
                 <XAxis type="number" hide />
                 <YAxis
                   dataKey="name"
@@ -736,17 +660,17 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
                   width={130}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                  cursor={chartTheme.tooltipCursor}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '10px', backdropFilter: 'blur(10px)' }}>
-                          <p style={{ color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '5px' }}>{data.name}</p>
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '5px' }}>{data.category}</p>
+                        <div style={tooltipStyle}>
+                          <p style={{ color: '#fff', fontWeight: 'bold', marginBottom: '5px' }}>{data.name}</p>
+                          <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '5px' }}>{data.category}</p>
                           <div style={{ display: 'flex', gap: '15px' }}>
-                            <span style={{ color: 'var(--accent-primary)' }}>{data.quantity} Units</span>
-                            <span style={{ color: 'var(--success)' }}>{formatCurrency(data.revenue)}</span>
+                            <span style={{ color: '#3b82f6' }}>{data.quantity} Units</span>
+                            <span style={{ color: '#10b981' }}>{formatCurrency(data.revenue)}</span>
                           </div>
                         </div>
                       );
@@ -761,7 +685,7 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
                 >
                   <LabelList dataKey="quantity" position="right" fill="var(--text-muted)" fontSize={11} formatter={(val) => `${val}`} />
                   {topSellingProducts.slice(0, 5).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
