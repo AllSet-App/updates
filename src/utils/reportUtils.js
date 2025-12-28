@@ -1,4 +1,5 @@
 import { startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, format, differenceInDays } from 'date-fns'
+import { safeAdd, safeSub, safeMult, safeDiv } from './mathUtils';
 
 // --- General Helpers ---
 
@@ -31,7 +32,8 @@ export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => 
 
     // Revenue is strictly from Paid orders (usually a subset of valid)
     const paidOrders = validOrders.filter(o => o.paymentStatus === 'Paid')
-    const revenue = paidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+    // const revenue = paidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+    const revenue = paidOrders.reduce((sum, o) => safeAdd(sum, o.totalPrice), 0)
 
     // Total Orders count should reflect Valid orders (Placed/Dispatched etc), not Cancelled ones.
     const totalOrders = validOrders.length
@@ -60,7 +62,8 @@ export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => 
         }
 
         const orderRevenue = Number(order.totalPrice) || 0
-        sourceStats[source].revenue += orderRevenue
+        // sourceStats[source].revenue += orderRevenue
+        sourceStats[source].revenue = safeAdd(sourceStats[source].revenue, orderRevenue);
 
         let orderCost = 0
         const items = order.orderItems || []
@@ -68,10 +71,12 @@ export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => 
             const invItem = inventoryMap[String(it.itemId)]
             if (invItem) {
                 const cost = Number(invItem.unitCost) || 0
-                orderCost += (Number(it.quantity) || 0) * cost
+                // orderCost += (Number(it.quantity) || 0) * cost
+                orderCost = safeAdd(orderCost, safeMult(it.quantity, cost))
             }
         })
-        sourceStats[source].cost += orderCost
+        // sourceStats[source].cost += orderCost
+        sourceStats[source].cost = safeAdd(sourceStats[source].cost, orderCost);
     })
 
     // 3. Subtract Ad Expenses - Category "Ads", match item name to source
@@ -81,7 +86,8 @@ export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => 
             // Find a source that matches this name (case-insensitive)
             Object.keys(sourceStats).forEach(sourceName => {
                 if (sourceName.toLowerCase() === item) {
-                    sourceStats[sourceName].adsExpense += Number(exp.amount || exp.total || 0)
+                    // sourceStats[sourceName].adsExpense += Number(exp.amount || exp.total || 0)
+                    sourceStats[sourceName].adsExpense = safeAdd(sourceStats[sourceName].adsExpense, exp.amount || exp.total);
                 }
             })
         }
@@ -96,7 +102,8 @@ export const calculateSalesMetrics = (orders, inventory = [], expenses = []) => 
         .map(s => ({
             name: s.name,
             revenue: s.revenue,
-            profit: s.revenue - s.cost - s.adsExpense
+            // profit: s.revenue - s.cost - s.adsExpense
+            profit: safeSub(s.revenue, safeAdd(s.cost, s.adsExpense))
         }))
         .filter(d => d.revenue > 0 || d.profit !== 0)
 
@@ -234,8 +241,10 @@ const calculateProductPerformance = (orders, inventory = [], products = { catego
                     }
                 }
             }
-            productStats[key].quantity += Number(item.quantity) || 0
-            productStats[key].revenue += (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
+            // productStats[key].quantity += Number(item.quantity) || 0
+            productStats[key].quantity = safeAdd(productStats[key].quantity, item.quantity);
+            // productStats[key].revenue += (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
+            productStats[key].revenue = safeAdd(productStats[key].revenue, safeMult(item.quantity, item.unitPrice));
         })
     })
 
@@ -257,16 +266,20 @@ export const getTopRevenueProducts = (orders, inventory = [], products = { categ
 // --- Expense Calculations ---
 
 export const calculateExpenseMetrics = (expenses, orders = []) => {
-    const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    // const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    const total = expenses.reduce((sum, e) => safeAdd(sum, e.amount), 0)
 
     // Sales for Ratio (Paid orders revenue)
     const paidOrders = orders.filter(o => o.paymentStatus === 'Paid')
-    const totalSales = paidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
-    const expenseSalesRatio = totalSales > 0 ? (total / totalSales) * 100 : 0
+    // const totalSales = paidOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+    const totalSales = paidOrders.reduce((sum, o) => safeAdd(sum, o.totalPrice), 0)
+    // const expenseSalesRatio = totalSales > 0 ? (total / totalSales) * 100 : 0
+    const expenseSalesRatio = totalSales > 0 ? safeMult(safeDiv(total, totalSales), 100) : 0
 
     const byCategory = expenses.reduce((acc, e) => {
         const cat = (e.category || 'Other').trim()
-        acc[cat] = (acc[cat] || 0) + (Number(e.amount) || 0)
+        // acc[cat] = (acc[cat] || 0) + (Number(e.amount) || 0)
+        acc[cat] = safeAdd(acc[cat] || 0, e.amount)
         return acc
     }, {})
 
@@ -280,7 +293,8 @@ export const calculateExpenseMetrics = (expenses, orders = []) => {
     const byItem = expenses.reduce((acc, e) => {
         const name = (e.item || e.description || 'Unnamed').trim()
         if (!acc[name]) acc[name] = { name, amount: 0, category: e.category || 'Other' }
-        acc[name].amount += Number(e.amount) || 0
+        // acc[name].amount += Number(e.amount) || 0
+        acc[name].amount = safeAdd(acc[name].amount, e.amount)
         return acc
     }, {})
 
@@ -297,27 +311,31 @@ export const calculateProfitability = (orders, expenses) => {
     // 1. Net Profit (Cash Basis)
     const revenue = orders
         .filter(o => o.paymentStatus === 'Paid')
-        .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+        // .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+        .reduce((sum, o) => safeAdd(sum, o.totalPrice), 0)
 
-    const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
-    const netProfit = revenue - totalExpenses
-    const margin = revenue > 0 ? (netProfit / revenue) * 100 : 0
+    // const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    const totalExpenses = expenses.reduce((sum, e) => safeAdd(sum, e.amount), 0)
+    // const netProfit = revenue - totalExpenses
+    const netProfit = safeSub(revenue, totalExpenses)
+    // const margin = revenue > 0 ? (netProfit / revenue) * 100 : 0
+    const margin = revenue > 0 ? safeMult(safeDiv(netProfit, revenue), 100) : 0
 
     return { netProfit, margin, revenue, totalExpenses }
 }
 
 export const calculateAverageBusinessMetrics = (orders, expenses) => {
-    const paidOrdersEncoded = orders.filter(o => o.paymentStatus === 'Paid');
-    const totalOrders = paidOrdersEncoded.length; // Use paid orders for revenue averaging to be accurate?? 
-    // actually, for cost per order, maybe we should use *all* orders that are not cancelled?
-    // Let's stick to "Valid" orders (not cancelled/returned) for the divisor to be safe.
+    // const paidOrdersEncoded = orders.filter(o => o.paymentStatus === 'Paid');
+    // const totalOrders = paidOrdersEncoded.length; 
 
-    const validOrders = orders.filter(o => !['cancelled', 'returned'].includes(o.status?.toLowerCase()));
-    const orderCount = validOrders.length;
+    // const validOrders = orders.filter(o => !['cancelled', 'returned'].includes(o.status?.toLowerCase()));
+    // const orderCount = validOrders.length;
+    const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
+    const paidCount = paidOrders.length;
 
     const { netProfit, revenue, totalExpenses } = calculateProfitability(orders, expenses);
 
-    if (orderCount === 0) {
+    if (paidCount === 0) {
         return {
             avgRevenuePerOrder: 0,
             avgCostPerOrder: 0,
@@ -326,9 +344,13 @@ export const calculateAverageBusinessMetrics = (orders, expenses) => {
     }
 
     return {
-        avgRevenuePerOrder: revenue / orderCount,
-        avgCostPerOrder: totalExpenses / orderCount,
-        avgProfitPerOrder: netProfit / orderCount
+        // avgRevenuePerOrder: revenue / orderCount,
+        // avgCostPerOrder: totalExpenses / orderCount,
+        // avgProfitPerOrder: netProfit / orderCount
+        // Standardized to Paid Orders as the denominator for Cash-based metrics
+        avgRevenuePerOrder: safeDiv(revenue, paidCount),
+        avgCostPerOrder: safeDiv(totalExpenses, paidCount),
+        avgProfitPerOrder: safeDiv(netProfit, paidCount)
     };
 }
 
@@ -342,7 +364,8 @@ export const getMonthlyFinancials = (orders, expenses) => {
         if (!date) return
         const key = date.substring(0, 7)
         if (!data[key]) data[key] = { date: key, revenue: 0, expenses: 0, profit: 0 }
-        data[key].revenue += Number(o.totalPrice) || 0
+        // data[key].revenue += Number(o.totalPrice) || 0
+        data[key].revenue = safeAdd(data[key].revenue, o.totalPrice)
     })
 
     // Expenses
@@ -351,12 +374,14 @@ export const getMonthlyFinancials = (orders, expenses) => {
         if (!date) return
         const key = date.substring(0, 7)
         if (!data[key]) data[key] = { date: key, revenue: 0, expenses: 0, profit: 0 }
-        data[key].expenses += Number(e.amount) || 0
+        // data[key].expenses += Number(e.amount) || 0
+        data[key].expenses = safeAdd(data[key].expenses, e.amount)
     })
 
     // Calculate Profit
     Object.values(data).forEach(item => {
-        item.profit = item.revenue - item.expenses
+        // item.profit = item.revenue - item.expenses
+        item.profit = safeSub(item.revenue, item.expenses)
     })
 
     return Object.values(data).sort((a, b) => a.date.localeCompare(b.date))
@@ -377,17 +402,14 @@ export const calculateOrderMetrics = (orders) => {
     const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }))
 
     // 1. Avg Order Value
-    const revenue = validOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
-    const avgOrderValue = validOrders.length > 0 ? (revenue / validOrders.length).toFixed(2) : 0
+    // const revenue = validOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0)
+    const revenue = validOrders.reduce((sum, o) => safeAdd(sum, o.totalPrice), 0)
+    // const avgOrderValue = validOrders.length > 0 ? (revenue / validOrders.length).toFixed(2) : 0
+    const avgOrderValue = safeDiv(revenue, validOrders.length).toFixed(2)
 
     // 2. Processing Time & Breakdown (Created -> Packed -> Dispatched)
     let totalProcessingDays = 0
     let processingCount = 0
-    // We try to infer "Packed" time if we had logs, but for now we only have Created & Dispatch dates.
-    // So we'll stick to Created -> Dispatched as the main "Processing" metric.
-
-    // Bottleneck Analysis: Status Duration (just a snapshot of current state ages isn't history)
-    // Instead we can show "Days to Dispatch" distribution maybe? Or just sticking to single Avg.
 
     orders.forEach(o => {
         if (o.status === 'Dispatched' && o.createdDate && o.dispatchDate) {
@@ -438,7 +460,8 @@ export const calculateOrderMetrics = (orders) => {
 
     const returningCustomers = Object.values(customerOrders).filter(count => count > 1).length
     const totalCustomers = Object.keys(customerOrders).length
-    const repeatRate = totalCustomers > 0 ? ((returningCustomers / totalCustomers) * 100).toFixed(1) : 0
+    // const repeatRate = totalCustomers > 0 ? ((returningCustomers / totalCustomers) * 100).toFixed(1) : 0
+    const repeatRate = totalCustomers > 0 ? safeMult(safeDiv(returningCustomers, totalCustomers), 100).toFixed(1) : 0
 
     return {
         statusData,
@@ -459,7 +482,6 @@ export const calculateConsumptionTrends = (orders) => {
     )
 
     // 2. Aggregate quantities by Item and Month
-    // Map: "YYYY-MM" -> { "ItemName": Qty, ... }
     const monthlyUsage = {}
     const itemTotals = {}
 
@@ -483,8 +505,10 @@ export const calculateConsumptionTrends = (orders) => {
             const name = item.customItemName || item.itemName || 'Unknown Item'
             const qty = Number(item.quantity) || 0
 
-            monthlyUsage[monthKey][name] = (monthlyUsage[monthKey][name] || 0) + qty
-            itemTotals[name] = (itemTotals[name] || 0) + qty
+            // monthlyUsage[monthKey][name] = (monthlyUsage[monthKey][name] || 0) + qty
+            monthlyUsage[monthKey][name] = safeAdd(monthlyUsage[monthKey][name] || 0, qty)
+            // itemTotals[name] = (itemTotals[name] || 0) + qty
+            itemTotals[name] = safeAdd(itemTotals[name] || 0, qty)
         })
     })
 
@@ -494,15 +518,14 @@ export const calculateConsumptionTrends = (orders) => {
         .slice(0, 5)
         .map(entry => entry[0])
 
-    // 4. Transform for Recharts
-    // Recharts needs array of objects, keys matching lines
     const chartData = Object.values(monthlyUsage).sort((a, b) => a.date.localeCompare(b.date))
 
     return { chartData, topItems }
 }
+
 // --- Consolidated Aggregators for Reports ---
 
-export const calculateProfitabilityMetrics = (orders, expenses) => {
+export const calculateProfitabilityMetrics = (orders, expenses, inventory = []) => {
     const { netProfit, margin, revenue, totalExpenses } = calculateProfitability(orders, expenses)
     const { avgRevenuePerOrder, avgCostPerOrder, avgProfitPerOrder } = calculateAverageBusinessMetrics(orders, expenses)
     const monthlyData = getMonthlyFinancials(orders, expenses)
@@ -511,6 +534,12 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
         { name: 'Profit', value: Math.max(0, netProfit) },
         { name: 'Expenses', value: totalExpenses }
     ]
+
+    // Inventory lookup for COGS
+    const inventoryMap = new Map();
+    inventory.forEach(item => {
+        if (item.id) inventoryMap.set(String(item.id), Number(item.unitCost) || 0);
+    });
 
     // --- Profit by Source Calculation ---
     const sourceStats = {}
@@ -522,21 +551,19 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
         if (!sourceStats[source]) {
             sourceStats[source] = { name: source, revenue: 0, cost: 0, adsExpense: 0 }
         }
-        sourceStats[source].revenue += Number(order.totalPrice) || 0
-        // Approximate cost (since we don't strictly link inventory cost snapshot to order yet, usage current unitCost)
-        // If we had a cost snapshot in order items, we'd use that. For now, ignoring cost or using 0 if not easily available here without fetching inventory again.
-        // Wait, calculateSalesMetrics fetches inventory. To be accurate we need inventory.
-        // But the user didn't pass inventory to this function. 
-        // Let's assume Cost is 0 for "Profit by Channel" in this specific view OR we accept we only show Revenue - Ad Spend?
-        // "Profit by Channel" usually implies Gross Profit (Revenue - COGS) - Ads.
-        // Without inventory passed in, we can't get COGS easily.
-        // Let's look at how calculateSalesMetrics does it. It filters inputs: (orders, inventory, expenses).
-        // createProfitabilityMetrics signature is (orders, expenses).
-        // I should probably just focus on Revenue - Expenses (Ad Spend) for "Contribution Margin" by channel?
-        // Or I should rely on the fact that the existing "Profit by Channel" in SalesReports MIGHT have been using COGS.
-        // Let's check calculateSalesMetrics again.
-        // Yes, calculateSalesMetrics uses inventory.
-        // So to move it here, I need to pass inventory to ProfitabilityReports and then to this function.
+        // sourceStats[source].revenue += Number(order.totalPrice) || 0
+        sourceStats[source].revenue = safeAdd(sourceStats[source].revenue, order.totalPrice);
+
+        // Calculate COGS for this order
+        let orderCost = 0;
+        const items = order.orderItems || [];
+        items.forEach(it => {
+            const cost = inventoryMap.get(String(it.itemId)) || 0;
+            const qty = Number(it.quantity) || 0;
+            orderCost = safeAdd(orderCost, safeMult(qty, cost));
+        });
+
+        sourceStats[source].cost = safeAdd(sourceStats[source].cost, orderCost);
     })
 
     // Ad Expenses
@@ -545,7 +572,8 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
             const item = (exp.item || exp.description || '').trim().toLowerCase()
             Object.keys(sourceStats).forEach(sourceName => {
                 if (sourceName.toLowerCase() === item) {
-                    sourceStats[sourceName].adsExpense += Number(exp.amount || exp.total || 0)
+                    // sourceStats[sourceName].adsExpense += Number(exp.amount || exp.total || 0)
+                    sourceStats[sourceName].adsExpense = safeAdd(sourceStats[sourceName].adsExpense, exp.amount || exp.total);
                 }
             })
         }
@@ -554,7 +582,9 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
     const profitabilityBySource = Object.values(sourceStats)
         .map(s => ({
             name: s.name,
-            value: s.revenue - s.adsExpense // "Profit" (Revenue - Ads) excluding COGS if inventory not available
+            // value: s.revenue - s.adsExpense 
+            // Corrected to include COGS: Gross Profit = Revenue - COGS - AdSpeend
+            value: safeSub(s.revenue, safeAdd(s.cost, s.adsExpense))
         }))
         .filter(d => d.value !== 0)
         .sort((a, b) => b.value - a.value)
@@ -572,7 +602,8 @@ export const calculateProfitabilityMetrics = (orders, expenses) => {
 }
 
 export const calculateInventoryMetrics = (inventory) => {
-    const totalValue = inventory.reduce((sum, item) => sum + (Number(item.currentStock || 0) * (Number(item.unitCost || 0))), 0)
+    // const totalValue = inventory.reduce((sum, item) => sum + (Number(item.currentStock || 0) * (Number(item.unitCost || 0))), 0)
+    const totalValue = inventory.reduce((sum, item) => safeAdd(sum, safeMult(item.currentStock, item.unitCost)), 0)
 
     const lowStockItems = inventory
         .filter(item => {
