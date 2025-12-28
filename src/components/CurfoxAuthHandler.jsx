@@ -74,10 +74,16 @@ const CurfoxAuthHandler = ({ session }) => {
 
                             if (cities && cities.length > 0) {
                                 // Cache in LocalStorage only if we have data
-                                localStorage.setItem(CACHE_KEY_PREFIX + 'districts', JSON.stringify(districts || []))
-                                localStorage.setItem(CACHE_KEY_PREFIX + 'cities', JSON.stringify(cities || []))
-                                localStorage.setItem(CACHE_KEY_PREFIX + 'timestamp', Date.now().toString())
-                                localStorage.setItem('curfox_auth', JSON.stringify(authPayload))
+                                try {
+                                    localStorage.setItem(CACHE_KEY_PREFIX + 'districts', JSON.stringify(districts || []))
+                                    localStorage.setItem(CACHE_KEY_PREFIX + 'cities', JSON.stringify(cities || []))
+                                    localStorage.setItem(CACHE_KEY_PREFIX + 'timestamp', Date.now().toString())
+                                    localStorage.setItem('curfox_auth', JSON.stringify(authPayload))
+                                } catch (storageErr) {
+                                    console.warn("App: LocalStorage quota exceeded. Using in-memory state only.", storageErr)
+                                    // If quota exceeded, we can still proceed as the data is already in 'cities' variable
+                                    // and will be dispatched to listeners. It just won't be cached for the next session.
+                                }
                             } else if (cities && cities.length === 0) {
                                 console.warn("App: Fetched cities list is empty, not caching.")
                             }

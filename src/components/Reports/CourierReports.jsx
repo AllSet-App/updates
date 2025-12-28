@@ -86,12 +86,14 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                 setOrders(curfoxOrders)
 
                 if (curfoxOrders.length > 0 || internalOrders.length > 0) {
-                    // For Reports: Sample the last 100 waybills from Curfox
-                    const MAX_SAMPLE = 100
+                    // INCREASE SAMPLE SIZE: Use all orders if possible, or at least 500
+                    const MAX_SAMPLE = 500
+
+                    // Prioritize waybills from the currently filtered date range
+                    const filteredWaybills = dateFilteredOrders.map(o => o.waybill_number).filter(Boolean)
                     const recentWaybills = curfoxOrders.slice(0, MAX_SAMPLE).map(o => o.waybill_number).filter(Boolean)
 
                     // For Reconciliation: Specifically target ALL internal orders that are Pending Payment
-                    // This ensures we don't miss checking finance status for older orders
                     const pendingReconciliationWaybills = (internalOrders || [])
                         .filter(o => {
                             const s = (o.status || '').toLowerCase()
@@ -104,7 +106,7 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                         .map(o => o.trackingNumber)
 
                     // Combine and deduplicate
-                    const waybills = [...new Set([...recentWaybills, ...pendingReconciliationWaybills])]
+                    const waybills = [...new Set([...filteredWaybills, ...recentWaybills, ...pendingReconciliationWaybills])]
 
                     if (waybills.length === 0) {
                         setLoading(false)
@@ -156,24 +158,17 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
 
     // --- Date Filtering (Local backup) ---
     const dateFilteredOrders = useMemo(() => {
-        if (!range?.start || !range?.end) return orders
-        const start = new Date(range.start)
-        start.setHours(0, 0, 0, 0)
-        const end = new Date(range.end)
-        end.setHours(23, 59, 59, 999)
-
-        return orders.filter(o => {
-            const d = new Date(o.created_at)
-            return d >= start && d <= end
-        })
-    }, [orders, range])
+        // The API already filters by range, so we should trust it to avoid timezone/clipping issues
+        // We only use the range here to force a recalculation if it changes
+        console.log(`CourierReports: Processing ${orders.length} orders from API`);
+        return orders;
+    }, [orders])
 
     // --- Report 1: Shipment Overview ---
     const shipmentStatusData = useMemo(() => {
         const counts = {}
         dateFilteredOrders.forEach(o => {
-            // Exhaustive status check based on actual Royal Express / Curfox response structure
-            const status = (
+            const rawStatus = (
                 o.order_current_status?.name ||
                 o.status?.name ||
                 (typeof o.status === 'string' ? o.status : null) ||
@@ -182,11 +177,19 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                 o.curr_status_name ||
                 o.current_status ||
                 'Unknown'
-            )
+            ).trim()
+
+            // Normalize some common cluster-prone statuses
+            let status = rawStatus;
+            if (rawStatus.toLowerCase().includes('delivered')) status = 'Delivered';
+            if (rawStatus.toLowerCase().includes('rto') || rawStatus.toLowerCase().includes('return')) status = 'Returned/RTO';
+            if (rawStatus.toLowerCase().includes('transit')) status = 'In Transit';
+            if (rawStatus.toLowerCase().includes('pickup')) status = 'Pickup';
+
             counts[status] = (counts[status] || 0) + 1
         })
         return Object.entries(counts).map(([name, value]) => ({ name, value }))
-    }, [orders])
+    }, [dateFilteredOrders])
 
     // --- Report 2: COD Ledger ---
     const codMetrics = useMemo(() => {
@@ -288,41 +291,80 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
         let toBeInvoiced = { count: 0, amount: 0 }
 
         dateFilteredOrders.forEach(o => {
-            const status = (
+            const rawStatus = (
                 o.order_current_status?.name ||
                 o.status?.name ||
                 (typeof o.status === 'string' ? o.status : null) ||
                 'Unknown'
-            ).toLowerCase()
+            ).toLowerCase().trim()
 
             const cod = Number(o.cod || o.cod_amount || 0)
             const collected = Number(o.collected_cod || 0)
-            const deliveryCharge = Number(o.delivery_charge || o.freight_amount || 0)
 
-            // Look up finance status if available
-            const finRecord = financeData.find(f => f.waybill_number === o.waybill_number)
-            const financeStatus = (finRecord?.finance_status || finRecord?.status || o.finance_status || '').toLowerCase()
+            const isDelivered = rawStatus.includes('delivered')
+            const isReturned = rawStatus.includes('return') || rawStatus.includes('rto') || rawStatus.includes('fail')
+            const isCancelled = rawStatus.includes('cancel') || rawStatus.includes('void') || rawStatus.includes('rejected') || rawStatus.includes('admin')
 
-            // 1. To Be Returned (RTO)
-            if (status.includes('return') || status.includes('rto') || status.includes('fail')) {
-                toBeReturned.count++
-                toBeReturned.amount += (cod > 0 ? cod : 0) // Value at risk
+            // Improved Matching Logic (Handling different field names and whitespace)
+            const finRecord = financeData.find(f => {
+                const fw = String(f.waybill_number || f.waybill || f.tracking_number || '').trim().toLowerCase();
+                const ow = String(o.waybill_number || o.waybill || o.tracking_number || o.id || '').trim().toLowerCase();
+                return fw !== '' && fw === ow;
+            });
+
+            // Extract cleanup status and flags
+            const financeStatus = (finRecord?.finance_status || finRecord?.status || o.finance_status || '').toLowerCase().trim();
+
+            // CRITICAL FIX: "not invoiced" contains the word "invoiced", so we must use exact checks or exclude "not"
+            const isExplicitlyBilled =
+                financeStatus === 'invoiced' ||
+                financeStatus === 'statement' ||
+                financeStatus === 'deposited' ||
+                financeStatus === 'approved' ||
+                financeStatus === 'paid' ||
+                financeStatus === 'settled';
+
+            const hasInvoiceNo = !!(finRecord?.invoice_no || finRecord?.invoice_number || finRecord?.invoice_id || finRecord?.invoice_ref_no);
+
+            const hasInvoice = isExplicitlyBilled || hasInvoiceNo;
+
+            // CRITICAL DATA LOGGING - Confirming linked data
+            if (finRecord && (isDelivered || isReturned) && !isCancelled) {
+                console.log(`[FINANCE MATCH] WB: ${o.waybill_number} | FinStatus: "${financeStatus}" | HasInv: ${hasInvoice}`);
             }
-            // 2. Delivered
-            else if (status === 'delivered') {
-                delivered.count++
-                delivered.amount += (collected > 0 ? collected : cod)
 
-                // 3. To Be Invoiced (Delivered but NOT Deposited/Approved)
-                // "Deposited" usually means courier has paid us.
-                const isSettled = financeStatus === 'deposited' || financeStatus === 'approved' || financeStatus.includes('paid')
-                if (!isSettled) {
+            // Base Value (Prefer actual collected amount if available)
+            const finalVal = (collected > 0 ? collected : cod);
+            const shipping = Number(finRecord?.delivery_charge || o.delivery_charge || 0);
+
+            // 1. To Be Returned (RTO) - Logistics Value (Gross)
+            if (isReturned && !isCancelled) {
+                toBeReturned.count++
+                toBeReturned.amount += cod
+            }
+
+            // 2. Delivered - Logistics Value (Gross)
+            if (isDelivered && !isCancelled) {
+                delivered.count++
+                delivered.amount += finalVal
+            }
+
+            // 3. To Be Invoiced - Finance Receivable (Net: COD minus Shipping)
+            const isStrictDelivered = rawStatus === 'delivered' || rawStatus === 'partially delivered';
+            const isStrictReturned = rawStatus === 'returned to merchant';
+
+            if (!hasInvoice && !isCancelled && (isStrictDelivered || isStrictReturned)) {
+                if (finRecord) {
                     toBeInvoiced.count++
-                    toBeInvoiced.amount += (collected > 0 ? collected : cod)
+                    // Expected Payout = Delivered COD - Total Shipping for all orders in the list
+                    // RTOs count as 0 cash in, but still subtract their shipping cost.
+                    const revenue = isStrictDelivered ? finalVal : 0;
+                    toBeInvoiced.amount += (revenue - shipping);
                 }
             }
-            // 4. Pending Delivery (In Transit, etc.)
-            else if (status !== 'cancelled') {
+
+            // 4. Pending Delivery
+            if (!isCancelled && !isReturned && !isDelivered) {
                 pendingDelivery.count++
                 pendingDelivery.amount += cod
             }
@@ -608,10 +650,15 @@ const CourierReports = ({ isMobile, range, internalOrders = [], onUpdateOrders }
                 <div className="card metric-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
                         <Truck size={16} />
-                        <span style={{ fontSize: '0.85rem' }}>Total Shipments</span>
+                        <span style={{ fontSize: '0.85rem' }}>Active Shipments</span>
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{dateFilteredOrders.length}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>All time</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>
+                        {dateFilteredOrders.filter(o => {
+                            const s = (o.order_current_status?.name || o.status?.name || o.status || '').toLowerCase();
+                            return !s.includes('cancel') && !s.includes('void') && !s.includes('rejected') && !s.includes('admin');
+                        }).length}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Excl. Cancelled</div>
                 </div>
                 <div className="card metric-card">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>

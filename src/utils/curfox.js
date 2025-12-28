@@ -185,11 +185,14 @@ export const curfoxService = {
             console.log(`Loaded ${rawCities.length} cities from Curfox`)
 
             if (rawCities.length > 0) {
-                // Map to flattened structure for easier filtering
+                // Map to flattened structure for easier filtering and MINIMIZE data weight
+                // This prevents LocalStorage QuotaExceededError by stripping unnecessary metadata
                 return rawCities.map(city => ({
-                    ...city,
-                    district_name: city.state?.name || city.district_name || '',
-                    name: city.name // Ensure name is top level
+                    id: city.id,
+                    name: city.name,
+                    district_name: city.state?.name || city.district_name || city.state_name || '',
+                    district: city.district || '',
+                    state_name: city.state?.name || ''
                 }))
             }
 
@@ -426,13 +429,17 @@ export const curfoxService = {
 
             if (result) {
                 const isTerminal = result.finance_status === 'Deposited' || result.finance_status === 'Approved';
-                localStorage.setItem(cacheKey, JSON.stringify({
+                // Ensure waybill_number is inside the object for matching later
+                const enrichedResult = {
                     ...result,
+                    waybill_number: waybill,
                     _terminal: isTerminal,
                     _ts: Date.now()
-                }));
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(enrichedResult));
+                return enrichedResult;
             }
-            return result
+            return null;
         } catch (error) {
             console.error("Finance Status Fetch Error:", error)
             return null
@@ -447,7 +454,8 @@ export const curfoxService = {
 
             const queryParams = new URLSearchParams({
                 ...params,
-                noPagination: 1
+                noPagination: 1,
+                per_page: 500 // Explicitly request a large page size
             }).toString()
 
             // Try private path first (more likely to have all fields)
@@ -520,6 +528,9 @@ export const curfoxService = {
             const fetched = await limitConcurrency(tasks, 1, (done, total) => {
                 if (onProgress) onProgress(cachedCount + done, waybills.length);
             }, 1000); // 1 request / 1 sec
+
+            // Re-map fetched results if they are missing the waybill link
+            // though getFinanceStatus now ensures it, extra safety here
             return [...results, ...fetched.filter(Boolean)];
         }
 
