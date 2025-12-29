@@ -64,7 +64,8 @@ const transformOrderToDB = (order) => {
     order_source: order.orderSource || 'Ad',
     courier_finance_status: order.courierFinanceStatus || null,
     courier_invoice_no: order.courierInvoiceNo || null,
-    courier_invoice_ref: order.courierInvoiceRef || null
+    courier_invoice_ref: order.courierInvoiceRef || null,
+    payment_method: order.paymentMethod || 'COD'
   }
 }
 
@@ -141,7 +142,8 @@ const transformOrderFromDB = (order) => {
     advancePayment: order.advance_payment || 0,
     courierFinanceStatus: order.courier_finance_status || null,
     courierInvoiceNo: order.courier_invoice_no || null,
-    courierInvoiceRef: order.courier_invoice_ref || null
+    courierInvoiceRef: order.courier_invoice_ref || null,
+    paymentMethod: order.payment_method || 'COD'
   }
 }
 
@@ -234,10 +236,10 @@ export const saveOrders = async (orders) => {
     // - datesSource: remove date fields + order_source
     // - datesSourceNoItems: remove date fields + order_source + multi-item fields
     const compatModes = {
-      datesOnly: ['order_date', 'dispatch_date', 'delivery_date', 'advance_payment'],
-      datesNoItems: ['order_date', 'dispatch_date', 'delivery_date', 'order_items', 'delivery_charge', 'advance_payment'],
-      datesSource: ['order_date', 'dispatch_date', 'delivery_date', 'order_source', 'advance_payment'],
-      datesSourceNoItems: ['order_date', 'dispatch_date', 'delivery_date', 'order_source', 'order_items', 'delivery_charge', 'advance_payment']
+      datesOnly: ['order_date', 'dispatch_date', 'delivery_date', 'advance_payment', 'payment_method'],
+      datesNoItems: ['order_date', 'dispatch_date', 'delivery_date', 'order_items', 'delivery_charge', 'advance_payment', 'payment_method'],
+      datesSource: ['order_date', 'dispatch_date', 'delivery_date', 'order_source', 'advance_payment', 'payment_method'],
+      datesSourceNoItems: ['order_date', 'dispatch_date', 'delivery_date', 'order_source', 'order_items', 'delivery_charge', 'advance_payment', 'payment_method']
     }
 
     const getCachedSchemaMode = () => {
@@ -414,7 +416,8 @@ export const saveOrders = async (orders) => {
             'Please run this in Supabase SQL Editor:\n\n' +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispatch_date DATE;\n" +
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_date DATE;\n"
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_date DATE;\n" +
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'COD';\n"
           )
         }
         if (multiItemOrderFromUI) {
@@ -440,7 +443,8 @@ export const saveOrders = async (orders) => {
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispatch_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_items JSONB NOT NULL DEFAULT '[]'::jsonb;\n" +
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10,2) DEFAULT 400;\n"
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10,2) DEFAULT 400;\n" +
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'COD';\n"
           )
         }
         return true
@@ -462,7 +466,8 @@ export const saveOrders = async (orders) => {
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispatch_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_date DATE;\n" +
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_source TEXT DEFAULT 'Ad';\n"
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_source TEXT DEFAULT 'Ad';\n" +
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'COD';\n"
           )
         }
         if (multiItemOrderFromUI) {
@@ -489,7 +494,8 @@ export const saveOrders = async (orders) => {
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_date DATE;\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_source TEXT DEFAULT 'Ad';\n" +
             "ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_items JSONB NOT NULL DEFAULT '[]'::jsonb;\n" +
-            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10,2) DEFAULT 400;\n"
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge DECIMAL(10,2) DEFAULT 400;\n" +
+            "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'COD';\n"
           )
         }
         return true

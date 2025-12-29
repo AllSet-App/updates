@@ -109,11 +109,19 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
     return null
   }
 
+  // Helper to safely extract name string from potential object values
+  const getSafeName = (val) => {
+    if (!val) return null
+    if (typeof val === 'string') return val
+    if (typeof val === 'object' && val.name) return val.name
+    return String(val)
+  }
+
   // Get category and item names with safety checks
   const category = localOrder.categoryId ? products.categories.find(cat => cat.id === localOrder.categoryId) : null
   const item = category && localOrder.itemId ? category.items.find(item => item.id === localOrder.itemId) : null
-  const categoryName = category?.name || 'N/A'
-  const itemName = localOrder.customItemName || item?.name || 'N/A'
+  const categoryName = getSafeName(category?.name) || 'N/A'
+  const itemName = getSafeName(localOrder.customItemName || item?.name) || 'N/A'
 
   // Get values - handle both camelCase (from form) and transformed (from DB) formats
   const orderItems = Array.isArray(localOrder.orderItems) && localOrder.orderItems.length > 0
@@ -129,15 +137,15 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
 
   const getCategoryName = (categoryId) => {
     const c = products.categories.find(cat => cat.id === categoryId)
-    return c?.name || 'N/A'
+    return getSafeName(c?.name) || 'N/A'
   }
 
   const getItemName = (item) => {
-    if (item.name || item.itemName) return item.name || item.itemName
-    if (item.customItemName) return item.customItemName
+    if (item.name || item.itemName) return getSafeName(item.name || item.itemName)
+    if (item.customItemName) return getSafeName(item.customItemName)
     const c = products.categories.find(cat => cat.id === item.categoryId)
     const it = c?.items?.find(x => x.id === item.itemId)
-    return it?.name || 'N/A'
+    return getSafeName(it?.name) || 'N/A'
   }
 
   const subtotal = orderItems.reduce((sum, it) => {
@@ -646,12 +654,33 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
                   </div>
                 )}
 
-                {safeOrder.trackingNumber && (
-                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
-                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Tracking Number</label>
-                    <div style={{ fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: '0.5px' }}>{safeOrder.trackingNumber}</div>
-                  </div>
-                )}
+                <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius)' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Tracking Number</label>
+                  <input
+                    type="text"
+                    value={safeOrder.trackingNumber}
+                    onChange={(e) => setLocalOrder(prev => ({ ...prev, trackingNumber: e.target.value }))}
+                    placeholder="No Tracking ID"
+                    style={{
+                      width: '100%',
+                      padding: '0.2rem 0',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      color: 'var(--accent-primary)',
+                      letterSpacing: '0.5px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      borderBottom: '1px solid var(--border-color)',
+                      borderRadius: 0,
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--border-color)'
+                      if (onSave) onSave(localOrder)
+                    }}
+                  />
+                </div>
 
                 {safeOrder.courierFinanceStatus && (
                   <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
@@ -663,7 +692,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
                           fontWeight: 600,
                           color: safeOrder.courierFinanceStatus === 'Deposited' || safeOrder.courierFinanceStatus === 'Approved' ? '#10b981' : 'var(--accent-secondary)'
                         }}>
-                          {safeOrder.courierFinanceStatus}
+                          {getSafeName(safeOrder.courierFinanceStatus)}
                         </span>
                       </div>
                       {safeOrder.courierInvoiceNo && (
@@ -912,7 +941,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
                       <div key={idx} style={{ position: 'relative', paddingLeft: '1rem', borderLeft: '2px solid var(--border-color)' }}>
                         <div style={{ position: 'absolute', left: '-5px', top: '2px', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: idx === 0 ? 'var(--accent-primary)' : 'var(--text-muted)' }}></div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 600, color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                          {event.status || event.status_code || 'Update'}
+                          {getSafeName(event.status) || getSafeName(event.status_code) || 'Update'}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                           {new Date(event.updated_at || event.create_at || event.date).toLocaleString()}
@@ -943,7 +972,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                          {event.status || event.status_code || 'Update'}
+                          {getSafeName(event.status) || getSafeName(event.status_code) || 'Update'}
                         </div>
                         {event.comment && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{event.comment}</div>}
                       </div>

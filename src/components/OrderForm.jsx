@@ -1007,13 +1007,15 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
                 {isCurfoxEnabled ? (
                   <div>
                     <input
+                      name="trackingNumber"
                       className="form-input"
                       value={formData.trackingNumber}
-                      readOnly
-                      placeholder="Generate via Dispatch"
-                      style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' }}
+                      onChange={handleChange}
+                      placeholder="Waybill ID"
                     />
-                    <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Use 'Dispatch' action to generate waybill</small>
+                    <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      Auto-generated on Dispatch, or enter manually.
+                    </small>
                   </div>
                 ) : (
                   <TrackingNumberInput
