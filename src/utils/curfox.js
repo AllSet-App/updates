@@ -47,6 +47,16 @@ async function limitConcurrency(tasks, limit, onProgress, delayMs = 100) {
 export const curfoxService = {
     baseUrl: 'https://v1.api.curfox.com/api/public/merchant',
 
+    // Cache Helpers
+    clearOrderCache: () => {
+        try {
+            localStorage.removeItem(`${CACHE_PREFIX}orders`);
+            localStorage.removeItem(`${CACHE_PREFIX}orders_ts`);
+        } catch (e) {
+            console.error('Error clearing order cache:', e);
+        }
+    },
+
     // Helpers
     getHeaders: (tenant, token = null) => {
         const headers = {
@@ -455,7 +465,7 @@ export const curfoxService = {
             const queryParams = new URLSearchParams({
                 ...params,
                 noPagination: 1,
-                per_page: 500 // Explicitly request a large page size
+                per_page: 2000 // Explicitly request a large page size to get all data
             }).toString()
 
             // Try private path first (more likely to have all fields)
@@ -494,6 +504,57 @@ export const curfoxService = {
         }
     },
 
+    getCachedOrders: async (authData, forceRefresh = false) => {
+        const CACHE_KEY_DATA = `${CACHE_PREFIX}orders`;
+        const CACHE_KEY_TS = `${CACHE_PREFIX}orders_ts`;
+        const ORDERS_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+        try {
+            // 1. Try Cache
+            if (!forceRefresh) {
+                const cachedTs = localStorage.getItem(CACHE_KEY_TS);
+                const cachedData = localStorage.getItem(CACHE_KEY_DATA);
+
+                if (cachedTs && cachedData) {
+                    const age = Date.now() - parseInt(cachedTs, 10);
+                    if (age < ORDERS_CACHE_TTL) {
+                        console.log(`Curfox: Returning cached orders (${(age / 1000).toFixed(0)}s old)`);
+                        return {
+                            data: JSON.parse(cachedData),
+                            fromCache: true,
+                            lastUpdated: parseInt(cachedTs, 10)
+                        };
+                    }
+                }
+            }
+
+            // 2. Fetch Network
+            console.log('Curfox: Fetching fresh orders...');
+            const orders = await curfoxService.getOrders(authData);
+
+            if (orders && orders.length > 0) {
+                try {
+                    localStorage.setItem(CACHE_KEY_DATA, JSON.stringify(orders));
+                    localStorage.setItem(CACHE_KEY_TS, Date.now().toString());
+                } catch (e) {
+                    console.warn('Curfox: Cache write failed (quota?)', e);
+                    // If quota exceeded, maybe clear old cache and try again?
+                    // For now, just continue without caching
+                }
+            }
+
+            return {
+                data: orders,
+                fromCache: false,
+                lastUpdated: Date.now()
+            };
+
+        } catch (error) {
+            console.error('getCachedOrders Error:', error);
+            return { data: [], fromCache: false, lastUpdated: 0, error };
+        }
+    },
+
     bulkGetFinanceStatus: async (waybills, authData, onProgress, forceRefresh = false) => {
         const results = [];
         const tasks = [];
@@ -525,9 +586,10 @@ export const curfoxService = {
         if (onProgress) onProgress(cachedCount, waybills.length);
 
         if (tasks.length > 0) {
-            const fetched = await limitConcurrency(tasks, 1, (done, total) => {
+            // Increase concurrency to 5 requests at a time, with 100ms staggering
+            const fetched = await limitConcurrency(tasks, 5, (done, total) => {
                 if (onProgress) onProgress(cachedCount + done, waybills.length);
-            }, 1000); // 1 request / 1 sec
+            }, 100);
 
             // Re-map fetched results if they are missing the waybill link
             // though getFinanceStatus now ensures it, extra safety here
@@ -573,5 +635,34 @@ export const curfoxService = {
             return [...results, ...fetched.filter(Boolean)];
         }
         return results;
+    },
+
+    getToBeInvoicedOrders: async (authData) => {
+        console.log("Curfox: Fetching orders waiting for an invoice...");
+
+        // Use server-side filter because the default response doesn't header 'is_invoiced' or 'merchant_invoice' fields
+        const params = {
+            'filter[is_invoiced]': 0,
+            'noPagination': 1
+        };
+
+        const successStatusKeys = ['key_13', 'key_14', 'key_7'];
+
+        try {
+            // Fetch only orders that Curfox considers "Uninvoiced"
+            const uninvoicedOrders = await curfoxService.getOrders(authData, params);
+
+            // Filter locally for the specific "Success/Delivered" statuses
+            const toBeInvoiced = uninvoicedOrders.filter(order => {
+                const statusKey = order.status?.key || order.status_key || order.order_current_status?.key;
+                return successStatusKeys.includes(statusKey);
+            });
+
+            console.log(`Curfox: Found ${toBeInvoiced.length} orders to be invoiced (Server Filter + Local Status Check).`);
+            return toBeInvoiced;
+        } catch (error) {
+            console.error("Failed to get To Be Invoiced list:", error);
+            return [];
+        }
     }
 }
