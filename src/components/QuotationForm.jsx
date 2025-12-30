@@ -178,6 +178,41 @@ const QuotationForm = ({ quotation, onClose, onSave }) => {
 
     return (
         <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
+            <style>{`
+                .item-row-grid {
+                    grid-template-columns: 1fr 1fr 1fr;
+                }
+                @media (max-width: 768px) {
+                    .modal-content {
+                        width: 100% !important;
+                        height: 100% !important;
+                        max-height: 100vh !important;
+                        border-radius: 0 !important;
+                        padding: 1rem !important;
+                    }
+                    .form-row {
+                        grid-template-columns: 1fr !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        gap: 1rem !important;
+                    }
+                    .item-row-grid {
+                        display: grid !important;
+                        grid-template-columns: 1fr 1fr 1fr !important; /* Keep quantity/price/total in grid even on mobile if possible, or stack them */
+                    }
+                    /* Let's actually stack them on very small screens, or keep 3 columns if they fit. 
+                       400px is small. 1fr 1fr 1fr might be tight.
+                       Let's make it 1fr 1fr for qty/price and total on new row? 
+                       Or just stack everything.
+                    */
+                }
+                @media (max-width: 480px) {
+                     .item-row-grid {
+                        display: flex !important;
+                        flex-direction: column !important;
+                    }
+                }
+            `}</style>
             <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
                 <div className="modal-header">
                     <h2 className="modal-title">{quotation ? 'Edit Quotation' : 'New Quotation'}</h2>
@@ -260,7 +295,7 @@ const QuotationForm = ({ quotation, onClose, onSave }) => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="form-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                                    <div className="form-row item-row-grid">
                                         <div className="form-group">
                                             <label className="form-label">Qty</label>
                                             <input type="number" className="form-input" value={it.quantity} onChange={e => updateItem(it.id, { quantity: e.target.value })} />

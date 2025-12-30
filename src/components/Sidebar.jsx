@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingBag, Package, DollarSign, Settings, Menu, X, Plus, FileText } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, DollarSign, Settings, Menu, X, Plus, FileText, BarChart3 } from 'lucide-react'
 
 const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAddOrder, onAddExpense, onLogout }) => {
   const menuItems = [
@@ -7,7 +7,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'expenses', label: 'Expenses', icon: DollarSign },
     { id: 'quotations', label: 'Quotations', icon: FileText },
-    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
   ]
 
   const handleNavClick = (id) => {
