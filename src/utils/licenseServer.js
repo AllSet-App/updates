@@ -38,6 +38,7 @@ export const signInWithGoogle = async () => {
         provider: 'google',
         options: {
             redirectTo: redirectTo,
+            skipBrowserRedirect: isElectron, // Prevent main window from navigating
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
@@ -48,9 +49,9 @@ export const signInWithGoogle = async () => {
     if (error) throw error
 
     // In web, Supabase handles the redirect automatically.
-    // In Electron, we need to open the auth URL in the system browser.
+    // In Electron, we open the auth URL in a dedicated popup window.
     if (isElectron && data?.url) {
-        window.electronAPI.openExternal(data.url)
+        window.electronAPI.openAuthWindow(data.url)
     }
 }
 

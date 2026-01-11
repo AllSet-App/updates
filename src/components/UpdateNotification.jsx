@@ -28,8 +28,8 @@ const UpdateNotification = ({ info, onInstall, onClose }) => {
             <style>{`
                 .update-toast {
                     position: fixed;
-                    bottom: 2rem;
-                    right: 2rem;
+                    bottom: calc(2rem + var(--safe-area-bottom));
+                    right: calc(2rem + var(--safe-area-right));
                     z-index: 10000;
                     width: 380px;
                     background: var(--glass-bg);
@@ -39,12 +39,36 @@ const UpdateNotification = ({ info, onInstall, onClose }) => {
                     border-radius: 16px;
                     padding: 1.25rem;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    transition: all 0.3s ease;
+                }
+
+                @media (max-width: 600px) {
+                    .update-toast {
+                        bottom: calc(1rem + var(--safe-area-bottom));
+                        right: calc(1rem + var(--safe-area-right));
+                        left: calc(1rem + var(--safe-area-left));
+                        width: auto;
+                        padding: 1rem;
+                    }
                 }
 
                 .update-toast-content {
                     display: flex;
-                    align-items: flex-start;
+                    align-items: center;
                     gap: 1rem;
+                }
+
+                @media (max-width: 400px) {
+                    .update-toast-content {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 0.75rem;
+                    }
+                    .update-toast-actions {
+                        width: 100%;
+                        flex-direction: row !important;
+                        justify-content: space-between;
+                    }
                 }
 
                 .update-toast-body {

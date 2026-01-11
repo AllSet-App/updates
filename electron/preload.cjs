@@ -38,7 +38,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
      * @param {Function} callback - Function to handle the URL.
      */
     onAuthCallback: (callback) => {
-        ipcRenderer.on('auth-callback', (event, url) => callback(url))
+        ipcRenderer.on('auth-callback', (event, url) => {
+            // Auto-close auth window if open
+            ipcRenderer.send('close-auth-window')
+            callback(url)
+        })
+    },
+
+    /**
+     * Open a dedicated auth window for OAuth.
+     * @param {string} url - The OAuth URL.
+     */
+    openAuthWindow: (url) => {
+        return ipcRenderer.invoke('open-auth-window', url)
+    },
+
+    /**
+     * Close the auth window manually.
+     */
+    closeAuthWindow: () => {
+        ipcRenderer.send('close-auth-window')
     },
 
     /**

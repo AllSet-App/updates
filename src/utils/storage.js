@@ -463,25 +463,13 @@ export const saveExpenseCategories = async (expenseCategories) => {
 export const getOrderSources = async () => {
   try {
     const data = await db.orderSources.orderBy('name').toArray()
-
-    if (!data || data.length === 0) {
-      // If empty, provide defaults but don't auto-write (avoids unexpected DB writes)
-      return [
-        { id: 'Ad', name: 'Ad' },
-        { id: 'Organic', name: 'Organic' }
-      ]
-    }
-
-    return data.map(s => ({
+    return (data || []).map(s => ({
       id: s.id,
       name: s.name
     }))
   } catch (error) {
     console.warn('Error reading order sources:', error)
-    return [
-      { id: 'Ad', name: 'Ad' },
-      { id: 'Organic', name: 'Organic' }
-    ]
+    return []
   }
 }
 
@@ -584,20 +572,15 @@ export const getProducts = async () => {
   try {
     const data = await db.products.get('products')
 
-    const defaultProducts = getDefaultProducts()
-
-    if (data && data.data && data.data.categories && data.data.categories.length > 0) {
-      console.log(`storage: getProducts - Loaded ${data.data.categories.length} categories from DB.`)
+    if (data && data.data && data.data.categories) {
       return data.data
     }
 
-    // Return default products if none exist
-    await saveProducts(defaultProducts)
-    return defaultProducts
+    const emptyProducts = { categories: [] }
+    return emptyProducts
   } catch (error) {
     console.error('Error reading products:', error)
-    const defaultProducts = getDefaultProducts()
-    return defaultProducts
+    return { categories: [] }
   }
 }
 
@@ -615,62 +598,6 @@ export const saveProducts = async (products) => {
   }
 }
 
-// Get default products data
-const getDefaultProducts = () => {
-  const generateId = () => {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9)
-  }
-
-  const mommyFramesId = generateId()
-  const plymountId = generateId()
-  const customId = generateId()
-  const keytagId = generateId()
-
-  return {
-    categories: [
-      {
-        id: mommyFramesId,
-        name: 'Mommy Frames',
-        items: [
-          { id: generateId(), name: 'Wall Frame Couple', price: 1590 },
-          { id: generateId(), name: 'Wall Frame Hand Folded', price: 1590 },
-          { id: generateId(), name: 'Wall Frame Heart Holding', price: 1590 },
-          { id: generateId(), name: 'Wall Frame Circle', price: 1690 },
-          { id: generateId(), name: 'Wall Frame Family', price: 1590 },
-          { id: generateId(), name: 'Table Frame Couple', price: 1990 },
-          { id: generateId(), name: 'Table Frame Hand Folded', price: 1990 },
-          { id: generateId(), name: 'Table Frame Heart Holding', price: 1990 }
-        ]
-      },
-      {
-        id: plymountId,
-        name: 'Plymount',
-        items: [
-          { id: generateId(), name: '4x6', price: 940 },
-          { id: generateId(), name: '6x8', price: 1155 },
-          { id: generateId(), name: '8x10', price: 1430 },
-          { id: generateId(), name: '8x12', price: 1510 },
-          { id: generateId(), name: '10x12', price: 1680 },
-          { id: generateId(), name: '10x15', price: 1880 },
-          { id: generateId(), name: '12x15', price: 2070 },
-          { id: generateId(), name: '12x18', price: 2250 },
-          { id: generateId(), name: '16x24', price: 3950 },
-          { id: generateId(), name: '20x30', price: 6750 }
-        ]
-      },
-      {
-        id: customId,
-        name: 'Custom',
-        items: []
-      },
-      {
-        id: keytagId,
-        name: 'Keytag',
-        items: []
-      }
-    ]
-  }
-}
 
 // ===== UTILITY FUNCTIONS =====
 

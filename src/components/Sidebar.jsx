@@ -56,8 +56,8 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
         onClick={() => setSidebarOpen(!sidebarOpen)}
         style={{
           position: 'fixed',
-          top: '1rem',
-          right: '1rem',
+          top: 'calc(1rem + var(--safe-area-top))',
+          right: 'calc(1rem + var(--safe-area-right))',
           left: 'unset',
           zIndex: 101,
           backgroundColor: 'var(--bg-card)',
@@ -368,6 +368,12 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   <button onClick={() => { setActiveView('help'); setShowProfileMenu(false); }} style={menuItemStyle}>
                     <LifeBuoy size={18} />
                     Help & Docs
+                  </button>
+
+                  {/* About */}
+                  <button onClick={() => { setActiveView('about'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                    <Info size={18} />
+                    About AOF Biz
                   </button>
                 </div>
               </div>

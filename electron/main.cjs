@@ -157,6 +157,9 @@ function createWindow() {
     show: false
   })
 
+  // Start maximized/fullscreen as requested
+  mainWindow.maximize()
+
   // Load the app
   if (process.env.VITE_DEV_SERVER_URL) {
     // Development: load from Vite dev server
@@ -175,6 +178,43 @@ function createWindow() {
     mainWindow = null
   })
 }
+
+// IPC Handler: Open Auth Window (Integrated Login)
+let authWindow = null
+ipcMain.handle('open-auth-window', async (event, url) => {
+  if (authWindow) {
+    authWindow.focus()
+    return { success: true }
+  }
+
+  authWindow = new BrowserWindow({
+    width: 600,
+    height: 700,
+    autoHideMenuBar: true,
+    title: 'AOF Biz Login',
+    icon: path.join(__dirname, '../public/logo.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  })
+
+  authWindow.loadURL(url)
+
+  authWindow.on('closed', () => {
+    authWindow = null
+  })
+
+  return { success: true }
+})
+
+// Close auth window on success callback
+ipcMain.on('close-auth-window', () => {
+  if (authWindow) {
+    authWindow.close()
+    authWindow = null
+  }
+})
 
 // IPC Handler: Setup Database
 ipcMain.handle('setup-database', async (event, connectionString) => {

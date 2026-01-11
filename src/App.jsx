@@ -9,6 +9,7 @@ import Settings from './components/Settings'
 import Contact from './components/Contact'
 import Profile from './components/Profile'
 import ModeSelectionScreen from './components/ModeSelectionScreen'
+import About from './components/About'
 import { getOrders, getExpenses, getInventory, getProducts, getQuotations, getSettings } from './utils/storage'
 import { Loader2 } from 'lucide-react'
 
@@ -43,7 +44,7 @@ function AppContent() {
   const [dataLoading, setDataLoading] = useState(false)
   const [activeView, setActiveView] = useState(() => {
     const savedView = localStorage.getItem('aof_active_view')
-    const validViews = ['dashboard', 'orders', 'inventory', 'expenses', 'quotations', 'reports', 'settings']
+    const validViews = ['dashboard', 'orders', 'inventory', 'expenses', 'quotations', 'reports', 'settings', 'about']
     return validViews.includes(savedView) ? savedView : 'dashboard'
   })
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -241,6 +242,9 @@ function AppContent() {
       case 'help':
         setActiveView('help')
         break
+      case 'about':
+        setActiveView('about')
+        break
       case 'shortcuts':
         setShowShortcuts(true)
         break
@@ -355,6 +359,8 @@ function AppContent() {
         return <HelpDocs />
       case 'profile':
         return <Profile onUpdateSettings={updateSettings} />
+      case 'about':
+        return <About />
       default:
         return <Dashboard orders={orders} expenses={expenses} inventory={inventory} products={products} onNavigate={handleNavigate} />
     }
@@ -447,6 +453,10 @@ function AppContent() {
       <main style={{
         flex: 1,
         padding: '1rem',
+        paddingTop: 'calc(1rem + var(--safe-area-top))',
+        paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
+        paddingLeft: 'calc(1rem + var(--safe-area-left))',
+        paddingRight: 'calc(1rem + var(--safe-area-right))',
         marginLeft: '0',
         backgroundColor: 'transparent',
         transition: 'margin-left 0.3s ease',
