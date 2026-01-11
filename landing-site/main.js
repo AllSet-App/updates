@@ -137,11 +137,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. Auto-counter for stats (subtle)
-    const stats = [
-        { label: 'Faster Checkout', start: 0, end: 50, suffix: '%' },
-        { label: 'Sync Uptime', start: 0, end: 99.9, suffix: '%' }
-    ];
+    // 7. Auto-fetch Latest Release
+    const fetchLatestRelease = async () => {
+        try {
+            const response = await fetch('https://api.github.com/repos/aofbiz/updates/releases/latest');
+            if (!response.ok) throw new Error('Failed to fetch release');
 
-    // We could add a counter animation here if needed, but keeping it clean for now.
+            const data = await response.json();
+            const version = data.tag_name; // e.g., "v1.0.9"
+            const date = new Date(data.published_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); // "Jan 2026"
+
+            // Update Release Info Text
+            const infoLink = document.getElementById('release-info-link');
+            if (infoLink) {
+                infoLink.textContent = `${version} (${date})`;
+                infoLink.href = data.html_url; // Link to the GitHub release page
+            }
+
+            // Find Assets
+            const winAsset = data.assets.find(a => a.name.endsWith('.exe'));
+            const androidAsset = data.assets.find(a => a.name.endsWith('.apk'));
+
+            // Update Download Buttons
+            if (winAsset) {
+                const winBtn = document.getElementById('btn-download-win');
+                if (winBtn) winBtn.href = winAsset.browser_download_url;
+            }
+
+            if (androidAsset) {
+                const androidBtn = document.getElementById('btn-download-android');
+                if (androidBtn) androidBtn.href = androidAsset.browser_download_url;
+            }
+
+        } catch (error) {
+            console.error('Error fetching latest release:', error);
+            // Fallback text if fetch fails
+            const infoLink = document.getElementById('release-info-link');
+            if (infoLink) infoLink.textContent = 'Latest Release (Check GitHub)';
+        }
+    };
+
+    fetchLatestRelease();
 });
