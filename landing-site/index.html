@@ -248,27 +248,24 @@
         // Initialize Lucide
         lucide.createIcons();
 
-        // Supabase Update Sync
-        const SUPABASE_URL = 'https://qrueudowswugtidmsphk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydWV1ZG93c3d1Z3RpZG1zcGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMjcxMTYsImV4cCI6MjA4MzYwMzExNn0.mAASDPbmjEv_KVmeFtYQcagfB90Ea3eAv5U6gY69zds';
+        // GitHub Update Sync
+        const GITHUB_API_URL = 'https://api.github.com/repos/aofbiz/updates/releases/latest';
 
         async function getLatestUpdate() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/updates?select=*&order=created_at.desc&limit=1`, {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
-                const [update] = await response.json();
-                if (update) {
+                const response = await fetch(GITHUB_API_URL);
+                if (!response.ok) throw new Error('GitHub API failed');
+                const release = await response.json();
+
+                if (release.tag_name) {
+                    const version = release.tag_name.replace('v', '');
                     const badge = document.getElementById('version-badge');
-                    if (badge) badge.innerText = `v${update.version} Now Available`;
+                    if (badge) badge.innerText = `v${version} Now Available`;
                 }
             } catch (err) {
                 console.error('Update fetch failed:', err);
                 const badge = document.getElementById('version-badge');
-                if (badge) badge.innerText = 'v1.0.13'; // Fallback
+                if (badge) badge.innerText = 'v1.0.14'; // Fallback
             }
         }
         getLatestUpdate();

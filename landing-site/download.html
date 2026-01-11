@@ -167,37 +167,38 @@
         lucide.createIcons();
 
         // Supabase Update Sync
-        const SUPABASE_URL = 'https://qrueudowswugtidmsphk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFydWV1ZG93c3d1Z3RpZG1zcGhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwMjcxMTYsImV4cCI6MjA4MzYwMzExNn0.mAASDPbmjEv_KVmeFtYQcagfB90Ea3eAv5U6gY69zds';
+        // GitHub Update Sync
+        const GITHUB_API_URL = 'https://api.github.com/repos/aofbiz/updates/releases/latest';
 
         async function syncDownloads() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/updates?select=*&order=created_at.desc&limit=1`, {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
-                const [update] = await response.json();
+                const response = await fetch(GITHUB_API_URL);
+                if (!response.ok) throw new Error('GitHub API failed');
+                const update = await response.json();
+
                 if (update) {
+                    const version = update.tag_name.replace('v', '');
+                    const exeAsset = update.assets.find(a => a.name.endsWith('.exe'));
+                    const apkAsset = update.assets.find(a => a.name.endsWith('.apk'));
+
                     // Update Buttons
-                    if (update.exe_link) {
-                        document.getElementById('exe-download-btn').href = update.exe_link;
-                        document.getElementById('exe-version').innerText = `Latest Version: v${update.version}`;
+                    if (exeAsset) {
+                        document.getElementById('exe-download-btn').href = exeAsset.browser_download_url;
+                        document.getElementById('exe-version').innerText = `Latest Version: v${version}`;
                     }
-                    if (update.apk_link) {
+                    if (apkAsset) {
                         const apkBtn = document.getElementById('apk-download-btn');
-                        apkBtn.href = update.apk_link;
+                        apkBtn.href = apkAsset.browser_download_url;
                         apkBtn.style.display = 'inline-flex';
                         document.getElementById('android-notify-btn').style.display = 'none';
                     }
 
                     // Update Release Notes
-                    document.getElementById('rel-notes-title').innerText = `What's New in v${update.version}`;
+                    document.getElementById('rel-notes-title').innerText = `What's New in v${version}`;
                     const list = document.getElementById('rel-notes-list');
                     list.innerHTML = '';
-                    if (update.release_notes) {
-                        update.release_notes.split('\n').filter(l => l.trim()).forEach(line => {
+                    if (update.body) {
+                        update.body.split('\n').filter(l => l.trim()).forEach(line => {
                             const li = document.createElement('li');
                             li.style.color = 'inherit';
                             li.innerText = line;
