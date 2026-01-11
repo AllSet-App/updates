@@ -49,9 +49,9 @@ export const signInWithGoogle = async () => {
     if (error) throw error
 
     // In web, Supabase handles the redirect automatically.
-    // In Electron, we open the auth URL in a dedicated popup window.
+    // In Electron, we open the auth URL in the system's default browser (e.g. Chrome/Edge)
     if (isElectron && data?.url) {
-        window.electronAPI.openAuthWindow(data.url)
+        window.electronAPI.openExternal(data.url)
     }
 }
 
