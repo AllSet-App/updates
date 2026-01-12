@@ -14,7 +14,8 @@ import {
     signOutIdentity,
     logUnauthorizedAttempt,
     registerFreeUser,
-    registerTrialUser
+    registerTrialUser,
+    masterClient
 } from '../utils/licenseServer'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
