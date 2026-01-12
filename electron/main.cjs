@@ -8,6 +8,11 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const path = require('path')
 const { Client } = require('pg')
+const fs = require('fs')
+const https = require('https')
+const crypto = require('crypto')
+const os = require('os')
+const { spawn } = require('child_process')
 
 
 // Protocol registration
@@ -151,7 +156,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false
     },
-    icon: path.join(__dirname, '../public/logo.png'),
+    icon: path.join(__dirname, process.platform === 'win32' ? '../public/logo.ico' : '../public/logo.png'),
     autoHideMenuBar: true,
     titleBarStyle: 'default',
     show: false
@@ -192,7 +197,7 @@ ipcMain.handle('open-auth-window', async (event, url) => {
     height: 700,
     autoHideMenuBar: true,
     title: 'AOF Biz Login',
-    icon: path.join(__dirname, '../public/logo.png'),
+    icon: path.join(__dirname, process.platform === 'win32' ? '../public/logo.ico' : '../public/logo.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
@@ -374,18 +379,24 @@ ipcMain.handle('start-download', async (event, url, checksum) => {
   return downloadFile(url);
 });
 
-ipcMain.handle('install-update', () => {
+ipcMain.handle('install-update', async () => {
   if (!downloadedFilePath || !fs.existsSync(downloadedFilePath)) {
-    console.error('Installation failed: File not found');
-    return;
+    console.error('Installation failed: File not found at', downloadedFilePath);
+    return { success: false, error: 'File not found' };
   }
 
-  // Spawn the installer and quit the app
-  const installer = spawn(downloadedFilePath, ['/S'], { // /S for silent if supported, but usually just launching is fine
-    detached: true,
-    stdio: 'ignore'
-  });
+  try {
+    // shell.openPath is the safest way to launch an EXE on Windows
+    await shell.openPath(downloadedFilePath);
 
-  installer.unref();
-  app.quit();
+    // Give it a second to initialize before quitting
+    setTimeout(() => {
+      app.quit();
+    }, 1000);
+
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to launch installer:', err);
+    return { success: false, error: err.message };
+  }
 });

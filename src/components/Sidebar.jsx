@@ -60,8 +60,8 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
         onClick={() => setSidebarOpen(!sidebarOpen)}
         style={{
           position: 'fixed',
-          top: 'calc(1rem + var(--safe-area-top))',
-          right: 'calc(1rem + var(--safe-area-right))',
+          top: 'calc(0.75rem + var(--safe-area-top))',
+          right: 'calc(0.75rem + var(--safe-area-right))',
           left: 'unset',
           zIndex: 101,
           backgroundColor: 'var(--bg-card)',
@@ -72,7 +72,9 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          color: 'var(--text-primary)'
+          color: 'var(--text-primary)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          backdropFilter: 'blur(8px)'
         }}
         className="mobile-menu-btn"
       >
