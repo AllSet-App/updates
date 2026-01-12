@@ -1,7 +1,7 @@
 {
   "name": "aof-ms",
   "private": true,
-  "version": "1.0.21",
+  "version": "1.0.22",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -58,9 +58,6 @@
       "oneClick": true,
       "perMachine": false,
       "allowToChangeInstallationDirectory": false,
-      "installerIcon": "public/icon-512.png",
-      "uninstallerIcon": "public/icon-512.png",
-      "installerHeaderIcon": "public/icon-512.png",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
