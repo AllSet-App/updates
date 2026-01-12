@@ -1,7 +1,7 @@
 {
   "name": "aof-ms",
   "private": true,
-  "version": "1.0.17",
+  "version": "1.0.18",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -51,7 +51,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "public/logo.ico",
+      "icon": "public/icon-512.png",
       "artifactName": "${productName} - ${version}.${ext}"
     },
     "publish": [

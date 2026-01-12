@@ -156,7 +156,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false
     },
-    icon: path.join(__dirname, process.platform === 'win32' ? '../public/logo.ico' : '../public/logo.png'),
+    icon: path.join(__dirname, '../public/icon-512.png'),
     autoHideMenuBar: true,
     titleBarStyle: 'default',
     show: false
@@ -197,7 +197,7 @@ ipcMain.handle('open-auth-window', async (event, url) => {
     height: 700,
     autoHideMenuBar: true,
     title: 'AOF Biz Login',
-    icon: path.join(__dirname, process.platform === 'win32' ? '../public/logo.ico' : '../public/logo.png'),
+    icon: path.join(__dirname, '../public/icon-512.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
