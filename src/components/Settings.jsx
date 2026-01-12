@@ -3,12 +3,15 @@ import {
   Settings as SettingsIcon, Save, AlertTriangle, Plus, Trash2, Edit2, Edit, Package, Search,
   ChevronDown, ChevronUp, Download, Upload, Trash, MessageCircle, X, LogOut, Database,
   Truck, RefreshCw, CheckCircle, Crown, Sparkles, Cloud, Building2, Users, Globe, Link, ShieldCheck, Database as DB,
-  Info, Eye, EyeOff, ChevronLeft, ChevronRight, CheckSquare
+  Info, Eye, EyeOff, ChevronLeft, ChevronRight, CheckSquare, Wifi, WifiOff
 } from 'lucide-react'
 import CustomDropdown from './Common/CustomDropdown'
 import Pagination from './Common/Pagination'
-import { loadGoogleScript, initTokenClient, uploadFileToDrive, listFilesFromDrive, downloadFileFromDrive } from '../utils/googleDrive'
+import { uploadBackup, listBackups, downloadBackup, deleteBackup, ensureBucketExists } from '../utils/supabaseBackup'
+import { saveSupabaseCredentials, testSupabaseConnection, clearSupabaseCredentials } from '../utils/supabaseClient'
+import { fullSync, getLastSyncTime } from '../utils/syncEngine'
 import { curfoxService } from '../utils/curfox'
+import { useOnlineStatus } from '../hooks/useOnlineStatus'
 
 import { generateTrackingNumbersFromRange, getSettings, saveSettings, getOrders, getTrackingNumbers, saveTrackingNumbers, getProducts, getOrderCounter, saveOrderCounter, exportAllData, importAllData, clearAllData, importAllDataFromObject } from '../utils/storage'
 import { toTitleCase } from '../utils/textUtils'
@@ -24,7 +27,6 @@ import ConfirmationModal from './ConfirmationModal'
 import { useToast } from './Toast/ToastContext'
 import ProFeatureLock, { ProFeatureBadge } from './ProFeatureLock'
 import CollapsibleSection from './Settings/CollapsibleSection'
-import CloudSyncSetup from './Settings/CloudSyncSetup'
 import UpdatesSection from './Settings/UpdatesSection'
 
 const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, onUpdateInventory, onLogout }) => {
@@ -45,7 +47,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
     dataManagement: false,
     dataHealth: false,
     orderSources: false,
-    googleDrive: false,
+    cloudBackup: false,
     whatsappTemplates: false,
     curfoxIntegration: false,
     generalConfig: false,
@@ -180,15 +182,6 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>Premium Features</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Advanced capabilities for growing businesses</p>
           </div>
-
-          <CollapsibleSection
-            title="Multi-Device Cloud Sync"
-            icon={Cloud}
-            isExpanded={expandedSections.deviceSync}
-            onToggle={() => toggleSection('deviceSync')}
-          >
-            <CloudSyncSetup />
-          </CollapsibleSection>
 
           <CollapsibleSection
             title="Multi-Business Management"
@@ -528,15 +521,15 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
       {
         activeTab === 'backup' && (
           <>
-            {/* Google Drive Backup Section */}
+            {/* Supabase Cloud Backup Section (Moved to Top) */}
             <CollapsibleSection
-              title={<>Google Drive Cloud Backup & Restore {isFreeUser && <ProFeatureBadge size={16} />}</>}
-              icon={Database}
-              isExpanded={expandedSections.googleDrive}
-              onToggle={() => toggleSection('googleDrive')}
+              title={<>Cloud Backup & Sync {isFreeUser && <ProFeatureBadge size={16} />}</>}
+              icon={Cloud}
+              isExpanded={expandedSections.cloudBackup}
+              onToggle={() => toggleSection('cloudBackup')}
             >
               <ProFeatureLock featureName="Cloud Backup" showContent={true}>
-                <GoogleDriveBackup
+                <SupabaseCloudHub
                   settings={settings}
                   setSettings={setSettings}
                   orders={orders}
@@ -2004,41 +1997,145 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
   )
 }
 
-// Google Drive Backup Component
-const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory, products, trackingNumbers, orderCounter, showToast, showConfirm, onDataImported }) => {
-  const { session, identityUser, login } = useLicensing()
-  const [isAutoBackupEnabled, setIsAutoBackupEnabled] = useState(settings?.googleDrive?.autoBackup || false)
-  const [backupFrequency, setBackupFrequency] = useState(settings?.googleDrive?.frequency || 'daily')
+// SQL Script for manual setup
+const SETUP_SQL = `-- AOF Biz Database Setup Script
+-- Run this in your Supabase SQL Editor (https://app.supabase.com)
+
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS inventory (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS tracking_numbers (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS order_sources (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS and setup permissive policies
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tracking_numbers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public manage" ON orders;
+DROP POLICY IF EXISTS "Public manage" ON expenses;
+DROP POLICY IF EXISTS "Public manage" ON inventory;
+DROP POLICY IF EXISTS "Public manage" ON settings;
+DROP POLICY IF EXISTS "Public manage" ON tracking_numbers;
+DROP POLICY IF EXISTS "Public manage" ON order_sources;
+DROP POLICY IF EXISTS "Public manage" ON products;
+
+CREATE POLICY "Public manage" ON orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON expenses FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON inventory FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON settings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON tracking_numbers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON order_sources FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON products FOR ALL USING (true) WITH CHECK (true);
+
+-- Create storage bucket for backups
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('backups', 'backups', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage policies for anonymous access
+DROP POLICY IF EXISTS "Public Manage Backups" ON storage.objects;
+CREATE POLICY "Public Manage Backups" ON storage.objects
+FOR ALL TO public
+USING (bucket_id = 'backups')
+WITH CHECK (bucket_id = 'backups');
+`
+
+// Unified Supabase Cloud Hub Component
+const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, products, trackingNumbers, orderCounter, showToast, showConfirm, onDataImported }) => {
+  const isOnline = useOnlineStatus()
+  const [isAutoBackupEnabled, setIsAutoBackupEnabled] = useState(settings?.cloudBackup?.autoBackup || false)
+  const [backupFrequency, setBackupFrequency] = useState(settings?.cloudBackup?.frequency || 'daily')
   const [isUploading, setIsUploading] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
-  const [driveFiles, setDriveFiles] = useState([])
+  const [backupFiles, setBackupFiles] = useState([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
-  const [lastBackup, setLastBackup] = useState(settings?.googleDrive?.lastBackup || null)
+  const [lastBackup, setLastBackup] = useState(settings?.cloudBackup?.lastBackup || null)
   const [showHelp, setShowHelp] = useState(false)
 
-  const accessToken = session?.provider_token || session?.access_token
-  const isConnected = !!accessToken && !!identityUser
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [lastSynced, setLastSynced] = useState(null)
+
+  // Wizard state (for when not connected)
+  const [currentStep, setCurrentStep] = useState(1)
+  const [completedSteps, setCompletedSteps] = useState([])
+  const [projectUrl, setProjectUrl] = useState('')
+  const [anonKey, setAnonKey] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const isConnected = !!settings?.supabase?.url && !!settings?.supabase?.anonKey
 
   useEffect(() => {
-    if (settings?.googleDrive) {
-      setIsAutoBackupEnabled(settings.googleDrive.autoBackup || false)
-      setBackupFrequency(settings.googleDrive.frequency || 'daily')
-      setLastBackup(settings.googleDrive.lastBackup || null)
+    if (settings?.cloudBackup) {
+      setIsAutoBackupEnabled(settings.cloudBackup.autoBackup || false)
+      setBackupFrequency(settings.cloudBackup.frequency || 'daily')
+      setLastBackup(settings.cloudBackup.lastBackup || null)
     }
-  }, [settings])
 
-  // Auto-fetch files once connected
+    if (isConnected) {
+      getLastSyncTime().then(setLastSynced)
+    }
+  }, [settings, isConnected])
+
   useEffect(() => {
-    if (isConnected && driveFiles.length === 0 && !isLoadingFiles) {
-      fetchDriveFiles()
+    if (isConnected && backupFiles.length === 0 && !isLoadingFiles) {
+      fetchBackups()
     }
   }, [isConnected])
 
   const handleSaveSettings = async () => {
     const updatedSettings = {
       ...settings,
-      googleDrive: {
-        ...settings?.googleDrive,
+      cloudBackup: {
+        ...settings?.cloudBackup,
         autoBackup: isAutoBackupEnabled,
         frequency: backupFrequency
       }
@@ -2046,384 +2143,451 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
     const success = await saveSettings(updatedSettings)
     if (success) {
       setSettings(updatedSettings)
-      showToast('Google Drive settings saved', 'success')
-    } else {
-      showToast('Failed to save settings', 'error')
+      showToast('Cloud settings saved', 'success')
     }
   }
 
-  const handleConnect = () => {
-    login()
-  }
-
-  const handleBackupNow = async () => {
-    if (!accessToken) {
-      showToast('Please connect to Google Drive first', 'warning')
-      handleConnect()
+  const handleConnect = async () => {
+    if (!projectUrl.trim() || !anonKey.trim()) {
+      showToast('Please enter both URL and Key', 'warning')
       return
     }
 
+    setIsLoading(true)
+    try {
+      const success = await saveSupabaseCredentials(projectUrl.trim(), anonKey.trim())
+      if (success) {
+        const result = await testSupabaseConnection()
+        if (result.success) {
+          showToast('Supabase Connected!', 'success')
+          // Update parent state directly
+          const updatedSettings = await getSettings()
+          setSettings(updatedSettings)
+          handleManualSync()
+        } else {
+          showToast(result.error, 'error')
+        }
+      }
+    } catch (e) {
+      showToast('Connection failed', 'error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDisconnect = () => {
+    showConfirm('Forget Connection', 'Are you sure? This will disable both Cloud Sync and Backups.', async () => {
+      const success = await clearSupabaseCredentials()
+      if (success) {
+        setIsLoading(true)
+        const updatedSettings = await getSettings()
+        setSettings(updatedSettings)
+        setProjectUrl('')
+        setAnonKey('')
+        setCurrentStep(1)
+        setCompletedSteps([])
+        showToast('Connection forgotten', 'info')
+        setIsLoading(false)
+      }
+    }, 'danger')
+  }
+
+  const handleManualSync = async () => {
+    setIsSyncing(true)
+    try {
+      const result = await fullSync('anon-user')
+      if (result.success) {
+        const syncTime = await getLastSyncTime()
+        setLastSynced(syncTime)
+        showToast('Sync complete!', 'success')
+      } else {
+        showToast(`Sync failed: ${result.error}`, 'error')
+      }
+    } catch (e) {
+      showToast('Sync error', 'error')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  const handleBackupNow = async () => {
+    if (!isConnected) return
     setIsUploading(true)
     try {
       const exportData = {
         version: '1.0',
         timestamp: new Date().toISOString(),
-        orders,
-        expenses,
-        products,
-        settings,
-        trackingNumbers,
-        orderCounter,
-        inventory
+        orders, expenses, products, settings, trackingNumbers, orderCounter, inventory
       }
-
       const fileName = `AOF_Backup_${new Date().toISOString().slice(0, 10)}_${new Date().getTime()}.json`
-      const content = JSON.stringify(exportData, null, 2)
-
-      await uploadFileToDrive(accessToken, fileName, content)
-
+      await uploadBackup(fileName, JSON.stringify(exportData, null, 2))
       const now = new Date().toISOString()
       setLastBackup(now)
-
       const updatedSettings = {
         ...settings,
-        googleDrive: {
-          ...settings?.googleDrive,
-          lastBackup: now
-        }
+        cloudBackup: { ...settings?.cloudBackup, lastBackup: now }
       }
       await saveSettings(updatedSettings)
       setSettings(updatedSettings)
-
-      showToast('Backup uploaded successfully!', 'success')
-      // Refresh file list if visible
-      if (driveFiles.length > 0) fetchDriveFiles()
+      showToast('Backup saved to Cloud!', 'success')
+      fetchBackups()
     } catch (error) {
-      console.error("Backup failed", error)
       showToast('Backup failed: ' + error.message, 'error')
     } finally {
       setIsUploading(false)
     }
   }
 
-  const fetchDriveFiles = async () => {
-    if (!accessToken) return
+  const fetchBackups = async () => {
+    if (!isConnected) return
     setIsLoadingFiles(true)
     try {
-      const files = await listFilesFromDrive(accessToken)
-      setDriveFiles(files)
-    } catch (error) {
-      showToast('Failed to load backups from Drive', 'error')
+      const files = await listBackups()
+      setBackupFiles(files)
     } finally {
       setIsLoadingFiles(false)
     }
   }
 
-  const handleRestoreFromDrive = (file) => {
-    showConfirm(
-      'Restore From Backup',
-      `Are you sure you want to restore from ${file.name}? This will overwrite all CURRENT data. We recommend making a manual backup first.`,
-      async () => {
-        setIsRestoring(true)
-        try {
-          const data = await downloadFileFromDrive(accessToken, file.id)
-          const result = await importAllDataFromObject(data)
-
-          if (result.success) {
-            showToast('Data restored successfully! The page will reload.', 'success')
-            if (onDataImported) onDataImported(result.data)
-            setTimeout(() => window.location.reload(), 1500)
-          } else {
-            showToast(result.message, 'error')
-          }
-        } catch (error) {
-          showToast('Failed to restore: ' + error.message, 'error')
-        } finally {
-          setIsRestoring(false)
+  const handleRestoreFromCloud = (file) => {
+    showConfirm('Restore From Cloud', `Overwrite current data with ${file.name}?`, async () => {
+      setIsRestoring(true)
+      try {
+        const data = await downloadBackup(file.name)
+        const result = await importAllDataFromObject(data)
+        if (result.success) {
+          showToast('Restored! Reloading...', 'success')
+          if (onDataImported) onDataImported(result.data)
+          setTimeout(() => window.location.reload(), 1500)
         }
-      },
-      'warning',
-      'Restore Now'
+      } catch (e) {
+        showToast('Restore failed', 'error')
+      } finally {
+        setIsRestoring(false)
+      }
+    }, 'warning', 'Restore Now')
+  }
+
+  const handleCopySQL = async () => {
+    try {
+      await navigator.clipboard.writeText(SETUP_SQL)
+      showToast('SQL script copied!', 'success')
+    } catch { showToast('Copy failed', 'error') }
+  }
+
+  // --- RENDERING WIZARD (Not Connected) ---
+  if (!isConnected) {
+    const STEPS = [
+      { id: 1, name: 'Setup Project', icon: Database },
+      { id: 2, name: 'Setup Tables', icon: Database },
+      { id: 3, name: 'Connect', icon: Cloud }
+    ]
+
+    return (
+      <div className="animate-fade-in" style={{ padding: '0.5rem 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0' }}>Supabase Cloud Hub</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>One-time setup to enable Multi-Device Sync and Cloud Backups</p>
+        </div>
+
+        {/* Wizard Steps */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2.5rem' }}>
+          {STEPS.map((step, idx) => (
+            <div key={step.id} style={{ display: 'flex', alignItems: 'center' }}>
+              <div
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  opacity: currentStep === step.id || completedSteps.includes(step.id) ? 1 : 0.3,
+                  cursor: completedSteps.includes(step.id) ? 'pointer' : 'default'
+                }}
+                onClick={() => completedSteps.includes(step.id) && setCurrentStep(step.id)}
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: completedSteps.includes(step.id) ? 'var(--success)' : currentStep === step.id ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
+                  color: 'white', marginBottom: '0.4rem'
+                }}>
+                  {completedSteps.includes(step.id) ? <Check size={16} /> : <step.icon size={16} />}
+                </div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{step.name}</span>
+              </div>
+              {idx < 2 && <ChevronRight size={14} style={{ margin: '0 0.5rem 1rem 0.5rem', opacity: 0.3 }} />}
+            </div>
+          ))}
+        </div>
+
+        {/* Step Content */}
+        <div style={{
+          padding: '2rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)', maxWidth: '600px', margin: '0 auto'
+        }}>
+          {currentStep === 1 && (
+            <div style={{ textAlign: 'center' }}>
+              <Database size={40} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
+              <h4>1. Create Your Project</h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>Create a free project at Supabase to store your business data safely.</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button className="btn btn-secondary" onClick={() => openExternalUrl('https://database.new')}>Open Supabase</button>
+                <button className="btn btn-primary" onClick={() => { setCompletedSteps([1]); setCurrentStep(2); }}>I Have a Project</button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 2 && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Database size={40} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
+                <h4>2. Setup Tables & Security</h4>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Copy and run the SQL script in your Supabase SQL Editor.</p>
+              </div>
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-tertiary)', borderRadius: '12px', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                <ol style={{ paddingLeft: '1.2rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <li>Click <strong>Copy SQL Script</strong> below.</li>
+                  <li>Click <strong>Open SQL Editor</strong> (Supabase Tab).</li>
+                  <li>Paste the script into the editor and click <strong>Run</strong>.</li>
+                </ol>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                <button className="btn btn-secondary btn-sm" onClick={handleCopySQL}>Copy SQL Script</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => openExternalUrl('https://app.supabase.com/project/_/sql')}>Open SQL Editor</button>
+              </div>
+              <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { setCompletedSteps([1, 2]); setCurrentStep(3); }}>Done, Continue</button>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <Cloud size={40} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
+                <h4>3. Connect Your App</h4>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Paste your API keys from <strong>Project Settings → API</strong></p>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Project URL</label>
+                <input type="text" className="form-input" value={projectUrl} onChange={e => setProjectUrl(e.target.value)} placeholder="https://your-id.supabase.co" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Anon Key</label>
+                <input type="password" className="form-input" value={anonKey} onChange={e => setAnonKey(e.target.value)} placeholder="eyJhbGciOiJIUz..." />
+              </div>
+              <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleConnect} disabled={isLoading}>
+                {isLoading ? 'Connecting...' : 'Connect Supabase'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 
+  // --- RENDERING HUB (Connected) ---
   return (
     <div className="animate-fade-in">
-      {/* Header & Intro */}
-      <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-        <div>
-          <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
-            Securely backup your business data to your personal Google Drive.
-            <br />Requires a one-time Google Sign-In with Drive permissions enabled in your Licensing Server.
-          </p>
-        </div>
-        <button
-          onClick={() => setShowHelp(!showHelp)}
-          className="btn btn-sm btn-secondary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Info size={16} color="var(--accent-primary)" /> Setup Guide
-        </button>
-      </div>
+      {/* 2-Column Dashboard */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
 
-      {showHelp && (
+        {/* Real-time Sync Card */}
         <div style={{
-          marginBottom: '2rem',
-          padding: '1.5rem',
-          backgroundColor: 'rgba(var(--accent-rgb), 0.04)',
-          borderRadius: '16px',
-          border: '1px solid rgba(var(--accent-rgb), 0.15)',
-          animation: 'slideDown 0.3s ease'
-        }}>
-          <h5 style={{ margin: '0 0 1rem 0', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Globe size={18} color="var(--accent-primary)" /> Step-by-Step Setup Guide
-          </h5>
-          <ol style={{ paddingLeft: '1.2rem', margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <li>Ensure the <strong>Google Drive API</strong> is enabled in your Google Cloud Project.</li>
-            <li>In your Supabase Dashboard, add <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>https://www.googleapis.com/auth/drive.file</code> to your <strong>Google Auth Implementation</strong> scopes.</li>
-            <li>Simply sign in using the <strong>Sign in with Google</strong> button in the Profile or Licensing section.</li>
-            <li>Once signed in, your Drive backup will be active automatically!</li>
-          </ol>
-        </div>
-      )}
-
-      {/* Main Settings Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-
-        {/* Card 1: Connection Status */}
-        <div style={{
-          padding: '1.5rem',
-          backgroundColor: 'var(--bg-secondary)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
-          justifyContent: 'center'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <ShieldCheck size={20} color="var(--accent-primary)" /> Connection Status
-            </h4>
-            {isConnected ? (
-              <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Active</span>
-            ) : (
-              <span className="badge badge-error" style={{ fontSize: '0.75rem' }}>Disconnected</span>
-            )}
-          </div>
-
-          <div style={{ textAlign: 'center', padding: '1rem' }}>
-            {isConnected ? (
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                <CheckCircle size={32} color="var(--success)" style={{ margin: '0 auto 1rem', display: 'block' }} />
-                Logged in as <strong>{identityUser?.email}</strong>
-              </div>
-            ) : (
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                Sign in with Google to enable cloud sync.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Card 2: Automation */}
-        <div style={{
-          padding: '1.5rem',
-          backgroundColor: 'var(--bg-secondary)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between'
+          padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)',
+          display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
         }}>
           <div>
-            <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <RefreshCw size={20} color={isAutoBackupEnabled ? "var(--success)" : "var(--text-muted)"} /> Automation
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h4 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Database size={18} color="var(--accent-primary)" /> Cloud Database
+              </h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {isOnline ? <Wifi size={14} color="var(--success)" /> : <WifiOff size={14} color="var(--text-muted)" />}
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: isOnline ? 'var(--success)' : 'var(--text-muted)' }}>{isOnline ? 'Online' : 'Offline'}</span>
+              </div>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Real-time synchronization keeps your data updated across all your devices instantly.</p>
+          </div>
+
+          <div>
+            <div style={{ padding: '0.85rem', backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Last Handshake</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{lastSynced ? new Date(lastSynced).toLocaleString() : 'Not synced yet'}</div>
+            </div>
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ width: '100%', padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={handleManualSync}
+              disabled={isSyncing || !isOnline}
+            >
+              <RefreshCw size={14} className={isSyncing ? 'spin' : ''} style={{ marginRight: '0.5rem' }} /> {isSyncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+          </div>
+        </div>
+
+        {/* Cloud Backup Automation Card */}
+        <div style={{
+          padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '16px', border: '1px solid var(--border-color)',
+          display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+        }}>
+          <div>
+            <h4 style={{ margin: '0 0 1.25rem 0', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <ShieldCheck size={18} color="var(--success)" /> Cloud Backup Automation
             </h4>
 
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              padding: '1rem',
-              backgroundColor: 'var(--bg-card)',
-              borderRadius: '12px',
-              border: '1px solid var(--border-color)'
-            }}>
+            <div style={{ padding: '1rem', backgroundColor: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={isAutoBackupEnabled}
-                    onChange={(e) => setIsAutoBackupEnabled(e.target.checked)}
-                  />
+                  <input type="checkbox" checked={isAutoBackupEnabled} onChange={e => setIsAutoBackupEnabled(e.target.checked)} />
                   <span className="slider round"></span>
                 </label>
-                <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Auto-Backup</span>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Enable</span>
               </div>
-
-              <div style={{ opacity: isAutoBackupEnabled ? 1 : 0.5, pointerEvents: isAutoBackupEnabled ? 'auto' : 'none' }}>
-                <CustomDropdown
-                  options={[
-                    { value: 'hourly', label: 'Every Hour' },
-                    { value: '6hours', label: 'Every 6H' },
-                    { value: '12hours', label: 'Every 12H' },
-                    { value: 'daily', label: 'Daily' },
-                    { value: 'weekly', label: 'Weekly' }
-                  ]}
-                  value={backupFrequency}
-                  onChange={setBackupFrequency}
-                  style={{ width: '130px', fontSize: '0.85rem' }}
-                />
-              </div>
+              <CustomDropdown
+                options={[
+                  { value: 'hourly', label: 'Every Hour' },
+                  { value: '12hours', label: '12 Hours' },
+                  { value: 'daily', label: 'Daily' },
+                  { value: 'weekly', label: 'Weekly' }
+                ]}
+                value={backupFrequency}
+                onChange={setBackupFrequency}
+                style={{ width: '110px', fontSize: '0.8rem' }}
+                disabled={!isAutoBackupEnabled}
+              />
             </div>
           </div>
 
-          <div style={{ marginTop: '1.25rem' }}>
-            {lastBackup ? (
-              <div style={{
-                padding: '0.85rem',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderRadius: '12px',
-                color: 'var(--success)',
-                fontSize: '0.85rem',
-                fontWeight: 500,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem'
-              }}>
-                <CheckCircle size={16} />
-                <span>Last synced: {new Date(lastBackup).toLocaleString()}</span>
-              </div>
-            ) : (
-              <div style={{
-                padding: '0.85rem',
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                borderRadius: '12px',
-                color: 'var(--text-muted)',
-                fontSize: '0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem'
-              }}>
-                <Cloud size={16} /> No backup created yet.
-              </div>
-            )}
+          <div>
+            <div style={{ padding: '0.85rem', backgroundColor: 'rgba(var(--accent-rgb), 0.05)', borderRadius: '12px', border: '1px solid rgba(var(--accent-rgb), 0.1)', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Snapshot Health</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--accent-primary)' }}>{lastBackup ? `Last: ${new Date(lastBackup).toLocaleDateString()}` : 'No backups yet'}</div>
+            </div>
+            <button
+              className="btn btn-secondary btn-sm"
+              style={{ width: '100%', padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+              onClick={handleSaveSettings}
+            >
+              <Save size={14} /> Save Preferences
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Drive File Browser */}
-      {isConnected && (
-        <div style={{ marginBottom: '2rem', animation: 'fadeIn 0.5s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Database size={18} /> Cloud Backups
-            </h4>
-            <button
-              onClick={fetchDriveFiles}
-              className="btn btn-sm btn-secondary"
-              disabled={isLoadingFiles}
-            >
-              <RefreshCw size={14} className={isLoadingFiles ? 'spin' : ''} style={{ marginRight: '0.4rem' }} />
-              {isLoadingFiles ? 'Scanning...' : 'Refresh List'}
-            </button>
-          </div>
+      {/* Cloud Browser */}
+      {/* Cloud Snapshots Browser */}
+      <div style={{
+        marginBottom: '2rem',
+        backgroundColor: 'var(--bg-secondary)',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          padding: '1rem 1.25rem',
+          borderBottom: '1px solid var(--border-color)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: 'var(--bg-card)'
+        }}>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Database size={16} color="var(--text-secondary)" /> Cloud Snapshots
+          </h4>
+          <button
+            onClick={fetchBackups}
+            className="btn btn-ghost btn-sm"
+            disabled={isLoadingFiles}
+            title="Refresh List"
+            style={{ padding: '0.4rem' }}
+          >
+            <RefreshCw size={14} className={isLoadingFiles ? 'spin' : ''} />
+          </button>
+        </div>
 
-          <div style={{
-            maxHeight: '220px',
-            overflowY: 'auto',
-            overflowX: 'auto',
-            border: '1px solid var(--border-color)',
-            borderRadius: '12px',
-            backgroundColor: 'var(--bg-secondary)'
-          }}>
-            {isLoadingFiles ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Checking Google Drive...</div>
-            ) : driveFiles.length === 0 ? (
-              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                <Cloud size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                <p>No AOF backups found in your Drive.</p>
-              </div>
-            ) : (
-              <table style={{ width: '100%', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
-                <thead style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-card)', zIndex: 5, borderBottom: '1px solid var(--border-color)' }}>
-                  <tr>
-                    <th style={{ textAlign: 'left', padding: '1rem' }}>Filename</th>
-                    <th style={{ textAlign: 'left', padding: '1rem' }}>Created At</th>
-                    <th style={{ textAlign: 'right', padding: '1rem' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {driveFiles.map(file => (
-                    <tr key={file.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
-                      <td style={{ padding: '1rem', fontWeight: 500 }}>{file.name}</td>
-                      <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{new Date(file.createdTime).toLocaleString()}</td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+        <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+          {isLoadingFiles ? (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <RefreshCw size={24} className="spin" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+              <p style={{ fontSize: '0.9rem' }}>Scanning cloud storage...</p>
+            </div>
+          ) : backupFiles.length === 0 ? (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <Cloud size={32} style={{ marginBottom: '0.75rem', opacity: 0.3 }} />
+              <p style={{ fontSize: '0.9rem' }}>No backup snapshots found.</p>
+            </div>
+          ) : (
+            <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+              <thead style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-secondary)', zIndex: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '0.75rem 1.25rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Filename</th>
+                  <th style={{ textAlign: 'right', padding: '0.75rem 1.25rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Date</th>
+                  <th style={{ textAlign: 'right', padding: '0.75rem 1.25rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {backupFiles.map((file, idx) => (
+                  <tr key={file.id || idx} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.1s' }} className="hover-bg-card">
+                    <td style={{ padding: '0.85rem 1.25rem', color: 'var(--text-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Package size={14} color="var(--accent-primary)" style={{ opacity: 0.7 }} />
+                        {file.name}
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.85rem 1.25rem', textAlign: 'right', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                      {file.created_at ? new Date(file.created_at).toLocaleDateString() : 'Unknown'}
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', opacity: 0.7 }}>
+                        {file.created_at ? new Date(file.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button
-                          onClick={() => handleRestoreFromDrive(file)}
-                          className="btn btn-sm btn-ghost"
-                          disabled={isRestoring}
-                          style={{ color: 'var(--accent-primary)', fontWeight: 600 }}
+                          onClick={() => handleRestoreFromCloud(file)}
+                          className="btn btn-sm"
+                          style={{
+                            backgroundColor: 'rgba(var(--accent-rgb), 0.1)',
+                            color: 'var(--accent-primary)',
+                            padding: '0.3rem 0.6rem',
+                            fontSize: '0.75rem'
+                          }}
+                          title="Restore this snapshot"
                         >
                           Restore
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                        <button
+                          onClick={() => handleDeleteBackup(file)}
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--text-muted)', padding: '0.3rem' }}
+                          title="Delete snapshot"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Footer Actions */}
+      {/* Connection Management Footer */}
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingTop: '1.5rem',
-        borderTop: '1px solid var(--border-color)'
+        paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
-        <button
-          onClick={handleSaveSettings}
-          className="btn btn-secondary"
-          style={{ minWidth: '120px', flex: '1 1 auto' }}
-        >
-          Save Preferences
-        </button>
-
-        {!isConnected ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: 'var(--success)' }}></div>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Active Connection</span>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
           <button
-            onClick={handleConnect}
-            className="btn btn-primary"
-            style={{ minWidth: '160px', flex: '1 1 auto', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
+            className="btn btn-ghost btn-sm"
+            onClick={handleDisconnect}
+            style={{ color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: 0.8 }}
+            title="Disconnect from Supabase"
           >
-            <Database size={18} />
-            Sign in with Google
+            <LogOut size={16} /> <span style={{ textDecoration: 'underline' }}>Disconnect</span>
           </button>
-        ) : (
-          <button
-            onClick={handleBackupNow}
-            className="btn btn-primary"
-            disabled={isUploading}
-            style={{ minWidth: '160px', flex: '1 1 auto', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
-          >
-            {isUploading ? (
-              <><RefreshCw size={18} className="spin" /> Uploading...</>
-            ) : (
-              <>
-                <Upload size={18} />
-                Backup Now
-              </>
-            )}
+          <button className="btn btn-primary" onClick={handleBackupNow} disabled={isUploading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Upload size={16} /> {isUploading ? 'Uploading...' : 'Backup Now'}
           </button>
-        )}
+        </div>
       </div>
     </div>
   )

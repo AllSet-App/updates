@@ -14,15 +14,16 @@ const AutoBackupHandler = ({ session, dataLoading }) => {
                 const settings = await getSettings()
 
                 // 2. Check if Auto Backup is enabled and configured
-                if (!settings?.googleDrive?.autoBackup || !settings?.googleDrive?.clientId) {
+                const isConfigured = settings?.supabase?.url && settings?.supabase?.anonKey
+                if (!settings?.cloudBackup?.autoBackup || !isConfigured) {
                     return
                 }
 
                 // 3. Time check (Default: daily = 86400000 ms)
-                const lastBackup = settings.googleDrive.lastBackup
+                const lastBackup = settings.cloudBackup.lastBackup
                 const now = new Date().getTime()
                 let backupInterval = 24 * 60 * 60 * 1000 // Daily default
-                const freq = settings.googleDrive.frequency || 'daily'
+                const freq = settings.cloudBackup.frequency || 'daily'
 
                 if (freq === 'hourly') backupInterval = 60 * 60 * 1000
                 if (freq === '6hours') backupInterval = 6 * 60 * 60 * 1000
