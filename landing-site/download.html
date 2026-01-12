@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download - AOF Biz</title>
+    <meta name="description"
+        content="Download the latest version of AOF Biz. The complete business operating system for modern framing businesses.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="layout-grid" color="#FF2E36"></i>
+                AOF <span>Biz</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="index.html#about">About</a>
+                <a href="download.html" class="active">Download</a>
+                <a href="contact.html">Contact</a>
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <i data-lucide="sun" class="sun"></i>
+                    <i data-lucide="moon" class="moon"></i>
+                </button>
+            </div>
+            <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 6rem 0 4rem;">
+        <div class="container" style="max-width: 800px;">
+            <div class="badge-container" style="justify-content: center; margin-bottom: 2rem;">
+                <span class="badge"
+                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                    Latest Release Available
+                </span>
+            </div>
+            <h1>Get AOF Biz for Windows</h1>
+            <p>The all-in-one management tool for your framing business. Download, install, and get organized in
+                minutes.</p>
+
+            <div style="margin-top: 3rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+                <a href="https://github.com/aofbiz/aofbiz.github.io/releases/latest/download/AOF.Biz.Setup.exe"
+                    class="btn btn-primary btn-lg" style="min-width: 250px; justify-content: center;">
+                    <i data-lucide="download"></i> Download for Windows
+                </a>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">
+                    Requires Windows 10 or 11 (64-bit)
+                </p>
+                <!-- Security Note -->
+                <div
+                    style="font-size: 0.85rem; color: var(--text-secondary); max-width: 500px; text-align: center; background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <i data-lucide="shield-check" size="16"
+                        style="vertical-align: middle; margin-right: 6px; color: var(--accent-primary);"></i>
+                    <strong>Safe & Secure:</strong> Our installer is digitally signed. If Windows SmartScreen appears,
+                    simply click "More Info" and "Run Anyway".
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <div class="grid"
+                style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+                <div class="card">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        1</div>
+                    <h3>Download</h3>
+                    <p>Click the button above to download the official <b>AOF.Biz.Setup.exe</b> installer.</p>
+                </div>
+                <div class="card">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        2</div>
+                    <h3>Install</h3>
+                    <p>Run the installer. It will automatically set up the application and create a desktop shortcut.
+                    </p>
+                </div>
+                <div class="card">
+                    <div
+                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        3</div>
+                    <h3>Sign In</h3>
+                    <p>Launch the app and sign in with your Google account to start your free trial or access Pro
+                        features.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq" style="padding: 4rem 0;">
+        <div class="container" style="max-width: 800px;">
+            <h2 style="text-align: center; margin-bottom: 3rem;">Frequently Asked Questions</h2>
+
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">Is it safe to
+                        download?</h3>
+                    <p style="color: var(--text-secondary);">Yes. AOF Biz runs locally on your machine. We do not upload
+                        your sensitive business data to any cloud unless you explicitly enable backups.</p>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">Can I use it
+                        offline?</h3>
+                    <p style="color: var(--text-secondary);">Absolutely. The core features work entirely offline. An
+                        internet connection is only needed for initial setup, updates, and cloud backups.</p>
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">How do I update?
+                    </h3>
+                    <p style="color: var(--text-secondary);">The application automatically checks for updates on
+                        startup. When a new version is available, you'll be prompted to install it with a single click.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <i data-lucide="layout-grid" color="#FF2E36"></i>
+                        AOF <span>Biz</span>
+                    </a>
+                    <p>Designed for professionals who value precision and style.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="features.html">All Features</a></li>
+                        <li><a href="download.html">Download</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="index.html#about">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 AOF Biz. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const toggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+</body>
+
+</html>
