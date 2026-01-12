@@ -264,12 +264,6 @@ ipcMain.handle('open-external', async (event, url) => {
   }
 })
 
-const fs = require('fs')
-const https = require('https')
-const crypto = require('crypto')
-const os = require('os')
-const { spawn } = require('child_process')
-
 // App lifecycle
 app.whenReady().then(createWindow)
 
