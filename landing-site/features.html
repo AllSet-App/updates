@@ -19,26 +19,7 @@
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="index.html" class="logo">
-                <i data-lucide="layout-grid" color="#FF2E36"></i>
-                AOF <span>Biz</span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="features.html" class="active">Features</a>
-                <a href="index.html#about">About</a>
-                <a href="download.html">Download</a>
-                <a href="contact.html">Contact</a>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
-                    <i data-lucide="sun" class="sun"></i>
-                    <i data-lucide="moon" class="moon"></i>
-                </button>
-            </div>
-            <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
 
     <header class="page-header">
         <div class="container">
@@ -65,7 +46,7 @@
                 </div>
                 <div class="about-image">
                     <div
-                        style="height: 300px; background: var(--bg-card); border-radius: 12px; border: var(--glass-border);">
+                        style="height: 300px; background: var(--surface-3); border-radius: 12px; border: var(--border);">
                         <i data-lucide="list-checks" size="48" style="opacity: 0.2;"></i>
                     </div>
                 </div>
@@ -86,7 +67,7 @@
                 </div>
                 <div class="about-image">
                     <div
-                        style="height: 300px; background: var(--bg-card); border-radius: 12px; border: var(--glass-border);">
+                        style="height: 300px; background: var(--surface-3); border-radius: 12px; border: var(--border);">
                         <i data-lucide="boxes" size="48" style="opacity: 0.2;"></i>
                     </div>
                 </div>
@@ -108,7 +89,7 @@
                 </div>
                 <div class="about-image">
                     <div
-                        style="height: 300px; background: var(--bg-card); border-radius: 12px; border: var(--glass-border);">
+                        style="height: 300px; background: var(--surface-3); border-radius: 12px; border: var(--border);">
                         <i data-lucide="line-chart" size="48" style="opacity: 0.2;"></i>
                     </div>
                 </div>
@@ -123,17 +104,17 @@
             </div>
             <div class="grid">
                 <div class="card">
-                    <i data-lucide="file-text" color="#FF2E36"></i>
+                    <i data-lucide="file-text" color="var(--brand-primary)"></i>
                     <h4>Quotation Engine</h4>
                     <p>Generate professional PDF quotes for your clients in seconds.</p>
                 </div>
                 <div class="card">
-                    <i data-lucide="database" color="#FF2E36"></i>
+                    <i data-lucide="database" color="var(--brand-primary)"></i>
                     <h4>Local Backup</h4>
                     <p>Keep your data safe with scheduled local and automated cloud backups.</p>
                 </div>
                 <div class="card">
-                    <i data-lucide="user-plus" color="#FF2E36"></i>
+                    <i data-lucide="user-plus" color="var(--brand-primary)"></i>
                     <h4>Customer CRM</h4>
                     <p>Build a detailed database of your loyal clients and their design preferences.</p>
                 </div>
@@ -141,54 +122,8 @@
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="index.html" class="logo">
-                        <i data-lucide="layout-grid" color="#FF2E36"></i>
-                        AOF <span>Biz</span>
-                    </a>
-                    <p>Designed for professionals who value precision and style.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="features.html">All Features</a></li>
-                        <li><a href="download.html">Download</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="index.html#about">About</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AOF Biz. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        lucide.createIcons();
-        const toggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            htmlElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    </script>
+    <div id="footer-placeholder"></div>
+    <script src="components.js"></script>
 </body>
 
 </html>

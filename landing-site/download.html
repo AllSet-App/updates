@@ -1,258 +1,337 @@
 <!DOCTYPE html>
-<!-- Deployment update: v2 -->
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download - AOF Biz</title>
-    <meta name="description"
-        content="Download the latest version of AOF Biz. The complete business operating system for modern framing businesses.">
+    <title>AOF Biz - Download Center</title>
+    <meta name="description" content="Get the latest version of AOF Biz for Windows and Android.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
-    <script>
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+    <style>
+        .dl-hero {
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .dl-hero::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(var(--brand-primary-rgb), 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .dl-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--text-1) 30%, var(--brand-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dl-subtitle {
+            color: var(--text-2);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 60px;
+            line-height: 1.6;
+        }
+
+        .panels-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .panel {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 50px 40px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--brand-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .panel:hover {
+            transform: translateY(-8px);
+            border-color: rgba(var(--brand-primary-rgb), 0.3);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .panel:hover::after {
+            opacity: 1;
+        }
+
+        .panel-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(var(--brand-primary-rgb), 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            color: var(--brand-primary);
+        }
+
+        .panel-name {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .panel-desc {
+            color: var(--text-2);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .dl-button {
+            width: 100%;
+            padding: 18px 32px;
+            background: var(--brand-primary);
+            color: white;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .dl-button:hover {
+            background: var(--brand-hover);
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(var(--brand-primary-rgb), 0.3);
+        }
+
+        .dl-button.inactive {
+            background: var(--surface-3);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            pointer-events: none;
+            border: 1px solid var(--border);
+        }
+
+        .v-tag {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .v-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .guide-grid {
+            margin-top: 100px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .guide-box h4 {
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+            color: var(--brand-primary);
+        }
+
+        .guide-box p {
+            color: var(--text-2);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 992px) {
+            .panels-container {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+            }
+
+            .guide-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar">
+    <div id="navbar-placeholder"></div>
+
+    <header class="dl-hero">
         <div class="container">
-            <a href="index.html" class="logo">
-                <i data-lucide="layout-grid" color="#FF2E36"></i>
-                AOF <span>Biz</span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="features.html">Features</a>
-                <a href="index.html#about">About</a>
-                <a href="download.html" class="active">Download</a>
-                <a href="contact.html">Contact</a>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
-                    <i data-lucide="sun" class="sun"></i>
-                    <i data-lucide="moon" class="moon"></i>
-                </button>
+            <div id="status-badge" class="v-badge" style="display: none;">
+                <span class="dot"></span>
+                <span id="v-val">v1.2.0 is now live</span>
             </div>
-            <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
-        </div>
-    </nav>
+            <h1 class="dl-title">Powerful Tools.<br>Everywhere.</h1>
+            <p class="dl-subtitle">Choose your platform and get started with the most advanced framing business
+                management system.</p>
 
-    <header class="page-header" style="padding: 6rem 0 4rem;">
-        <div class="container" style="max-width: 800px;">
-            <div class="badge-container" style="justify-content: center; margin-bottom: 2rem;">
-                <span class="badge"
-                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);">
-                    <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
-                    Latest Release Available
-                </span>
-            </div>
-            <h1>Get AOF Biz for Windows</h1>
-            <p>The all-in-one management tool for your framing business. Download, install, and get organized in
-                minutes.</p>
-
-            <div style="margin-top: 3rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                <div class="download-buttons"
-                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-                    <a id="windows-download-btn"
-                        href="https://github.com/aofbiz/aofbiz.github.io/releases/latest/download/AOF.Biz.Setup.exe"
-                        class="btn btn-primary btn-lg" style="min-width: 250px; justify-content: center;">
-                        <i data-lucide="download"></i> Download for Windows
+            <div class="panels-container">
+                <!-- Windows -->
+                <div class="panel">
+                    <div class="panel-icon"><i data-lucide="monitor" size="32"></i></div>
+                    <h2 class="panel-name">Windows</h2>
+                    <p class="panel-desc">Perfect for full-scale operations. Includes inventory management, invoice
+                        generation, and high-performance reporting.</p>
+                    <a id="win-btn" href="#" class="dl-button">
+                        <i data-lucide="download-cloud"></i> Download for Windows
                     </a>
-                    <a id="mobile-download-btn" href="#" class="btn btn-secondary btn-lg"
-                        style="min-width: 250px; justify-content: center; display: none;">
-                        <i data-lucide="smartphone"></i> Download for Android
-                    </a>
+                    <div id="win-meta" class="v-tag">Checking for updates...</div>
                 </div>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">
-                    Requires Windows 10 or 11 (64-bit)
-                </p>
-                <!-- Security Note -->
-                <div
-                    style="font-size: 0.85rem; color: var(--text-secondary); max-width: 500px; text-align: center; background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <i data-lucide="shield-check" size="16"
-                        style="vertical-align: middle; margin-right: 6px; color: var(--accent-primary);"></i>
-                    <strong>Safe & Secure:</strong> Our installer is digitally signed. If Windows SmartScreen appears,
-                    simply click "More Info" and "Run Anyway".
+
+                <!-- Android -->
+                <div class="panel" id="apk-panel" style="opacity: 0.4;">
+                    <div class="panel-icon"><i data-lucide="smartphone" size="32"></i></div>
+                    <h2 class="panel-name">Android</h2>
+                    <p class="panel-desc">Your business on the go. Manage orders and check stock levels right from your
+                        customer's location.</p>
+                    <a id="apk-btn" href="#" class="dl-button inactive">
+                        <i data-lucide="locked"></i> Coming Soon
+                    </a>
+                    <div id="apk-meta" class="v-tag">Development in progress</div>
+                </div>
+            </div>
+
+            <div class="container" style="max-width: 900px;">
+                <div class="guide-grid">
+                    <div class="guide-box">
+                        <h4 style="color: var(--brand-primary);">Step 1</h4>
+                        <p>Download the installer. Our software is digitally signed for maximum security.</p>
+                    </div>
+                    <div class="guide-box">
+                        <h4 style="color: var(--brand-primary);">Step 2</h4>
+                        <p>Run the setup. If Windows SmartScreen prompts you, click "More Info" and then "Run Anyway".
+                        </p>
+                    </div>
+                    <div class="guide-box">
+                        <h4 style="color: var(--brand-primary);">Step 3</h4>
+                        <p>Log in with your Google account. All your data will sync automatically across your devices.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <section class="features">
-        <div class="container">
-            <div class="grid"
-                style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
-                <div class="card">
-                    <div
-                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
-                        1</div>
-                    <h3>Download</h3>
-                    <p>Click the button above to download the official <b>AOF.Biz.Setup.exe</b> installer.</p>
-                </div>
-                <div class="card">
-                    <div
-                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
-                        2</div>
-                    <h3>Install</h3>
-                    <p>Run the installer. It will automatically set up the application and create a desktop shortcut.
-                    </p>
-                </div>
-                <div class="card">
-                    <div
-                        style="width: 40px; height: 40px; background: rgba(var(--accent-rgb), 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;">
-                        3</div>
-                    <h3>Sign In</h3>
-                    <p>Launch the app and sign in with your Google account to start your free trial or access Pro
-                        features.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div id="footer-placeholder"></div>
 
-    <section class="faq" style="padding: 4rem 0;">
-        <div class="container" style="max-width: 800px;">
-            <h2 style="text-align: center; margin-bottom: 3rem;">Frequently Asked Questions</h2>
-
-            <div style="display: flex; flex-direction: column; gap: 2rem;">
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">Is it safe to
-                        download?</h3>
-                    <p style="color: var(--text-secondary);">Yes. AOF Biz runs locally on your machine. We do not upload
-                        your sensitive business data to any cloud unless you explicitly enable backups.</p>
-                </div>
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">Can I use it
-                        offline?</h3>
-                    <p style="color: var(--text-secondary);">Absolutely. The core features work entirely offline. An
-                        internet connection is only needed for initial setup, updates, and cloud backups.</p>
-                </div>
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-primary);">How do I update?
-                    </h3>
-                    <p style="color: var(--text-secondary);">The application automatically checks for updates on
-                        startup. When a new version is available, you'll be prompted to install it with a single click.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="index.html" class="logo">
-                        <i data-lucide="layout-grid" color="#FF2E36"></i>
-                        AOF <span>Biz</span>
-                    </a>
-                    <p>Designed for professionals who value precision and style.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="features.html">All Features</a></li>
-                        <li><a href="download.html">Download</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="index.html#about">About</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AOF Biz. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
+    <script src="versions.js"></script>
+    <script src="components.js"></script>
     <script>
-        lucide.createIcons();
-        const toggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            htmlElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
+        // Config-based UI Update
+        function updatePlatforms() {
+            if (window.AOF_CONFIG) {
+                const conf = window.AOF_CONFIG;
 
-        // Fetch latest version and download links
-        async function fetchDownloadLinks() {
-            // Configuration matching index.html
-            const SUPABASE_PROJECT_URL = 'https://tvuiezseozqUflhMvMce.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dWllenNlb3pxVWZsaE12TWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyNTU5MDksImV4cCI6MjA1NDgzMTkwOX0.qXQ26l6SlaJ7-1_p5Q28e4e6y6a3-5c7_d8f9e0a1b2';
-
-            try {
-                // Fetch latest Windows version
-                try {
-                    const response = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/updates?select=version,url&os=eq.windows&order=created_at.desc&limit=1`, {
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data && data.length > 0) {
-                            const windowsBtn = document.getElementById('windows-download-btn');
-                            if (windowsBtn) {
-                                windowsBtn.href = data[0].url;
-                                windowsBtn.innerHTML = `<i data-lucide="download"></i> Download for Windows <span style="font-size: 0.8em; opacity: 0.8; margin-left:8px;">(v${data[0].version})</span>`;
-                                lucide.createIcons();
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.warn("Windows fetch failed", e);
+                // Badge
+                const badge = document.getElementById('status-badge');
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                    document.getElementById('v-val').textContent = `v${conf.version} is now live`;
                 }
 
-                // Fetch latest Android version
-                try {
-                    const mobileResponse = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/updates?select=version,url&os=eq.android&order=created_at.desc&limit=1`, {
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                        }
-                    });
-
-                    if (mobileResponse.ok) {
-                        const mobileData = await mobileResponse.json();
-                        if (mobileData && mobileData.length > 0) {
-                            const mobileBtn = document.getElementById('mobile-download-btn');
-                            if (mobileBtn) {
-                                mobileBtn.href = mobileData[0].url;
-                                mobileBtn.innerHTML = `<i data-lucide="smartphone"></i> Download for Android <span style="font-size: 0.8em; opacity: 0.8; margin-left:8px;">(v${mobileData[0].version})</span>`;
-                                mobileBtn.style.display = 'inline-flex';
-                                lucide.createIcons();
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.warn("Android fetch failed", e);
+                // Windows
+                if (conf.exe_link) {
+                    const b = document.getElementById('win-btn');
+                    if (b) b.href = conf.exe_link;
+                    const meta = document.getElementById('win-meta');
+                    if (meta) meta.textContent = `Latest Stable Build: v${conf.version}`;
                 }
 
-            } catch (error) {
-                console.warn('Failed to fetch latest versions:', error);
+                // Android
+                if (conf.apk_link) {
+                    const p = document.getElementById('apk-panel');
+                    const b = document.getElementById('apk-btn');
+                    if (p) p.style.opacity = "1";
+                    if (b) {
+                        b.href = conf.apk_link;
+                        b.classList.remove('inactive');
+                        b.innerHTML = '<i data-lucide="download"></i> Download APK';
+                    }
+                    const ameta = document.getElementById('apk-meta');
+                    if (ameta) ameta.textContent = `Mobile Companion: v${conf.version}`;
+                    if (window.lucide) lucide.createIcons();
+                }
             }
         }
 
-        fetchDownloadLinks();
+        window.addEventListener('load', updatePlatforms);
     </script>
 </body>
 

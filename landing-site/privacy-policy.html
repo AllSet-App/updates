@@ -5,80 +5,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - AOF Biz</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        h1 {
-            color: #2563eb;
-        }
-
-        h2 {
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-            margin-top: 2rem;
-        }
-
-        .scope-box {
-            background: #f8fafc;
-            border-left: 4px solid #2563eb;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-    </style>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
 </head>
 
 <body>
-    <h1>Privacy Policy</h1>
-    <p>Last Updated: January 12, 2026</p>
+    <div id="navbar-placeholder"></div>
 
-    <p>Welcome to <strong>AOF Biz</strong>. Your privacy is critically important to us. This Privacy Policy describes
-        how AOF Biz handles your personal information when you use our desktop application and associated services.</p>
+    <header class="page-header">
+        <div class="container">
+            <h1>Privacy Policy</h1>
+            <p>Last Updated: January 12, 2026</p>
+        </div>
+    </header>
 
-    <h2>1. Data We Do NOT Collect</h2>
-    <p>AOF Biz is designed with a "Local First" philosophy. Your business data (orders, inventory, expenses, quotations)
-        is stored <strong>locally on your device</strong>. We do not transmit your sensitive business data to our
-        servers.</p>
+    <main class="container" style="padding: 4rem 2rem; max-width: 800px;">
 
-    <h2>2. Google Drive Integration</h2>
-    <p>AOF Biz offers an optional Cloud Backup feature. To enable this, we request access to your Google Drive via the
-        following scope:</p>
+        <p>Welcome to <strong>AOF Biz</strong>. Your privacy is critically important to us. This Privacy Policy
+            describes
+            how AOF Biz handles your personal information when you use our desktop application and associated services.
+        </p>
 
-    <div class="scope-box">
-        <strong>https://www.googleapis.com/auth/drive.file</strong><br>
-        <em>Permission requested: "See, edit, create, and delete only the specific Google Drive files you use with this
-            app."</em>
-    </div>
+        <h2>1. Data We Do NOT Collect</h2>
+        <p>AOF Biz is designed with a "Local First" philosophy. Your business data (orders, inventory, expenses,
+            quotations)
+            is stored <strong>locally on your device</strong>. We do not transmit your sensitive business data to our
+            servers.</p>
 
-    <p><strong>How we use this data:</strong></p>
-    <ul>
-        <li><strong>Backup:</strong> We create a encrypted backup file of your local database on your Google Drive.</li>
-        <li><strong>Restore:</strong> We read the backup files created by AOF Biz to restore your data upon your
-            request.</li>
-        <li><strong>Isolation:</strong> We cannot see or access any other files in your Google Drive. We only have
-            access to files created by the AOF Biz application.</li>
-    </ul>
+        <h2>2. Google Drive Integration</h2>
+        <p>AOF Biz offers an optional Cloud Backup feature. To enable this, we request access to your Google Drive via
+            the
+            following scope:</p>
 
-    <h2>3. Licensing & Identity</h2>
-    <p>When you sign in with Google, we collect your <strong>Email address</strong>. This is used solely for:</p>
-    <ul>
-        <li>Verifying your subscription status (Pro/Trial).</li>
-        <li>Providing customer support relative to your account.</li>
-    </ul>
+        <div class="scope-box">
+            <strong>https://www.googleapis.com/auth/drive.file</strong><br>
+            <em>Permission requested: "See, edit, create, and delete only the specific Google Drive files you use with
+                this
+                app."</em>
+        </div>
 
-    <h2>4. Third-Party Services</h2>
-    <p>We use <strong>Supabase</strong> as our identity proxy and licensing server. Supabase handles the authentication
-        securely and does not have access to your private business data stored in your Google Drive.</p>
+        <p><strong>How we use this data:</strong></p>
+        <ul>
+            <li><strong>Backup:</strong> We create a encrypted backup file of your local database on your Google Drive.
+            </li>
+            <li><strong>Restore:</strong> We read the backup files created by AOF Biz to restore your data upon your
+                request.</li>
+            <li><strong>Isolation:</strong> We cannot see or access any other files in your Google Drive. We only have
+                access to files created by the AOF Biz application.</li>
+        </ul>
 
-    <h2>5. Contact Us</h2>
-    <p>If you have any questions about this Privacy Policy, please contact us via our official website: <a
-            href="https://aofbiz.github.io">aofbiz.github.io</a></p>
+        <h2>3. Licensing & Identity</h2>
+        <p>When you sign in with Google, we collect your <strong>Email address</strong>. This is used solely for:</p>
+        <ul>
+            <li>Verifying your subscription status (Pro/Trial).</li>
+            <li>Providing customer support relative to your account.</li>
+        </ul>
+
+        <h2>4. Third-Party Services</h2>
+        <p>We use <strong>Supabase</strong> as our identity proxy and licensing server. Supabase handles the
+            authentication
+            securely and does not have access to your private business data stored in your Google Drive.</p>
+
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="components.js"></script>
 </body>
 
 </html>

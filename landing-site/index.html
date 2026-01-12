@@ -29,27 +29,7 @@
 
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="index.html" class="logo">
-                <i data-lucide="layout-grid" color="#FF2E36"></i>
-                AOF <span>Biz</span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="features.html">Features</a>
-                <a href="index.html#about">About</a>
-                <a href="download.html">Download</a>
-                <a href="contact.html">Contact</a>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
-                    <i data-lucide="sun" class="sun"></i>
-                    <i data-lucide="moon" class="moon"></i>
-                </button>
-            </div>
-            <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
 
     <!-- Hero Section -->
     <header class="hero">
@@ -214,8 +194,8 @@
                         </li>
                     </ul>
 
-                    <a href="https://github.com/aofbiz/aofbiz.github.io/releases/latest/download/AOF.Biz.Setup.exe"
-                        class="btn btn-secondary" style="width: 100%; justify-content: center;">
+                    <a href="#" id="free-download-btn" class="btn btn-secondary"
+                        style="width: 100%; justify-content: center;">
                         Download Now
                     </a>
                 </div>
@@ -288,96 +268,35 @@
     </section>
 
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="index.html" class="logo">
-                        <i data-lucide="layout-grid" color="#FF2E36"></i>
-                        AOF <span>Biz</span>
-                    </a>
-                    <p>Revolutionizing frame business management with cutting-edge tools and intuitive design.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="features.html">All Features</a></li>
-                        <li><a href="download.html">Download</a></li>
-                        <li><a href="download.html#pricing">Pricing</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="index.html#about">About</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="download.html#updates">Release Notes</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AOF Biz. All rights reserved. Crafted for Professionals.</p>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 
+    <script src="versions.js"></script>
+    <script src="components.js"></script>
     <script>
-        // Initialize Lucide
-        lucide.createIcons();
-
-        // Theme Toggle Logic
-        const toggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            htmlElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-
-        // ----------------------------------------------------
-        // FETCH LATEST VERSION FROM SUPABASE
-        // ----------------------------------------------------
-        const SUPABASE_PROJECT_URL = 'https://tvuiezseozqUflhMvMce.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dWllenNlb3pxVWZsaE12TWN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyNTU5MDksImV4cCI6MjA1NDgzMTkwOX0.qXQ26l6SlaJ7-1_p5Q28e4e6y6a3-5c7_d8f9e0a1b2';
-
-        async function fetchLatestVersion() {
-            try {
-                // We use the REST API manually to avoid importing the sizeable supabase-js client
-                const response = await fetch(`${SUPABASE_PROJECT_URL}/rest/v1/updates?select=version&order=created_at.desc&limit=1`, {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    }
-                });
-
-                if (!response.ok) throw new Error('Network response was not ok');
-
-                const data = await response.json();
-                if (data && data.length > 0) {
-                    const latestVersion = data[0].version;
-                    const badge = document.getElementById('version-badge-text');
-                    if (badge) {
-                        badge.textContent = `${latestVersion} Available`;
-                    }
+        // Update version display (called from components.js or index.html)
+        function updateVersionDisplay() {
+            if (window.AOF_CONFIG) {
+                const badge = document.getElementById('version-badge-text');
+                if (badge) {
+                    badge.textContent = `${window.AOF_CONFIG.version} Available`;
                 }
-            } catch (error) {
-                console.warn('Failed to fetch latest version:', error);
-                // Fallback text is already in HTML
+
+                // Update Hero Download Button Link
+                const heroDl = document.getElementById('download-trigger');
+                if (heroDl && window.AOF_CONFIG.exe_link) {
+                    heroDl.href = window.AOF_CONFIG.exe_link;
+                }
+
+                // Update Free Plan Download Button
+                const freeDl = document.getElementById('free-download-btn');
+                if (freeDl && window.AOF_CONFIG.exe_link) {
+                    freeDl.href = window.AOF_CONFIG.exe_link;
+                }
             }
         }
 
-        fetchLatestVersion();
+        // Listen for config load if it happens late
+        window.addEventListener('load', updateVersionDisplay);
     </script>
 </body>
 

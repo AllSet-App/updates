@@ -19,26 +19,7 @@
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="index.html" class="logo">
-                <i data-lucide="layout-grid" color="#FF2E36"></i>
-                AOF <span>Biz</span>
-            </a>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="features.html">Features</a>
-                <a href="index.html#about">About</a>
-                <a href="download.html">Download</a>
-                <a href="contact.html" class="active">Contact</a>
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
-                    <i data-lucide="sun" class="sun"></i>
-                    <i data-lucide="moon" class="moon"></i>
-                </button>
-            </div>
-            <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
 
     <header class="page-header">
         <div class="container">
@@ -57,21 +38,21 @@
 
                         <div style="margin-top: 2rem;">
                             <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                                <i data-lucide="mail" color="#FF2E36"></i>
+                                <i data-lucide="mail" color="var(--brand-primary)"></i>
                                 <div>
                                     <h4 style="margin-bottom: 0.2rem;">Email</h4>
                                     <p style="margin: 0;">support@aofbiz.com</p>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                                <i data-lucide="message-circle" color="#FF2E36"></i>
+                                <i data-lucide="message-circle" color="var(--brand-primary)"></i>
                                 <div>
                                     <h4 style="margin-bottom: 0.2rem;">WhatsApp</h4>
                                     <p style="margin: 0;">+94 77 123 4567</p>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 1rem;">
-                                <i data-lucide="map-pin" color="#FF2E36"></i>
+                                <i data-lucide="map-pin" color="var(--brand-primary)"></i>
                                 <div>
                                     <h4 style="margin-bottom: 0.2rem;">Office</h4>
                                     <p style="margin: 0;">Art of Frames, Colombo, Sri Lanka</p>
@@ -111,54 +92,8 @@
         </div>
     </section>
 
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <a href="index.html" class="logo">
-                        <i data-lucide="layout-grid" color="#FF2E36"></i>
-                        AOF <span>Biz</span>
-                    </a>
-                    <p>Designed for professionals who value precision and style.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="features.html">All Features</a></li>
-                        <li><a href="download.html">Download</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="index.html#about">About</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AOF Biz. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        lucide.createIcons();
-        const toggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-        toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            htmlElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    </script>
+    <div id="footer-placeholder"></div>
+    <script src="components.js"></script>
 </body>
 
 </html>
