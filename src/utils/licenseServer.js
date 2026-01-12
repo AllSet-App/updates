@@ -42,6 +42,7 @@ export const signInWithGoogle = async () => {
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',
+                scope: 'openid email profile https://www.googleapis.com/auth/drive.file'
             },
         },
     })
@@ -112,7 +113,7 @@ export const handleAuthCallback = async (url) => {
             refresh_token: refreshToken
         })
         if (error) throw error
-        return data.user
+        return { user: data.user, session: data.session }
     }
 
     return null

@@ -143,8 +143,9 @@ export const LicensingProvider = ({ children }) => {
             console.log('Processing auth callback:', url)
             setIsLoading(true)
             try {
-                const user = await handleAuthCallback(url)
-                if (user) {
+                const authResult = await handleAuthCallback(url)
+                if (authResult?.user) {
+                    const { user } = authResult
                     const result = await checkLicenseStatus(user.email)
 
                     if (result.status === 'pro') {
@@ -284,9 +285,26 @@ export const LicensingProvider = ({ children }) => {
     const isTrialActive = timeLeft > 0 && licenseStatus !== 'pro'
     const isTrialExpired = localStorage.getItem('aof_trial_start') && timeLeft <= 0 && licenseStatus !== 'pro'
 
+    const [session, setSession] = useState(null)
+
+    useEffect(() => {
+        const getSession = async () => {
+            const { data: { session } } = await masterClient.auth.getSession()
+            setSession(session)
+        }
+        getSession()
+
+        const { data: { subscription } } = masterClient.auth.onAuthStateChange((_event, session) => {
+            setSession(session)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [])
+
     const value = {
         identityUser,
         licenseStatus,
+        session,
         isLoading,
         userMode,
         setUserMode,

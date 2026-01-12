@@ -2006,53 +2006,39 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
 
 // Google Drive Backup Component
 const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory, products, trackingNumbers, orderCounter, showToast, showConfirm, onDataImported }) => {
-  const [clientId, setClientId] = useState(settings?.googleDrive?.clientId || '')
+  const { session, identityUser, login } = useLicensing()
   const [isAutoBackupEnabled, setIsAutoBackupEnabled] = useState(settings?.googleDrive?.autoBackup || false)
   const [backupFrequency, setBackupFrequency] = useState(settings?.googleDrive?.frequency || 'daily')
-  const [isConnected, setIsConnected] = useState(false)
-  const [tokenClient, setTokenClient] = useState(null)
-  const [accessToken, setAccessToken] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
   const [driveFiles, setDriveFiles] = useState([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
   const [lastBackup, setLastBackup] = useState(settings?.googleDrive?.lastBackup || null)
   const [showHelp, setShowHelp] = useState(false)
-  const [showClientId, setShowClientId] = useState(false)
+
+  const accessToken = session?.provider_token || session?.access_token
+  const isConnected = !!accessToken && !!identityUser
 
   useEffect(() => {
     if (settings?.googleDrive) {
-      setClientId(settings.googleDrive.clientId || '')
       setIsAutoBackupEnabled(settings.googleDrive.autoBackup || false)
       setBackupFrequency(settings.googleDrive.frequency || 'daily')
       setLastBackup(settings.googleDrive.lastBackup || null)
     }
+  }, [settings])
 
-    loadGoogleScript().catch(err => console.error("Failed to load Google Script", err))
-
-    // Handle deep link callback for Google Drive Auth (Desktop Only)
-    if (window.electronAPI) {
-      const handleDriveAuth = (url) => {
-        if (!url) return;
-        const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
-        const token = params.get('access_token');
-        if (token) {
-          setAccessToken(token);
-          setIsConnected(true);
-          showToast('Connected to Google Drive!', 'success');
-        }
-      };
-
-      window.electronAPI.onAuthCallback(handleDriveAuth);
+  // Auto-fetch files once connected
+  useEffect(() => {
+    if (isConnected && driveFiles.length === 0 && !isLoadingFiles) {
+      fetchDriveFiles()
     }
-  }, [settings, showToast])
+  }, [isConnected])
 
   const handleSaveSettings = async () => {
     const updatedSettings = {
       ...settings,
       googleDrive: {
         ...settings?.googleDrive,
-        clientId,
         autoBackup: isAutoBackupEnabled,
         frequency: backupFrequency
       }
@@ -2061,50 +2047,13 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
     if (success) {
       setSettings(updatedSettings)
       showToast('Google Drive settings saved', 'success')
-
-      if (clientId && window.google) {
-        try {
-          const client = initTokenClient(clientId, (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-              setAccessToken(tokenResponse.access_token)
-              setIsConnected(true)
-              showToast('Connected to Google Drive!', 'success')
-            }
-          })
-          setTokenClient(client)
-        } catch (e) {
-          console.error("Error initializing token client", e)
-        }
-      }
     } else {
       showToast('Failed to save settings', 'error')
     }
   }
 
   const handleConnect = () => {
-    if (!clientId) {
-      showToast('Please enter a Client ID first', 'warning')
-      return
-    }
-
-    if (!tokenClient) {
-      try {
-        const client = initTokenClient(clientId, (tokenResponse) => {
-          if (tokenResponse && tokenResponse.access_token) {
-            setAccessToken(tokenResponse.access_token)
-            setIsConnected(true)
-            showToast('Connected to Google Drive!', 'success')
-          }
-        })
-        setTokenClient(client)
-        client.requestAccessToken();
-      } catch (e) {
-        console.error("Error initializing token client", e)
-        showToast('Error initializing Google Sign-In', 'error')
-      }
-    } else {
-      tokenClient.requestAccessToken();
-    }
+    login()
   }
 
   const handleBackupNow = async () => {
@@ -2205,7 +2154,7 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
         <div>
           <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0 }}>
             Securely backup your business data to your personal Google Drive.
-            <br />Requires a one-time setup of a Google Cloud Client ID.
+            <br />Requires a one-time Google Sign-In with Drive permissions enabled in your Licensing Server.
           </p>
         </div>
         <button
@@ -2230,12 +2179,10 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
             <Globe size={18} color="var(--accent-primary)" /> Step-by-Step Setup Guide
           </h5>
           <ol style={{ paddingLeft: '1.2rem', margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <li>Visit the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Google Cloud Console</a> and sign in.</li>
-            <li>Create a new project (e.g., "AOF Backups") and search for "Google Drive API" to enable it.</li>
-            <li>Configure the <strong>OAuth Consent Screen</strong> (External User Type).Publish the app.</li>
-            <li>Create <strong>OAuth Client ID</strong> credentials for a Web Application.</li>
-            <li>Add <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{window.location.origin}</code> to Authorized JavaScript origins.</li>
-            <li>Copy the Client ID and paste it below.</li>
+            <li>Ensure the <strong>Google Drive API</strong> is enabled in your Google Cloud Project.</li>
+            <li>In your Supabase Dashboard, add <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>https://www.googleapis.com/auth/drive.file</code> to your <strong>Google Auth Implementation</strong> scopes.</li>
+            <li>Simply sign in using the <strong>Sign in with Google</strong> button in the Profile or Licensing section.</li>
+            <li>Once signed in, your Drive backup will be active automatically!</li>
           </ol>
         </div>
       )}
@@ -2243,7 +2190,7 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
       {/* Main Settings Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
 
-        {/* Card 1: Credentials */}
+        {/* Card 1: Connection Status */}
         <div style={{
           padding: '1.5rem',
           backgroundColor: 'var(--bg-secondary)',
@@ -2251,48 +2198,31 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
           border: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1.25rem'
+          gap: '1.25rem',
+          justifyContent: 'center'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <ShieldCheck size={20} color="var(--accent-primary)" /> Credentials
+              <ShieldCheck size={20} color="var(--accent-primary)" /> Connection Status
             </h4>
-            {isConnected && <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Connected</span>}
+            {isConnected ? (
+              <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Active</span>
+            ) : (
+              <span className="badge badge-error" style={{ fontSize: '0.75rem' }}>Disconnected</span>
+            )}
           </div>
 
-          <div>
-            <label className="form-label" style={{ fontSize: '0.85rem' }}>OAuth 2.0 Client ID</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showClientId ? "text" : "password"}
-                className="form-input"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                placeholder="Ex: 123456789-abcdef..."
-                style={{ paddingRight: '2.5rem', fontFamily: 'monospace', fontSize: '0.9rem' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowClientId(!showClientId)}
-                style={{
-                  position: 'absolute',
-                  right: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  padding: 0,
-                  display: 'flex'
-                }}
-              >
-                {showClientId ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-              Origin constraint: ensure <code style={{ color: 'var(--text-primary)' }}>{window.location.origin}</code> is allowed in GCloud.
-            </p>
+          <div style={{ textAlign: 'center', padding: '1rem' }}>
+            {isConnected ? (
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <CheckCircle size={32} color="var(--success)" style={{ margin: '0 auto 1rem', display: 'block' }} />
+                Logged in as <strong>{identityUser?.email}</strong>
+              </div>
+            ) : (
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                Sign in with Google to enable cloud sync.
+              </div>
+            )}
           </div>
         </div>
 
@@ -2465,18 +2395,17 @@ const GoogleDriveBackup = ({ settings, setSettings, orders, expenses, inventory,
           className="btn btn-secondary"
           style={{ minWidth: '120px', flex: '1 1 auto' }}
         >
-          Save Config
+          Save Preferences
         </button>
 
         {!isConnected ? (
           <button
             onClick={handleConnect}
             className="btn btn-primary"
-            disabled={!clientId}
-            style={{ minWidth: '140px', flex: '1 1 auto', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
+            style={{ minWidth: '160px', flex: '1 1 auto', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
           >
             <Database size={18} />
-            Connect
+            Sign in with Google
           </button>
         ) : (
           <button
