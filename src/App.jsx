@@ -28,6 +28,7 @@ import TrialCountdownBar from './components/Common/TrialCountdownBar'
 import { useToast } from './components/Toast/ToastContext'
 import { useUpdateManager } from './hooks/useUpdateManager'
 import UpdateNotification from './components/UpdateNotification'
+import MandatoryUpdateModal from './components/MandatoryUpdateModal'
 
 // Inner App component that uses licensing context
 function AppContent() {
@@ -485,11 +486,18 @@ function AppContent() {
         />
       )}
 
-      {updateManager.status === 'available' && showUpdateToast && (
+      {updateManager.status === 'available' && showUpdateToast && !updateManager.updateInfo?.is_mandatory && (
         <UpdateNotification
           info={updateManager.updateInfo}
           onGoToUpdate={handleGoToUpdate}
           onClose={() => setShowUpdateToast(false)}
+        />
+      )}
+
+      {updateManager.status === 'available' && updateManager.updateInfo?.is_mandatory && (
+        <MandatoryUpdateModal
+          info={updateManager.updateInfo}
+          onUpdate={(platform) => updateManager.startDownload(platform)}
         />
       )}
     </div>

@@ -42,7 +42,10 @@ export const useUpdateManager = () => {
             }
 
             if (compareVersions(latest.version, currentVersion) > 1 || compareVersions(latest.version, currentVersion) === 1) {
-                setUpdateInfo(latest)
+                setUpdateInfo({
+                    ...latest,
+                    is_mandatory: latest.is_mandatory || false
+                })
                 setStatus('available')
             } else {
                 if (!isSilent) setStatus('up-to-date')
