@@ -735,11 +735,12 @@ export const calculateNextOrderNumber = (orders = []) => {
 export const exportAllData = async (orders, expenses, products, settings, trackingNumbers, orderCounter, inventory, includeSettings = true) => {
   try {
     // Fetch additional data from database
-    const [orderSources, quotations, expenseCategories, inventoryCategories] = await Promise.all([
+    const [orderSources, quotations, expenseCategories, inventoryCategories, inventoryLogs] = await Promise.all([
       getOrderSources(),
       getQuotations(),
       getExpenseCategories(),
-      getInventoryCategories()
+      getInventoryCategories(),
+      getInventoryLogs(null) // Fetch ALL logs for backup
     ])
 
     const data = {
@@ -754,7 +755,10 @@ export const exportAllData = async (orders, expenses, products, settings, tracki
       orderSources: orderSources || [],
       quotations: quotations || [],
       expenseCategories: expenseCategories || [],
-      inventoryCategories: inventoryCategories || []
+      quotations: quotations || [],
+      expenseCategories: expenseCategories || [],
+      inventoryCategories: inventoryCategories || [],
+      inventoryLogs: inventoryLogs || []
     }
 
     // Only include settings if requested
@@ -798,6 +802,8 @@ export const importAllDataFromObject = async (data, includeSettings = true) => {
     if (data.orderSources) await saveOrderSources(data.orderSources)
     if (data.quotations) await saveQuotations(data.quotations)
     if (data.expenseCategories) await saveExpenseCategories(data.expenseCategories)
+    if (data.inventoryCategories) await saveInventoryCategories(data.inventoryCategories)
+    if (data.inventoryLogs) await saveInventoryLogs(data.inventoryLogs)
     if (data.inventoryCategories) await saveInventoryCategories(data.inventoryCategories)
 
     // Only import settings if requested
@@ -868,7 +874,10 @@ export const clearAllData = async () => {
       db.trackingNumbers.clear(),
       db.orderCounter.clear(),
       db.products.clear(), // This table holds products, inventory categories, and expense categories
-      db.settings.clear()
+      db.settings.clear(),
+      db.quotations.clear(),
+      db.inventoryLogs.clear(),
+      db.syncQueue.clear() // Clear sync queue for a fresh start
     ])
 
     return { success: true, message: 'All data cleared successfully!' }
@@ -880,9 +889,16 @@ export const clearAllData = async () => {
 
 // ===== INVENTORY LOGS =====
 
-export const getInventoryLogs = async () => {
+export const getInventoryLogs = async (limit = 100) => {
   try {
-    const data = await db.inventoryLogs.orderBy('date').reverse().limit(100).toArray() // Fetch last 100 logs by default
+    let query = db.inventoryLogs.orderBy('date').reverse()
+
+    // Only apply limit if it is provided (not null/undefined/0/false)
+    if (limit) {
+      query = query.limit(limit)
+    }
+
+    const data = await query.toArray()
 
     // Data stored in Dexie should already be in camelCase, so no transformation needed.
     return data || []
@@ -927,6 +943,28 @@ export const deleteInventoryLog = async (logId) => {
     return true
   } catch (error) {
     console.error('Error deleting inventory log:', error)
+    return false
+  }
+}
+
+export const saveInventoryLogs = async (logs) => {
+  try {
+    // Bulk put to Dexie
+    const records = logs.map(log => ({
+      ...log,
+      updatedAt: log.date || new Date().toISOString()
+    }))
+
+    await db.inventoryLogs.bulkPut(records)
+
+    // Trigger auto-sync for each
+    records.forEach(record => {
+      autoSyncRecord('inventoryLogs', record)
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error saving inventory logs:', error)
     return false
   }
 }

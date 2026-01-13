@@ -2001,6 +2001,7 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
 const SETUP_SQL = `-- AOF Biz Database Setup Script
 -- Run this in your Supabase SQL Editor (https://app.supabase.com)
 
+-- 1. Orders
 CREATE TABLE IF NOT EXISTS orders (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2008,6 +2009,7 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 2. Expenses
 CREATE TABLE IF NOT EXISTS expenses (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2015,6 +2017,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 3. Inventory
 CREATE TABLE IF NOT EXISTS inventory (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2022,6 +2025,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 4. Settings
 CREATE TABLE IF NOT EXISTS settings (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2029,6 +2033,7 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Tracking Numbers
 CREATE TABLE IF NOT EXISTS tracking_numbers (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2036,6 +2041,7 @@ CREATE TABLE IF NOT EXISTS tracking_numbers (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Order Sources
 CREATE TABLE IF NOT EXISTS order_sources (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2043,6 +2049,7 @@ CREATE TABLE IF NOT EXISTS order_sources (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 7. Products (Categories)
 CREATE TABLE IF NOT EXISTS products (
   id TEXT PRIMARY KEY,
   user_id TEXT DEFAULT 'anon-user',
@@ -2050,7 +2057,31 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable RLS and setup permissive policies
+-- 8. Order Counter
+CREATE TABLE IF NOT EXISTS order_counter (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Inventory Logs
+CREATE TABLE IF NOT EXISTS inventory_logs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. Quotations
+CREATE TABLE IF NOT EXISTS quotations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT DEFAULT 'anon-user',
+  data JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
@@ -2058,7 +2089,11 @@ ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tracking_numbers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_sources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_counter ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quotations ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies to allow re-run
 DROP POLICY IF EXISTS "Public manage" ON orders;
 DROP POLICY IF EXISTS "Public manage" ON expenses;
 DROP POLICY IF EXISTS "Public manage" ON inventory;
@@ -2066,7 +2101,11 @@ DROP POLICY IF EXISTS "Public manage" ON settings;
 DROP POLICY IF EXISTS "Public manage" ON tracking_numbers;
 DROP POLICY IF EXISTS "Public manage" ON order_sources;
 DROP POLICY IF EXISTS "Public manage" ON products;
+DROP POLICY IF EXISTS "Public manage" ON order_counter;
+DROP POLICY IF EXISTS "Public manage" ON inventory_logs;
+DROP POLICY IF EXISTS "Public manage" ON quotations;
 
+-- Create permissive policies (Public Read/Write for now)
 CREATE POLICY "Public manage" ON orders FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public manage" ON expenses FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public manage" ON inventory FOR ALL USING (true) WITH CHECK (true);
@@ -2074,13 +2113,16 @@ CREATE POLICY "Public manage" ON settings FOR ALL USING (true) WITH CHECK (true)
 CREATE POLICY "Public manage" ON tracking_numbers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public manage" ON order_sources FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public manage" ON products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON order_counter FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON inventory_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public manage" ON quotations FOR ALL USING (true) WITH CHECK (true);
 
 -- Create storage bucket for backups
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('backups', 'backups', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage policies for anonymous access
+-- Storage policies
 DROP POLICY IF EXISTS "Public Manage Backups" ON storage.objects;
 CREATE POLICY "Public Manage Backups" ON storage.objects
 FOR ALL TO public
