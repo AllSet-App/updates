@@ -48,6 +48,13 @@ export const pushToCloud = async (tableName, record, userId) => {
             updated_at: record.updatedAt || new Date().toISOString()
         }
 
+        const payloadSize = JSON.stringify(cloudRecord).length
+        console.log(`Sync: pushing to ${tableName}, size: ${(payloadSize / 1024).toFixed(2)} KB`)
+
+        if (payloadSize > 1000000) {
+            console.warn(`Sync: Large payload detected for ${tableName} (${(payloadSize / 1024 / 1024).toFixed(2)} MB). This might cause connection issues.`)
+        }
+
         const { error } = await supabase
             .from(supabaseTable)
             .upsert(cloudRecord, { onConflict: 'id' })
