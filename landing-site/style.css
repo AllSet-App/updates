@@ -17,8 +17,8 @@
 
     --text-1: #ffffff;
     --text-2: #e2e8f0;
-    --text-3: #94a3b8;
-    --text-muted: #64748b;
+    --text-3: #cbd5e1;
+    --text-muted: #94a3b8;
 
     --border: rgba(255, 255, 255, 0.1);
     --border-light: rgba(255, 255, 255, 0.05);
@@ -115,11 +115,17 @@ html {
 body {
     font-family: var(--font-sans);
     background-color: var(--surface-1);
-    color: var(--text-1);
+    color: var(--text-2);
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+b,
+strong {
+    color: var(--text-1);
+    font-weight: var(--fw-bold);
 }
 
 a {
