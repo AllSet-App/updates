@@ -298,8 +298,28 @@ h1 {
 
 @media (max-width: 1024px) {
     .mobile-only {
-        display: flex !important;
+        display: block !important;
     }
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Hide menu toggle by default on desktop */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.menu-toggle:hover {
+    color: var(--brand-primary);
 }
 
 .nav-links a:hover,

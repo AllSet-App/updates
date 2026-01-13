@@ -188,4 +188,9 @@ function initNavbar() {
             localStorage.setItem('theme', newTheme);
         });
     }
+
+    // Fix: Re-initialize Lucide icons specifically for the navbar after setup
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
