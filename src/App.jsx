@@ -29,6 +29,7 @@ import { useToast } from './components/Toast/ToastContext'
 import { useUpdateManager } from './hooks/useUpdateManager'
 import UpdateNotification from './components/UpdateNotification'
 import MandatoryUpdateModal from './components/MandatoryUpdateModal'
+import MandatoryUpdateGracePopup from './components/MandatoryUpdateGracePopup'
 
 // Inner App component that uses licensing context
 function AppContent() {
@@ -37,18 +38,38 @@ function AppContent() {
   const { addToast } = useToast()
   const updateManager = useUpdateManager()
   const [showUpdateToast, setShowUpdateToast] = useState(true)
+  const [showGracePopup, setShowGracePopup] = useState(true)
 
   // Handle view change from update notification
   const handleGoToUpdate = () => {
     localStorage.setItem('aof_settings_active_tab', 'updates')
     setActiveView('settings')
     setShowUpdateToast(false)
+    setShowGracePopup(false)
   }
 
   // Background update check on load
   useEffect(() => {
     updateManager.checkForUpdates(true)
   }, [])
+
+  // Grace Period Hourly Toast
+  useEffect(() => {
+    if (updateManager.updateInfo?.is_mandatory && !updateManager.isBlocked && updateManager.timeRemaining) {
+      const hours = Math.floor(updateManager.timeRemaining / (1000 * 60 * 60))
+      const minutes = Math.floor((updateManager.timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
+
+      const timer = setInterval(() => {
+        addToast(
+          `Warning: Mandatory update required in ${hours}h ${minutes}m. Update now to avoid lockout.`,
+          'error',
+          8000
+        )
+      }, 60 * 60 * 1000) // Every hour
+
+      return () => clearInterval(timer)
+    }
+  }, [updateManager.updateInfo, updateManager.isBlocked, updateManager.timeRemaining])
 
   // Local "session" for compatibility with components expecting it
   const dummySession = { user: { id: 'local-user', email: 'local@app' } }
@@ -494,7 +515,16 @@ function AppContent() {
         />
       )}
 
-      {updateManager.status === 'available' && updateManager.updateInfo?.is_mandatory && (
+      {updateManager.status === 'available' && updateManager.updateInfo?.is_mandatory && !updateManager.isBlocked && showGracePopup && (
+        <MandatoryUpdateGracePopup
+          info={updateManager.updateInfo}
+          timeRemaining={updateManager.timeRemaining}
+          onUpdate={handleGoToUpdate}
+          onClose={() => setShowGracePopup(false)}
+        />
+      )}
+
+      {updateManager.status === 'available' && updateManager.updateInfo?.is_mandatory && updateManager.isBlocked && (
         <MandatoryUpdateModal
           info={updateManager.updateInfo}
           onUpdate={(platform) => updateManager.startDownload(platform)}

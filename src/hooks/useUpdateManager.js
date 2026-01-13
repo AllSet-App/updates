@@ -8,6 +8,9 @@ export const useUpdateManager = () => {
     const [progress, setProgress] = useState(0)
     const [downloadStats, setDownloadStats] = useState({ speed: 0, total: 0, transferred: 0 })
     const [error, setError] = useState(null)
+    const [deadline, setDeadline] = useState(null)
+    const [timeRemaining, setTimeRemaining] = useState(null)
+    const [isBlocked, setIsBlocked] = useState(false)
 
     const currentVersion = pkg.version
 
@@ -43,9 +46,24 @@ export const useUpdateManager = () => {
             }
 
             if (compareVersions(latest.version, currentVersion) > 1 || compareVersions(latest.version, currentVersion) === 1) {
+                const isMandatory = latest.is_mandatory || false
+
+                if (isMandatory) {
+                    const storedDeadline = localStorage.getItem('mandatory_deadline')
+                    let targetDeadline
+
+                    if (storedDeadline) {
+                        targetDeadline = parseInt(storedDeadline, 10)
+                    } else {
+                        targetDeadline = Date.now() + (48 * 60 * 60 * 1000) // 48 hours from now
+                        localStorage.setItem('mandatory_deadline', targetDeadline.toString())
+                    }
+                    setDeadline(targetDeadline)
+                }
+
                 setUpdateInfo({
                     ...latest,
-                    is_mandatory: latest.is_mandatory || false
+                    is_mandatory: isMandatory
                 })
                 setStatus('available')
             } else {
@@ -103,6 +121,29 @@ export const useUpdateManager = () => {
         }
     }, [updateInfo])
 
+    // Timer logic for blocking screen
+    useEffect(() => {
+        if (!deadline) return
+
+        const checkTime = () => {
+            const now = Date.now()
+            const remaining = deadline - now
+
+            setTimeRemaining(remaining)
+
+            if (remaining <= 0) {
+                setIsBlocked(true)
+            } else {
+                setIsBlocked(false)
+            }
+        }
+
+        checkTime() // Initial check
+        const interval = setInterval(checkTime, 60000) // Check every minute (sufficient for UI)
+
+        return () => clearInterval(interval)
+    }, [deadline])
+
     const installUpdate = useCallback(() => {
         if (window.electronAPI) {
             window.electronAPI.installUpdate()
@@ -118,6 +159,9 @@ export const useUpdateManager = () => {
         checkForUpdates,
         startDownload,
         installUpdate,
-        currentVersion
+        currentVersion,
+        deadline,
+        timeRemaining,
+        isBlocked
     }
 }
