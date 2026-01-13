@@ -7,19 +7,45 @@ const COMPONENTS = {
     navbar: `
     <nav class="navbar">
         <div class="container">
+            <!-- Brand -->
             <a href="index.html" class="nav-brand">
                 <img src="logo-light.png" alt="AOF Logo" class="logo-light">
                 <img src="logo-dark.png" alt="AOF Logo" class="logo-dark">
                 <div class="nav-brand-text">AOF <span>Biz</span></div>
             </a>
             
+            <!-- Desktop Menu -->
+            <div class="desktop-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="features.html" class="nav-link">Features</a>
+                <a href="index.html#about" class="nav-link">About</a>
+                <a href="download.html" class="nav-link">Download</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </div>
+
+            <!-- Right Actions -->
             <div class="nav-right">
                 <button class="theme-switch" id="theme-switch" aria-label="Toggle Theme">
                     <i data-lucide="sun" class="sun"></i>
                     <i data-lucide="moon" class="moon"></i>
                 </button>
                 <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
+                
+                <!-- Mobile Toggle -->
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Menu">
+                    <i data-lucide="menu"></i>
+                </button>
             </div>
+        </div>
+        
+        <!-- Mobile Drawer -->
+        <div class="mobile-drawer" id="mobile-drawer">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="features.html" class="nav-link">Features</a>
+            <a href="index.html#about" class="nav-link">About</a>
+            <a href="download.html" class="nav-link">Download</a>
+            <a href="contact.html" class="nav-link">Contact</a>
+            <a href="download.html" class="btn btn-primary btn-sm" style="margin-top: 1rem; width: 100%;">Get Started</a>
         </div>
     </nav>`,
 
@@ -143,9 +169,11 @@ function renderComponent(placeholderId, html, callback) {
  */
 function initNavbar() {
     const themeSwitch = document.getElementById('theme-switch');
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const mobileDrawer = document.getElementById('mobile-drawer');
     const htmlElement = document.documentElement;
 
-    // Theme Toggle
+    // 1. Theme Toggle
     if (themeSwitch) {
         themeSwitch.addEventListener('click', () => {
             const currentTheme = htmlElement.getAttribute('data-theme') || 'dark';
@@ -154,6 +182,51 @@ function initNavbar() {
             localStorage.setItem('theme', newTheme);
         });
     }
+
+    // 2. Mobile Menu Toggle
+    if (mobileToggle && mobileDrawer) {
+        mobileToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent closing immediately
+            const isOpen = mobileDrawer.classList.toggle('is-open');
+            const icon = mobileToggle.querySelector('i');
+            icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
+            if (window.lucide) window.lucide.createIcons();
+        });
+
+        // Close on Link Click
+        mobileDrawer.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileDrawer.classList.remove('is-open');
+                mobileToggle.querySelector('i').setAttribute('data-lucide', 'menu');
+                if (window.lucide) window.lucide.createIcons();
+            });
+        });
+
+        // Close on Outside Click
+        document.addEventListener('click', (e) => {
+            if (mobileDrawer.classList.contains('is-open') &&
+                !mobileDrawer.contains(e.target) &&
+                !mobileToggle.contains(e.target)) {
+
+                mobileDrawer.classList.remove('is-open');
+                mobileToggle.querySelector('i').setAttribute('data-lucide', 'menu');
+                if (window.lucide) window.lucide.createIcons();
+            }
+        });
+    }
+
+    // 3. Highlight Active Link (Desktop & Mobile)
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const allLinks = document.querySelectorAll('.nav-link');
+    allLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        // Simple accurate match
+        if (href === currentPath || (currentPath === '' && href === 'index.html')) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
 
     // Ensure Icons Rendered
     if (window.lucide) window.lucide.createIcons();
