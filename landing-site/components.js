@@ -13,24 +13,12 @@ const COMPONENTS = {
                 <div class="nav-brand-text">AOF <span>Biz</span></div>
             </a>
             
-            <div class="nav-menu" id="nav-menu">
-                <a href="index.html" class="nav-item">Home</a>
-                <a href="features.html" class="nav-item">Features</a>
-                <a href="index.html#about" class="nav-item">About</a>
-                <a href="download.html" class="nav-item">Download</a>
-                <a href="contact.html" class="nav-item">Contact</a>
-                <a href="download.html" class="btn btn-primary btn-sm nav-mobile-cta">Get Started</a>
-            </div>
-
             <div class="nav-right">
                 <button class="theme-switch" id="theme-switch" aria-label="Toggle Theme">
                     <i data-lucide="sun" class="sun"></i>
                     <i data-lucide="moon" class="moon"></i>
                 </button>
                 <a href="download.html" class="btn btn-primary btn-sm">Get Started</a>
-                <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Toggle Menu">
-                    <i data-lucide="menu"></i>
-                </button>
             </div>
         </div>
     </nav>`,
@@ -154,54 +142,10 @@ function renderComponent(placeholderId, html, callback) {
  * Initializes Navbar specific logic after injection
  */
 function initNavbar() {
-    const mobileToggle = document.getElementById('mobile-toggle');
-    const navMenu = document.getElementById('nav-menu');
     const themeSwitch = document.getElementById('theme-switch');
     const htmlElement = document.documentElement;
 
-    // 1. Highlight Active Link
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    const links = navMenu ? navMenu.querySelectorAll('.nav-item') : [];
-    links.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href === currentPath || (currentPath === '' && href === 'index.html')) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
-
-    // 2. Mobile Menu Logic
-    if (mobileToggle && navMenu) {
-        // Toggle Open/Close
-        mobileToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = navMenu.classList.toggle('is-open');
-            const icon = mobileToggle.querySelector('i');
-            icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
-            if (window.lucide) window.lucide.createIcons();
-        });
-
-        // Close on Link Click
-        navMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('is-open');
-                mobileToggle.querySelector('i').setAttribute('data-lucide', 'menu');
-                if (window.lucide) window.lucide.createIcons();
-            });
-        });
-
-        // Close on Outside Click
-        document.addEventListener('click', (e) => {
-            if (navMenu.classList.contains('is-open') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
-                navMenu.classList.remove('is-open');
-                mobileToggle.querySelector('i').setAttribute('data-lucide', 'menu');
-                if (window.lucide) window.lucide.createIcons();
-            }
-        });
-    }
-
-    // 3. Theme Toggle
+    // Theme Toggle
     if (themeSwitch) {
         themeSwitch.addEventListener('click', () => {
             const currentTheme = htmlElement.getAttribute('data-theme') || 'dark';

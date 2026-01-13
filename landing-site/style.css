@@ -368,6 +368,11 @@ h1 {
     justify-content: center;
     z-index: 10001;
     /* Above everything */
+    padding: 0;
+}
+
+.mobile-toggle-btn:active {
+    transform: scale(0.95);
 }
 
 /* --- RESPONSIVE NAVIGATION --- */
@@ -387,6 +392,9 @@ h1 {
         transform: translateX(100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-top: 1px solid rgba(255, 255, 255, 0.05);
+        z-index: 9998;
+        overflow-y: auto;
+        /* Allow scrolling if menu is long */
     }
 
     .nav-menu.is-open {
@@ -397,10 +405,13 @@ h1 {
     .nav-item {
         font-size: 1.25rem;
         font-weight: 600;
+        width: 100%;
+        text-align: center;
+        padding: 1rem;
     }
 
     .mobile-toggle-btn {
-        display: flex;
+        display: flex !important;
     }
 
     .nav-right .btn-primary {
