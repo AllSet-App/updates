@@ -242,22 +242,28 @@ h1 {
 }
 
 /* Theme-based logo switching */
-/* Default (Dark Mode): Show light logo, hide dark logo */
+/* Default (Dark Mode): User requested SWAP - showing dark logo on dark theme? Or just swapping file references? 
+   User said "logo files should be swapped for thr modes". 
+   Previous: Default(Dark) -> LightLogo. LightMode -> DarkLogo.
+   New: Default(Dark) -> DarkLogo. LightMode -> LightLogo. 
+*/
+
+/* Default (Dark Mode) */
 .logo-light {
-    display: block;
+    display: none;
 }
 
 .logo-dark {
-    display: none;
+    display: block;
 }
 
-/* Light Mode: Show dark logo, hide light logo */
+/* Light Mode */
 [data-theme="light"] .logo-light {
-    display: none;
+    display: block;
 }
 
 [data-theme="light"] .logo-dark {
-    display: block;
+    display: none;
 }
 
 .nav-links {
