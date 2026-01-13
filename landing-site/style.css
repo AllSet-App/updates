@@ -1000,7 +1000,7 @@ textarea.form-control {
 .wa-float-btn {
     position: fixed;
     bottom: 2rem;
-    left: 2rem;
+    right: 2rem;
     width: 3.5rem;
     height: 3.5rem;
     background: #25D366;
@@ -1010,7 +1010,7 @@ textarea.form-control {
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-    z-index: 900;
+    z-index: 1000;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: wa-bounce 0.5s ease-out forwards;
 }
@@ -1046,7 +1046,7 @@ textarea.form-control {
 /* Back to Top Button */
 .back-to-top {
     position: fixed;
-    bottom: 2rem;
+    bottom: 7rem;
     right: 2rem;
     width: 3rem;
     height: 3rem;
@@ -1148,7 +1148,7 @@ textarea.form-control {
     }
 
     .back-to-top {
-        bottom: 1rem;
+        bottom: 5.5rem;
         right: 1rem;
         width: 2.5rem;
         height: 2.5rem;
@@ -1156,7 +1156,7 @@ textarea.form-control {
 
     .wa-float-btn {
         bottom: 1rem;
-        left: 1rem;
+        right: 1rem;
         width: 3rem;
         height: 3rem;
     }
