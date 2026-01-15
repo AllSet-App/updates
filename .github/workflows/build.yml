@@ -40,13 +40,13 @@ jobs:
           cd android
           ./gradlew assembleRelease
           VERSION=${GITHUB_REF_NAME#v}
-          mv app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/AOF Biz - $VERSION.apk"
+          mv app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/AllSet - $VERSION.apk"
         shell: bash
 
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "android/app/build/outputs/apk/release/AOF Biz - *.apk"
+          files: "android/app/build/outputs/apk/release/AllSet - *.apk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Optional: Add Android Build logic here if you have 

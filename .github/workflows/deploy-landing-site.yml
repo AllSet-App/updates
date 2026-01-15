@@ -23,6 +23,6 @@ jobs:
         with:
           folder: landing-site
           branch: main
-          repository-name: aofbiz/aofbiz.github.io
+          repository-name: AllSet-App/AllSet-App.github.io
           token: ${{ secrets.API_TOKEN_GITHUB }}
           clean: true
