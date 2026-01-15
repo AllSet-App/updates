@@ -1,5 +1,5 @@
 /* 
-   AOF Biz Landing Page - Premium Style (2026) 
+   AllSet Landing Page - Premium Style (2026) 
    Theme: Dark Mode Default, Red/Black/White Palette
 */
 
@@ -1517,6 +1517,7 @@ button {
 .brand-logo:hover .brand-title {
     color: var(--brand-primary);
 }
+
 .features-contact-cta {
     padding: 10rem 0;
     text-align: center;
@@ -1533,6 +1534,7 @@ button {
     .brand-logo img {
         height: 38px !important;
     }
+
     .brand-title {
         font-size: 1.15rem !important;
     }
@@ -1543,9 +1545,11 @@ button {
         font-size: 2.5rem !important;
         padding: 0 1rem;
     }
+
     .feature-text-v4 h3 {
         font-size: 1.75rem !important;
     }
+
     .feature-text-v4 p {
         font-size: 1.1rem !important;
         padding: 0 1rem;
@@ -1556,19 +1560,24 @@ button {
     .brand-logo img {
         height: 32px !important;
     }
+
     .brand-title {
         font-size: 1rem !important;
     }
+
     .features-hero h1 {
         font-size: 2.1rem !important;
     }
+
     .feature-text-v4 h3 {
         font-size: 1.4rem !important;
         padding: 0 1rem;
     }
+
     .feature-list-check-v4 {
         padding: 0 1rem !important;
     }
+
     .feature-list-check-v4 li {
         font-size: 0.95rem !important;
     }
@@ -1579,6 +1588,7 @@ button {
     .container {
         padding: 0 1.5rem !important;
     }
+
     .feature-row-v4 {
         padding: 0 0.5rem;
     }
@@ -1589,10 +1599,12 @@ button {
         padding: 2rem 0;
         gap: 4rem !important;
     }
+
     .feature-visual-v4 {
         padding: 1.25rem !important;
         margin: 0 0.25rem;
     }
+
     .container {
         padding: 0 1.25rem !important;
     }
@@ -1601,8 +1613,8 @@ button {
 /* --- CRITICAL RESPONSIVENESS FIX --- */
 /* Fix the issue where padding: X 0; was stripping horizontal safety margins on mobile */
 
-.container, 
-.features-grid-v4, 
+.container,
+.features-grid-v4,
 .download-page-hero,
 .features-hero,
 .contact-section-v4 {
@@ -1611,14 +1623,15 @@ button {
 }
 
 @media (max-width: 768px) {
-    .container, 
+
+    .container,
     .features-grid-v4,
     .features-hero,
     .download-page-hero {
         padding-left: 1.25rem !important;
         padding-right: 1.25rem !important;
     }
-    
+
     /* Ensure feature cards and visuals don't overflow */
     .feature-row-v4,
     .feature-visual-v4 {
@@ -1630,12 +1643,13 @@ button {
 }
 
 @media (max-width: 480px) {
-    .container, 
+
+    .container,
     .features-grid-v4 {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
-    
+
     /* Extra breathing room for visual boxes */
     .feature-visual-v4 {
         padding: 1rem !important;
@@ -1644,6 +1658,7 @@ button {
 
 /* Section Spacing Optimization for Mobile */
 @media (max-width: 768px) {
+
     .features-section,
     .contact-section-v4,
     .pricing-section,
@@ -1653,13 +1668,14 @@ button {
         padding-top: 4rem !important;
         padding-bottom: 4rem !important;
     }
-    
+
     .section-header {
         margin-bottom: 3rem !important;
     }
 }
 
 @media (max-width: 480px) {
+
     .features-section,
     .contact-section-v4,
     .pricing-section,
@@ -1677,7 +1693,7 @@ button {
         padding-top: calc(var(--header-height) + 2rem) !important;
         padding-bottom: 3rem !important;
     }
-    
+
     .features-section,
     .contact-section-v4,
     .pricing-section,
@@ -1687,11 +1703,11 @@ button {
         padding-top: 3.5rem !important;
         padding-bottom: 3.5rem !important;
     }
-    
+
     .section-header {
         margin-bottom: 2.5rem !important;
     }
-    
+
     footer {
         padding: 3rem 0 !important;
         margin-top: 2rem !important;
@@ -1713,7 +1729,7 @@ button {
         padding-top: 3rem !important;
         padding-bottom: 3rem !important;
     }
-    
+
     .section-header {
         margin-bottom: 2rem !important;
     }
@@ -1723,6 +1739,7 @@ button {
     .hero-grid {
         gap: 2rem !important;
     }
+
     .features-grid {
         gap: 1.25rem !important;
     }
@@ -1738,7 +1755,7 @@ button {
         padding: 1.25rem !important;
         gap: 1rem !important;
     }
-    
+
     .contact-icon-v4 {
         width: 48px !important;
         height: 48px !important;
@@ -1772,6 +1789,7 @@ button {
         font-size: 2.25rem !important;
         line-height: 1.1 !important;
     }
+
     .hero-desc {
         font-size: 1rem !important;
     }

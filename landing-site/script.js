@@ -1,4 +1,4 @@
-/* AOF Biz Landing Logic */
+/* AllSet Landing Logic */
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
