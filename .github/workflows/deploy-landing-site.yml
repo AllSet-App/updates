@@ -3,26 +3,38 @@ name: Deploy Landing Site
 on:
   push:
     branches:
-      - main  # Set this to your default branch
+      - main
     paths:
       - 'landing-site/**'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: landing-site
-          branch: main
-          repository-name: AllSet-App/AllSet-App.github.io
-          token: ${{ secrets.API_TOKEN_GITHUB }}
-          clean: true
+          path: './landing-site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
