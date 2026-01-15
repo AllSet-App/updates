@@ -42,7 +42,7 @@ function AppContent() {
 
   // Handle view change from update notification
   const handleGoToUpdate = () => {
-    localStorage.setItem('aof_settings_active_tab', 'updates')
+    localStorage.setItem('allset_settings_active_tab', 'updates')
     setActiveView('settings')
     setShowUpdateToast(false)
     setShowGracePopup(false)
@@ -76,7 +76,7 @@ function AppContent() {
 
   const [dataLoading, setDataLoading] = useState(false)
   const [activeView, setActiveView] = useState(() => {
-    const savedView = localStorage.getItem('aof_active_view')
+    const savedView = localStorage.getItem('allset_active_view')
     const validViews = ['dashboard', 'orders', 'inventory', 'expenses', 'quotations', 'reports', 'settings', 'about', 'contact', 'profile']
     return validViews.includes(savedView) ? savedView : 'dashboard'
   })
@@ -147,14 +147,14 @@ function AppContent() {
 
   // Persist active view to localStorage
   useEffect(() => {
-    localStorage.setItem('aof_active_view', activeView)
+    localStorage.setItem('allset_active_view', activeView)
   }, [activeView])
 
   // Trial Warning Logic (2x per day)
   useEffect(() => {
     if (!isTrialActive) return
 
-    const TRIAL_WARNINGS_KEY = 'aof_trial_warnings'
+    const TRIAL_WARNINGS_KEY = 'allset_trial_warnings'
     const today = new Date().toDateString()
 
     try {
@@ -291,7 +291,7 @@ function AppContent() {
         setActiveView('contact')
         break
       case 'help':
-        window.open('https://aofbiz.github.io/docs.html', '_blank')
+        window.open('https://AllSet.github.io/docs.html', '_blank')
         break
       case 'about':
         setActiveView('about')

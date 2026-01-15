@@ -367,8 +367,8 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
     </svg>`
 
     // Business Info Logic
-    const defaultName = 'AOF Biz - Managment App'
-    const defaultTagline = 'From Chaos To Clarity.'
+    const defaultName = 'AllSet'
+    const defaultTagline = 'From Chaos to Clarity.'
 
     const bizName = isFreeUser ? defaultName : (settings?.businessName || defaultName)
     const bizTagline = isFreeUser ? defaultTagline : (settings?.businessTagline || defaultTagline)
@@ -517,7 +517,7 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
 
     <!-- Footer -->
     <div class="footer">
-      <p>Powered by AOF Biz – A Professional Business Managment App</p>
+      <p>Powered by AllSet – A Professional Business Management App</p>
     </div>
   </div>
 
@@ -683,8 +683,8 @@ const ViewOrderModal = ({ order, customerOrderCount = 1, onClose, onSave, onRequ
               marginBottom: '2rem',
               display: 'none'
             }}>
-              <h1 style={{ color: 'var(--accent-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>AOF Biz</h1>
-              <p style={{ color: 'var(--text-muted)' }}>From Chaos To Clarity.</p>
+              <h1 style={{ color: 'var(--accent-primary)', fontSize: '2rem', marginBottom: '0.5rem' }}>AllSet</h1>
+              <p style={{ color: 'var(--text-muted)' }}>From Chaos to Clarity.</p>
             </div>
 
 

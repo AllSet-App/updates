@@ -21,7 +21,7 @@ const Profile = ({ onUpdateSettings }) => {
     const { effectiveTheme } = useTheme()
     const { addToast } = useToast()
 
-    const logoSrc = effectiveTheme === 'dark' ? './logo-dark.svg' : './logo.svg'
+    const logoSrc = effectiveTheme === 'dark' ? './logo-dark.png' : './logo-light.png'
 
     const [settings, setSettings] = useState({
         businessName: '',
@@ -124,8 +124,8 @@ const Profile = ({ onUpdateSettings }) => {
             "This will restore your Business Name, Tagline, and Logo to the application's default branding. This action cannot be undone.",
             () => {
                 const defaults = {
-                    businessName: 'AOF Biz - Managment App',
-                    businessTagline: 'From Chaos To Clarity',
+                    businessName: 'AllSet',
+                    businessTagline: 'From Chaos to Clarity',
                     businessLogo: null
                 }
                 setSettings(prev => ({ ...prev, ...defaults }))
@@ -169,7 +169,7 @@ const Profile = ({ onUpdateSettings }) => {
         }
 
         const handleWhatsApp = () => {
-            const message = encodeURIComponent("I'd like to purchase an AOF Biz PRO license for my Google account.")
+            const message = encodeURIComponent("I'd like to purchase an AllSet PRO license for my Google account.")
             window.open(`https://wa.me/94750350109?text=${message}`, '_blank')
         }
 
@@ -409,7 +409,7 @@ const Profile = ({ onUpdateSettings }) => {
                         onClick={() => {
                             showConfirm('Reset Preferences', 'This will reset your plan and theme preferences and reload the app. Your data remains safe. Continue?', () => {
                                 resetSelection()
-                                localStorage.removeItem('aof_theme')
+                                localStorage.removeItem('allset_theme')
                                 window.location.reload()
                             })
                         }}
@@ -492,13 +492,13 @@ const Profile = ({ onUpdateSettings }) => {
                                         margin: 0, fontSize: '2.2rem', fontWeight: 900,
                                         color: 'var(--text-primary)', letterSpacing: '-1px', lineHeight: 1.1
                                     }}>
-                                        {settings.businessName || (isFreeUser ? "AOF Biz - Managment App" : "Your Business")}
+                                        {settings.businessName || (isFreeUser ? "AllSet" : "Your Business")}
                                     </h3>
                                     <p style={{
                                         margin: '8px 0 0', fontSize: '1.1rem', fontStyle: 'italic',
                                         color: 'var(--text-secondary)', opacity: 0.8
                                     }}>
-                                        {settings.businessTagline || (isFreeUser ? "From Chaos To Clarity" : "Your Brand Tagline")}
+                                        {settings.businessTagline || (isFreeUser ? "From Chaos to Clarity" : "Your Brand Tagline")}
                                     </p>
                                 </div>
                             </div>
@@ -692,8 +692,8 @@ const Profile = ({ onUpdateSettings }) => {
                                     <label className="form-label">Business Name</label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. AOF Biz"
-                                        value={isFreeUser ? "AOF Biz - Managment App" : settings.businessName}
+                                        placeholder="e.g. AllSet"
+                                        value={isFreeUser ? "AllSet" : settings.businessName}
                                         onChange={(e) => handleChange('businessName', e.target.value)}
                                         disabled={isFreeUser}
                                         className="form-input"
@@ -704,8 +704,8 @@ const Profile = ({ onUpdateSettings }) => {
                                     <label className="form-label">Tagline / Slogan</label>
                                     <input
                                         type="text"
-                                        placeholder="From Chaos To Clarity."
-                                        value={isFreeUser ? "From Chaos To Clarity." : settings.businessTagline}
+                                        placeholder="From Chaos to Clarity."
+                                        value={isFreeUser ? "From Chaos to Clarity." : settings.businessTagline}
                                         onChange={(e) => handleChange('businessTagline', e.target.value)}
                                         disabled={isFreeUser}
                                         className="form-input"
@@ -919,7 +919,7 @@ const Profile = ({ onUpdateSettings }) => {
                     <div>
                         <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Free Mode Restrictions</h4>
                         <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                            Branding features like custom logos and business names are disabled. Invoices will carry "AOF Biz" branding until a Pro license is activated.
+                            Branding features like custom logos and business names are disabled. Invoices will carry "AllSet" branding until a Pro license is activated.
                         </p>
                     </div>
                 </div>

@@ -35,12 +35,12 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
   const { userMode, setUserMode, resetSelection, isProUser, isFreeUser } = useLicensing()
   const { theme, setTheme, fontFamily, setFontFamily, fontSize, setFontSize, effectiveTheme, paletteId, setPalette } = useTheme()
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('aof_settings_active_tab') || 'general'
+    return localStorage.getItem('allset_settings_active_tab') || 'general'
   })
 
   // Persistence for active tab
   useEffect(() => {
-    localStorage.setItem('aof_settings_active_tab', activeTab)
+    localStorage.setItem('allset_settings_active_tab', activeTab)
   }, [activeTab])
   const [settings, setSettings] = useState({})
   const [expandedSections, setExpandedSections] = useState({
@@ -2003,7 +2003,7 @@ const WhatsAppTemplates = ({ settings, setSettings, showAlert, showConfirm, show
 }
 
 // SQL Script for manual setup
-const SETUP_SQL = `-- AOF Biz Database Setup Script
+const SETUP_SQL = `-- AllSet Database Setup Script
 -- Run this in your Supabase SQL Editor (https://app.supabase.com)
 
 -- 1. Orders
@@ -2278,7 +2278,7 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
         timestamp: new Date().toISOString(),
         orders, expenses, products, settings, trackingNumbers, orderCounter, inventory
       }
-      const fileName = `AOF_Backup_${new Date().toISOString().slice(0, 10)}_${new Date().getTime()}.json`
+      const fileName = `allset_Backup_${new Date().toISOString().slice(0, 10)}_${new Date().getTime()}.json`
       await uploadBackup(fileName, JSON.stringify(exportData, null, 2))
       const now = new Date().toISOString()
       setLastBackup(now)
@@ -2672,8 +2672,8 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
 
 // General Configuration Component
 const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
-  const [businessName, setBusinessName] = useState(settings?.businessName || 'AOF Biz - Management App')
-  const [businessTagline, setBusinessTagline] = useState(settings?.businessTagline || 'From Chaos To Clarity')
+  const [businessName, setBusinessName] = useState(settings?.businessName || 'AllSet')
+  const [businessTagline, setBusinessTagline] = useState(settings?.businessTagline || 'From Chaos to Clarity')
   const [businessLogo, setBusinessLogo] = useState(settings?.businessLogo || null)
   const [defaultDeliveryCharge, setDefaultDeliveryCharge] = useState(settings?.general?.defaultDeliveryCharge ?? 400)
   const [quotationExpiryDays, setQuotationExpiryDays] = useState(settings?.general?.quotationExpiryDays ?? 7)
@@ -2684,8 +2684,8 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
 
   useEffect(() => {
     if (settings) {
-      setBusinessName(settings.businessName || 'AOF Biz - Management App')
-      setBusinessTagline(settings.businessTagline || 'From Chaos To Clarity')
+      setBusinessName(settings.businessName || 'AllSet')
+      setBusinessTagline(settings.businessTagline || 'From Chaos to Clarity')
       setBusinessLogo(settings.businessLogo || null)
       if (settings.general) {
         setDefaultDeliveryCharge(settings.general.defaultDeliveryCharge ?? 400)
@@ -2714,8 +2714,8 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
     setIsSaving(true)
     const updatedSettings = {
       ...settings,
-      businessName: businessName.trim() || 'AOF Biz - Management App',
-      businessTagline: businessTagline.trim() || 'From Chaos To Clarity',
+      businessName: businessName.trim() || 'AllSet',
+      businessTagline: businessTagline.trim() || 'From Chaos to Clarity',
       businessLogo: businessLogo,
       general: {
         ...settings?.general,
@@ -2754,7 +2754,7 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
                 className="form-input"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="AOF Biz"
+                placeholder="AllSet"
               />
               <small style={{ color: 'var(--text-muted)' }}>This appears at the top of your sidebar.</small>
             </div>

@@ -31,10 +31,10 @@ export const LicensingProvider = ({ children }) => {
 
     // Mode selection persistence
     const [userMode, setUserMode] = useState(() => {
-        const saved = localStorage.getItem('aof_user_mode') || sessionStorage.getItem('aof_user_mode')
+        const saved = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
         return saved || null
     })
-    const [rememberSelection, setRememberSelection] = useState(() => localStorage.getItem('aof_remember_selection') === 'true')
+    const [rememberSelection, setRememberSelection] = useState(() => localStorage.getItem('allset_remember_selection') === 'true')
 
     // Trial state
     const [timeLeft, setTimeLeft] = useState(0)
@@ -44,7 +44,7 @@ export const LicensingProvider = ({ children }) => {
      * Calculate and update trial time
      */
     const updateTrialTime = useCallback(() => {
-        const trialStart = localStorage.getItem('aof_trial_start')
+        const trialStart = localStorage.getItem('allset_trial_start')
         if (trialStart) {
             const now = Date.now()
             const startStr = trialStart
@@ -54,7 +54,7 @@ export const LicensingProvider = ({ children }) => {
             if (remaining <= 0) {
                 // Trial Expired
                 setTimeLeft(0)
-                // We do NOT clear aof_trial_start here so we know they DID have a trial that is now expired
+                // We do NOT clear allset_trial_start here so we know they DID have a trial that is now expired
                 // This prevents them from starting a new one.
                 return false
             } else {
@@ -97,7 +97,7 @@ export const LicensingProvider = ({ children }) => {
                         setAuthError(null)
                     } else {
                         // User is NOT Pro - check if they are trying to access Pro or just using Free
-                        const intendedMode = localStorage.getItem('aof_user_mode') || sessionStorage.getItem('aof_user_mode')
+                        const intendedMode = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
 
                         // Check for valid trial
                         const hasActiveTrial = updateTrialTime()
@@ -155,8 +155,8 @@ export const LicensingProvider = ({ children }) => {
                         setUserMode('pro')
                         setAuthError(null)
                     } else {
-                        const intendedMode = localStorage.getItem('aof_user_mode') || sessionStorage.getItem('aof_user_mode')
-                        const authIntent = sessionStorage.getItem('aof_auth_intent')
+                        const intendedMode = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
+                        const authIntent = sessionStorage.getItem('allset_auth_intent')
 
                         // Check for valid existing trial
                         const hasActiveTrial = updateTrialTime()
@@ -164,7 +164,7 @@ export const LicensingProvider = ({ children }) => {
                         if (authIntent === 'trial') {
                             await activateTrial(user)
                             setAuthError(null)
-                            sessionStorage.removeItem('aof_auth_intent')
+                            sessionStorage.removeItem('allset_auth_intent')
                             // activateTrial sets userMode to 'pro' internally
                         } else if (intendedMode === 'pro') {
                             if (hasActiveTrial) {
@@ -222,19 +222,19 @@ export const LicensingProvider = ({ children }) => {
     useEffect(() => {
         if (userMode) {
             if (rememberSelection) {
-                localStorage.setItem('aof_user_mode', userMode)
+                localStorage.setItem('allset_user_mode', userMode)
             } else {
-                sessionStorage.setItem('aof_user_mode', userMode)
-                localStorage.removeItem('aof_user_mode')
+                sessionStorage.setItem('allset_user_mode', userMode)
+                localStorage.removeItem('allset_user_mode')
             }
         } else {
-            localStorage.removeItem('aof_user_mode')
-            sessionStorage.removeItem('aof_user_mode')
+            localStorage.removeItem('allset_user_mode')
+            sessionStorage.removeItem('allset_user_mode')
         }
     }, [userMode, rememberSelection])
 
     useEffect(() => {
-        localStorage.setItem('aof_remember_selection', rememberSelection)
+        localStorage.setItem('allset_remember_selection', rememberSelection)
     }, [rememberSelection])
 
     /**
@@ -267,7 +267,7 @@ export const LicensingProvider = ({ children }) => {
         }
 
         const now = Date.now().toString()
-        localStorage.setItem('aof_trial_start', now)
+        localStorage.setItem('allset_trial_start', now)
         updateTrialTime()
         setUserMode('pro') // Unlock features temporarily
     }
@@ -275,8 +275,8 @@ export const LicensingProvider = ({ children }) => {
     const resetSelection = () => {
         setUserMode(null)
         setRememberSelection(false)
-        localStorage.removeItem('aof_user_mode')
-        localStorage.removeItem('aof_remember_selection')
+        localStorage.removeItem('allset_user_mode')
+        localStorage.removeItem('allset_remember_selection')
     }
 
     // Derivative states for UI - Strictly controlled
@@ -284,7 +284,7 @@ export const LicensingProvider = ({ children }) => {
     const isProUser = userMode === 'pro' && (licenseStatus === 'pro' || timeLeft > 0)
     const isFreeUser = userMode === 'free' || !isProUser
     const isTrialActive = timeLeft > 0 && licenseStatus !== 'pro'
-    const isTrialExpired = localStorage.getItem('aof_trial_start') && timeLeft <= 0 && licenseStatus !== 'pro'
+    const isTrialExpired = localStorage.getItem('allset_trial_start') && timeLeft <= 0 && licenseStatus !== 'pro'
 
     const [session, setSession] = useState(null)
 

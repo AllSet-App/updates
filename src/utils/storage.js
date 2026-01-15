@@ -6,10 +6,10 @@ import { isSupabaseConfigured, getSyncUserId } from './supabaseClient'
 import { pushToCloud, deleteFromCloud } from './syncEngine'
 
 // Bump version to invalidate any previous cached compat modes that might be too strict.
-const ORDERS_SCHEMA_CACHE_KEY = 'aof_orders_schema_missing_cols_v4'
-const ORDER_SOURCES_WARNED_KEY = 'aof_warned_missing_order_sources_v1'
+const ORDERS_SCHEMA_CACHE_KEY = 'allset_orders_schema_missing_cols_v4'
+const ORDER_SOURCES_WARNED_KEY = 'allset_warned_missing_order_sources_v1'
 // Debug/verification helper: confirm multi-item orders really persisted
-const ORDERS_MULTIITEM_VERIFY_KEY = 'aof_orders_multiitem_verify_v1'
+const ORDERS_MULTIITEM_VERIFY_KEY = 'allset_orders_multiitem_verify_v1'
 
 // Auto-sync helper - syncs record to cloud if configured
 // Uses dynamic imports to avoid circular dependency
@@ -246,8 +246,8 @@ Tracking number: {{tracking_number}}
 මෙහියම්කිසි ගැටලුවක් ඇතිනම් විමසීමට කාරුණික වන්න.`
 
   const defaultSettings = {
-    businessName: 'AOF Biz - Management App',
-    businessTagline: 'From Chaos To Clarity',
+    businessName: 'AllSet',
+    businessTagline: 'From Chaos to Clarity',
     businessLogo: null,
     orderNumberConfig: {
       enabled: false,
@@ -778,7 +778,7 @@ export const exportAllData = async (orders, expenses, products, settings, tracki
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `aof-biz-backup-${new Date().toISOString().split('T')[0]}.json`
+    link.download = `allset-backup-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

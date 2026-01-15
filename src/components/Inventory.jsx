@@ -90,10 +90,10 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
   }
 
   // Date Filter State for History
-  const [filterType, setFilterType] = useState(() => localStorage.getItem('aof_inventory_filter_type') || 'month')
-  const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('aof_inventory_selected_month') || format(new Date(), 'yyyy-MM'))
-  const [startDate, setStartDate] = useState(() => localStorage.getItem('aof_inventory_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
-  const [endDate, setEndDate] = useState(() => localStorage.getItem('aof_inventory_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
+  const [filterType, setFilterType] = useState(() => localStorage.getItem('allset_inventory_filter_type') || 'month')
+  const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('allset_inventory_selected_month') || format(new Date(), 'yyyy-MM'))
+  const [startDate, setStartDate] = useState(() => localStorage.getItem('allset_inventory_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
+  const [endDate, setEndDate] = useState(() => localStorage.getItem('allset_inventory_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -129,19 +129,19 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
 
   // Persist date filter state
   useEffect(() => {
-    localStorage.setItem('aof_inventory_filter_type', filterType)
+    localStorage.setItem('allset_inventory_filter_type', filterType)
   }, [filterType])
 
   useEffect(() => {
-    localStorage.setItem('aof_inventory_selected_month', selectedMonth)
+    localStorage.setItem('allset_inventory_selected_month', selectedMonth)
   }, [selectedMonth])
 
   useEffect(() => {
-    localStorage.setItem('aof_inventory_start_date', startDate)
+    localStorage.setItem('allset_inventory_start_date', startDate)
   }, [startDate])
 
   useEffect(() => {
-    localStorage.setItem('aof_inventory_end_date', endDate)
+    localStorage.setItem('allset_inventory_end_date', endDate)
   }, [endDate])
 
   // Filter logs by date

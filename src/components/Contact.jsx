@@ -44,9 +44,9 @@ const Contact = () => {
                             <div>
                                 <h3 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.25rem' }}>Email Support</h3>
                                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>We'll get back to you within 24 hours</p>
-                                <a href="mailto:aofbizhelp@gmail.com
+                                <a href="mailto:AllSethelp@gmail.com
 " style={{ color: 'var(--accent-primary)', fontWeight: 500, textDecoration: 'none' }}>
-                                    aofbizhelp@gmail.com
+                                    AllSethelp@gmail.com
 
                                 </a>
                             </div>

@@ -29,9 +29,9 @@ export const signInWithGoogle = async () => {
 
     let redirectTo = window.location.origin
     if (isElectron) {
-        redirectTo = 'aof-biz://auth-callback'
+        redirectTo = 'allset://auth-callback'
     } else if (isMobile) {
-        redirectTo = 'com.aofbiz.app://auth-callback'
+        redirectTo = 'com.allset.app://auth-callback'
     }
 
     const { data, error } = await masterClient.auth.signInWithOAuth({

@@ -10,13 +10,13 @@ export const useTheme = () => {
   return context
 }
 
-const THEME_STORAGE_KEY = 'aof_theme'
-const FONT_STORAGE_KEY = 'aof_font_family'
-const SIZE_STORAGE_KEY = 'aof_font_size'
-const PALETTE_STORAGE_KEY = 'aof_palette_id'
+const THEME_STORAGE_KEY = 'allset_theme'
+const FONT_STORAGE_KEY = 'allset_font_family'
+const SIZE_STORAGE_KEY = 'allset_font_size'
+const PALETTE_STORAGE_KEY = 'allset_palette_id'
 
 export const PALETTES = {
-  signature: { id: 'signature', name: 'AOF Signature', color: '#FF2E36', hover: '#e0282f' },
+  signature: { id: 'signature', name: 'AllSet Signature', color: '#FF2E36', hover: '#e0282f' },
   midnight: { id: 'midnight', name: 'Midnight Blue', color: '#3B82F6', hover: '#2563EB' },
   emerald: { id: 'emerald', name: 'Emerald Garden', color: '#10B981', hover: '#059669' },
   sunburst: { id: 'sunburst', name: 'Sunburst Gold', color: '#F59E0B', hover: '#D97706' },

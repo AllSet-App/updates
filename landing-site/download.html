@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download AllSet - Management Suite</title>
+    <meta name="description" content="Download AllSet for Windows and Android.">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css?v=2.0">
+
+    <!-- JS -->
+    <script src="config.js?v=2.0"></script>
+    <script src="script.js?v=2.0" defer></script>
+
+    <!-- Prevent FOUC -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <a href="index.html" class="brand-logo">
+                <img src="logo-light.png" alt="AllSet" class="logo-light">
+                <img src="logo-dark.png" alt="AllSet" class="logo-dark">
+                <span class="brand-title">AllSet</span>
+            </a>
+
+            <nav class="desktop-nav">
+                <a href="index.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="download.html" class="active">Download</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
+                <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Menu">
+                    <svg id="icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                    <svg id="icon-close" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html">Home</a>
+        <a href="features.html">Features</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="download.html">Download</a>
+        <a href="index.html#contact">Contact</a>
+    </div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="download-page-hero animate-on-scroll">
+            <div class="container">
+                <span class="feature-tag-v4 version-text">v2.0.10 Available</span>
+                <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 2rem;">Get Started with AllSet</h1>
+                <p class="hero-desc" style="max-width: 600px; margin: 0 auto 3rem;">Download the official application
+                    and start managing with precision.</p>
+
+                <div class="hero-buttons" style="justify-content: center;">
+                    <a href="#" class="btn btn-primary btn-download-win">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path
+                                d="M0 3.449L9.75 2.1V11.7H0V3.449zm0 17.1L9.75 21.9V12.3H0v8.249zM10.5 2V11.7H24V0L10.5 2zm0 20l13.5 2V12.3H10.5V22z" />
+                        </svg>
+                        Download for Windows
+                    </a>
+                    <a href="#" class="btn btn-secondary btn-download-android">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path
+                                d="M17.523 15.3414C17.0709 15.3414 16.6978 14.9701 16.6978 14.5162C16.6978 14.0623 17.0709 13.691 17.523 13.691C17.9751 13.691 18.3482 14.0623 18.3482 14.5162C18.3482 14.9701 17.9751 15.3414 17.523 15.3414ZM6.47703 15.3414C6.02492 15.3414 5.65181 14.9701 5.65181 14.5162C5.65181 14.0623 6.02492 13.691 6.47703 13.691C6.92914 13.691 7.30225 14.0623 7.30225 14.5162C7.30225 14.9701 6.92914 15.3414 6.47703 15.3414ZM17.8631 10.1554L20.0811 6.32422C20.1895 6.1384 20.1258 5.89965 19.938 5.79155C19.7503 5.68345 19.5106 5.74688 19.4032 5.93481L17.1519 9.82424C15.6519 9.13809 13.914 8.75 12 8.75C10.086 8.75 8.34814 9.13809 6.84814 9.82424L4.59685 5.93481C4.48937 5.74688 4.2497 5.68345 4.06197 5.79155C3.87423 5.89965 3.81055 6.1384 3.9189 6.32422L6.13689 10.1554C2.61058 12.0626 0.222304 15.619 0 19.749H24C23.7777 15.619 21.3894 12.0626 17.8631 10.1554Z" />
+                        </svg>
+                        Get Android App
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Safety Notification -->
+        <section class="container animate-on-scroll">
+            <div class="safety-notice-v1">
+                <h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    Safety Information
+                </h3>
+                <p>As AllSet is currently in its growth phase, browsers or OS might flag the download as <span
+                        class="highlight-v1">"Potentially Unsafe"</span>. <b>The app is completely safe to use</b>.
+                    Please follow the guides below to bypass these flags.</p>
+            </div>
+        </section>
+
+        <!-- Installation Guides -->
+        <section class="container">
+            <div class="guide-grid-v1">
+                <!-- Windows Guide -->
+                <div class="guide-card-v1 animate-on-scroll">
+                    <h3>Windows Guide</h3>
+                    <ul class="guide-steps-v1">
+                        <li><span class="step-num-v1">1</span>
+                            <div>Download the <span class="highlight-v1">.exe</span> installer.</div>
+                        </li>
+                        <li><span class="step-num-v1">2</span>
+                            <div>If Chrome warns, select <span class="highlight-v1">"Keep"</span>.</div>
+                        </li>
+                        <li><span class="step-num-v1">3</span>
+                            <div>Click <span class="highlight-v1">"More Info"</span> & <span class="highlight-v1">"Run
+                                    anyway"</span> on SmartScreen.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Android Guide -->
+                <div class="guide-card-v1 animate-on-scroll">
+                    <h3>Android Guide</h3>
+                    <ul class="guide-steps-v1">
+                        <li><span class="step-num-v1">1</span>
+                            <div>Download the <span class="highlight-v1">.apk</span> file.</div>
+                        </li>
+                        <li><span class="step-num-v1">2</span>
+                            <div>Enable <span class="highlight-v1">"Unknown Sources"</span> in Settings.</div>
+                        </li>
+                        <li><span class="step-num-v1">3</span>
+                            <div>Return and select <span class="highlight-v1">"Install"</span>.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simple Contact CTA -->
+        <section class="container" style="padding: 0 0 10rem; text-align: center;">
+            <div class="animate-on-scroll">
+                <h2>Still Having Trouble?</h2>
+                <p>Our support team is ready to help you get the application running.</p>
+                <div style="margin-top: 2.5rem;">
+                    <a href="index.html#contact" class="btn btn-primary">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border-color); padding: 4rem 0;">
+        <div class="container" style="text-align: center; color: var(--text-muted);">
+            <p>&copy; 2026 AllSet. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

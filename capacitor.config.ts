@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.aofbiz.app',
-  appName: 'AOF Biz',
+  appId: 'com.allset.app',
+  appName: 'AllSet',
   webDir: 'dist',
   server: {
     // Allow external URLs (for Supabase)

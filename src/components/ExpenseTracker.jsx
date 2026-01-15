@@ -23,10 +23,10 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
   const [categoryFilter, setCategoryFilter] = useState('all')
 
   // Date Filter State
-  const [filterType, setFilterType] = useState(() => localStorage.getItem('aof_expenses_filter_type') || 'month')
-  const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('aof_expenses_selected_month') || format(new Date(), 'yyyy-MM'))
-  const [startDate, setStartDate] = useState(() => localStorage.getItem('aof_expenses_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
-  const [endDate, setEndDate] = useState(() => localStorage.getItem('aof_expenses_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
+  const [filterType, setFilterType] = useState(() => localStorage.getItem('allset_expenses_filter_type') || 'month')
+  const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('allset_expenses_selected_month') || format(new Date(), 'yyyy-MM'))
+  const [startDate, setStartDate] = useState(() => localStorage.getItem('allset_expenses_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
+  const [endDate, setEndDate] = useState(() => localStorage.getItem('allset_expenses_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
 
   // Modal State
   const [modalConfig, setModalConfig] = useState({
@@ -75,19 +75,19 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
 
   // Persist date filter state
   useEffect(() => {
-    localStorage.setItem('aof_expenses_filter_type', filterType)
+    localStorage.setItem('allset_expenses_filter_type', filterType)
   }, [filterType])
 
   useEffect(() => {
-    localStorage.setItem('aof_expenses_selected_month', selectedMonth)
+    localStorage.setItem('allset_expenses_selected_month', selectedMonth)
   }, [selectedMonth])
 
   useEffect(() => {
-    localStorage.setItem('aof_expenses_start_date', startDate)
+    localStorage.setItem('allset_expenses_start_date', startDate)
   }, [startDate])
 
   useEffect(() => {
-    localStorage.setItem('aof_expenses_end_date', endDate)
+    localStorage.setItem('allset_expenses_end_date', endDate)
   }, [endDate])
 
   const currentDate = new Date()

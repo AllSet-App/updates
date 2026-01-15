@@ -123,7 +123,7 @@ const MandatoryUpdateModal = ({ info, onUpdate, onCancel, progress, downloadStat
                     </div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Mandatory Update Required</h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem', maxWidth: '400px', margin: '0.5rem auto 0' }}>
-                        The grace period for this update has expired. You must update to continue using AOF Biz.
+                        The grace period for this update has expired. You must update to continue using AllSet.
                     </p>
                 </div>
 

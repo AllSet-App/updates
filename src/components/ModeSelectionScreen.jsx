@@ -23,7 +23,7 @@ const ModeSelectionScreen = ({ onModeSelected }) => {
         setLocalError(null)
     }, [activeMode])
 
-    const logoSrc = effectiveTheme === 'dark' ? './logo-dark.svg' : './logo.svg'
+    const logoSrc = effectiveTheme === 'dark' ? './logo-dark.png' : './logo-light.png'
 
     const handleFreeMode = async () => {
         setIsLoading(true)
@@ -60,13 +60,13 @@ const ModeSelectionScreen = ({ onModeSelected }) => {
         setLocalError(null)
         try {
             // Set flag so LicensingContext knows to activate trial after auth
-            sessionStorage.setItem('aof_auth_intent', 'trial')
+            sessionStorage.setItem('allset_auth_intent', 'trial')
             await login()
             // Redirection to Pro mode happens in LicensingContext after verification
             setIsLoading(false)
         } catch (err) {
             console.error('Trial login error:', err)
-            sessionStorage.removeItem('aof_auth_intent')
+            sessionStorage.removeItem('allset_auth_intent')
             setLocalError('Google sign-in failed. Please try again.')
             setIsLoading(false)
         }
@@ -126,9 +126,9 @@ const ModeSelectionScreen = ({ onModeSelected }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '3.5rem' }}>
                         <img src={logoSrc} alt="Logo" style={{ height: '130px' }} />
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1, letterSpacing: '-1px' }}>AOF Biz</h1>
-                            <h2 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '2px' }}>MANAGMENT APP</h2>
-                            <p style={{ fontSize: '0.85rem', fontStyle: 'italic', fontWeight: 400, color: 'var(--text-primary)', margin: '6px 0 0', opacity: 0.8 }}>From Chaos To Clarity</p>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1, letterSpacing: '-1px' }}>AllSet</h1>
+                            <h2 style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '2px' }}>Management APP</h2>
+                            <p style={{ fontSize: '0.85rem', fontStyle: 'italic', fontWeight: 400, color: 'var(--text-primary)', margin: '6px 0 0', opacity: 0.8 }}>From Chaos to Clarity</p>
                         </div>
                     </div>
 
@@ -297,7 +297,7 @@ const ModeSelectionScreen = ({ onModeSelected }) => {
                                 <div style={{ textAlign: 'center' }}>
                                     <p style={{ color: '#666', fontSize: '0.8rem', margin: 0 }}>
                                         Need help? Contact support at <br />
-                                        <a href="mailto:aofbizhelp@gmail.com" style={{ color: 'var(--pro-accent)', textDecoration: 'none', fontWeight: 500 }}>aofbizhelp@gmail.com</a>
+                                        <a href="mailto:AllSethelp@gmail.com" style={{ color: 'var(--pro-accent)', textDecoration: 'none', fontWeight: 500 }}>AllSethelp@gmail.com</a>
                                     </p>
                                 </div>
                             </div>
@@ -399,7 +399,7 @@ const ModeSelectionScreen = ({ onModeSelected }) => {
                     </div>
 
                     <div style={{ marginTop: 'auto', paddingTop: '2.5rem', textAlign: 'center', opacity: 0.4 }}>
-                        <p style={{ fontSize: '0.65rem', letterSpacing: '2px', fontWeight: 700, textTransform: 'uppercase' }}>Powered by AOF Biz</p>
+                        <p style={{ fontSize: '0.65rem', letterSpacing: '2px', fontWeight: 700, textTransform: 'uppercase' }}>Powered by AllSet</p>
                     </div>
                 </div>
             </div>

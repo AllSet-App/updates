@@ -32,11 +32,11 @@ const QuotationManagement = ({ quotations, onUpdateQuotations, orders, onUpdateO
     const [settings, setSettings] = useState(null)
 
     // Date Filter State
-    const [filterType, setFilterType] = useState(() => localStorage.getItem('aof_quotations_filter_type') || 'month')
-    const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('aof_quotations_selected_month') || format(new Date(), 'yyyy-MM'))
-    const [startDate, setStartDate] = useState(() => localStorage.getItem('aof_quotations_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
-    const [endDate, setEndDate] = useState(() => localStorage.getItem('aof_quotations_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
-    const [statusFilter, setStatusFilter] = useState(() => localStorage.getItem('aof_quotations_status_filter') || 'all')
+    const [filterType, setFilterType] = useState(() => localStorage.getItem('allset_quotations_filter_type') || 'month')
+    const [selectedMonth, setSelectedMonth] = useState(() => localStorage.getItem('allset_quotations_selected_month') || format(new Date(), 'yyyy-MM'))
+    const [startDate, setStartDate] = useState(() => localStorage.getItem('allset_quotations_start_date') || format(startOfMonth(new Date()), 'yyyy-MM-dd'))
+    const [endDate, setEndDate] = useState(() => localStorage.getItem('allset_quotations_end_date') || format(endOfMonth(new Date()), 'yyyy-MM-dd'))
+    const [statusFilter, setStatusFilter] = useState(() => localStorage.getItem('allset_quotations_status_filter') || 'all')
 
     useEffect(() => {
         getProducts().then(setProducts)
@@ -45,23 +45,23 @@ const QuotationManagement = ({ quotations, onUpdateQuotations, orders, onUpdateO
 
     // Persist date filter state
     useEffect(() => {
-        localStorage.setItem('aof_quotations_filter_type', filterType)
+        localStorage.setItem('allset_quotations_filter_type', filterType)
     }, [filterType])
 
     useEffect(() => {
-        localStorage.setItem('aof_quotations_selected_month', selectedMonth)
+        localStorage.setItem('allset_quotations_selected_month', selectedMonth)
     }, [selectedMonth])
 
     useEffect(() => {
-        localStorage.setItem('aof_quotations_start_date', startDate)
+        localStorage.setItem('allset_quotations_start_date', startDate)
     }, [startDate])
 
     useEffect(() => {
-        localStorage.setItem('aof_quotations_end_date', endDate)
+        localStorage.setItem('allset_quotations_end_date', endDate)
     }, [endDate])
 
     useEffect(() => {
-        localStorage.setItem('aof_quotations_status_filter', statusFilter)
+        localStorage.setItem('allset_quotations_status_filter', statusFilter)
     }, [statusFilter])
 
     // Filter & Sort Logic

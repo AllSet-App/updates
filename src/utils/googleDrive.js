@@ -30,7 +30,7 @@ export const initTokenClient = (clientId, callback) => {
     if (window.electronAPI) {
         return {
             requestAccessToken: () => {
-                const redirectUri = 'aof-biz://auth-callback';
+                const redirectUri = 'allset://auth-callback';
                 const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
                     `client_id=${clientId}&` +
                     `redirect_uri=${encodeURIComponent(redirectUri)}&` +
@@ -64,7 +64,7 @@ export const initTokenClient = (clientId, callback) => {
 */
 export const uploadFileToDrive = async (accessToken, fileName, fileContent, mimeType = 'application/json') => {
     try {
-        // 1. Search for existing "AOF_Backups" folder
+        // 1. Search for existing "AllSet_Backups" folder
         const folderId = await getOrCreateBackupFolder(accessToken);
 
         // 2. Prepare metadata
@@ -168,7 +168,7 @@ export const downloadFileFromDrive = async (accessToken, fileId) => {
 
 // Helper to find or create the backup folder
 const getOrCreateBackupFolder = async (accessToken) => {
-    const folderName = 'AOF_Backups';
+    const folderName = 'AllSet_Backups';
 
     // Search for folder
     const searchRes = await fetch(

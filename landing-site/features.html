@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - AllSet</title>
+    <meta name="description"
+        content="Explore the powerful features of AllSet. From order management to cloud sync, everything you need for your business.">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css?v=2.0">
+
+    <!-- JS -->
+    <script src="config.js?v=2.0"></script>
+    <script src="script.js?v=2.0" defer></script>
+
+    <!-- Prevent FOUC -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <!-- Brand -->
+            <a href="index.html" class="brand-logo">
+                <img src="logo-light.png" alt="AllSet" class="logo-light">
+                <img src="logo-dark.png" alt="AllSet" class="logo-dark">
+                <span class="brand-title">AllSet</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="desktop-nav">
+                <a href="index.html">Home</a>
+                <a href="features.html" class="active">Features</a>
+                <a href="index.html#pricing">Pricing</a>
+                <a href="download.html">Download</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="header-actions">
+                <!-- Theme Toggle -->
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Theme">
+                    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </svg>
+                    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                </button>
+
+                <a href="download.html" class="btn btn-primary">Get Started</a>
+
+                <button class="mobile-toggle-btn" id="mobile-toggle" aria-label="Menu">
+                    <svg id="icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                    <svg id="icon-close" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="index.html">Home</a>
+        <a href="features.html">Features</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="download.html">Download</a>
+        <a href="index.html#contact">Contact</a>
+    </div>
+
+    <!-- Features Content -->
+    <main>
+        <section class="features-hero animate-on-scroll">
+            <div class="container">
+                <span class="feature-tag-v4">Powered by Precision</span>
+                <h1>Powerful Features for<br>Modern Entrepreneurs</h1>
+                <p class="hero-desc">Everything you need to manage your business effectively, from orders to insights.
+                </p>
+            </div>
+        </section>
+
+        <section class="container features-grid-v4">
+            <!-- 1. Dashboard -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4">Insightful</span>
+                    <h3>Dashboard & Intelligence</h3>
+                    <p>Get a bird's-eye view of your business performance. Our dashboard provides real-time visibility
+                        into your most critical metrics.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> KPI Summary Cards (Orders, Dispatches, Payments)</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Interactive Revenue & Volume Charts</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Marketing Source Performance Tracking</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Smart Low-Stock Alerts</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <img src="dashboard-desktop.png" alt="Dashboard Insights">
+                </div>
+            </div>
+
+            <!-- 2. Order Management -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4">Efficient</span>
+                    <h3>Advanced Order Management</h3>
+                    <p>Manage the entire lifecycle of your sales with ease. Our multi-step wizard is designed for speed
+                        and accuracy.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Multi-Step Wizard for Desktop & Mobile</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Visual Attachments per Order Item</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Curfox API Support for Automatic Logistics</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Customer Blacklist Protection System</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <img src="dashboard-mobile.png" alt="Mobile Order Management" style="width: 280px;">
+                </div>
+            </div>
+
+            <!-- 3. Inventory -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4 pro-chip-v4">PRO</span>
+                    <h3>Inventory & Stock Control</h3>
+                    <p>Never run out of essentials. Track materials and products with precision stock thresholds and
+                        unit cost management.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Categorized Material & Product Tracking</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Smart Reorder Levels & Alerts</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Unit Cost Management for Profit Analysis</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Detailed Supplier Association</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <div
+                        style="background: linear-gradient(135deg, #111 0%, #000 100%); width: 100%; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
+                            stroke="var(--brand-primary)" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Financials -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4 pro-chip-v4">PRO</span>
+                    <h3>Financial Clarity & Expenses</h3>
+                    <p>Track every rupee. Associate expenses with categories and items to get a true picture of your
+                        business profitability.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Comprehensive Billing & Expense Manager</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Automated Profitability Calculations</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Operational vs Marketing Cost Analysis</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <div
+                        style="background: linear-gradient(135deg, #111 0%, #000 100%); width: 100%; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
+                            stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Quotations -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4">Professional</span>
+                    <h3>Smart Quotations</h3>
+                    <p>Convert inquiries into sales faster. Create professional quotations with automated expiry
+                        tracking and flexible discounting.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Automated Expiry Date Tracking</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Flexible Flat or Percentage Discounts</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> One-Click Status Conversion</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <div
+                        style="background: linear-gradient(135deg, #111 0%, #000 100%); width: 100%; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
+                            stroke="#eab308" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Sync -->
+            <div class="feature-row-v4 animate-on-scroll">
+                <div class="feature-text-v4">
+                    <span class="feature-tag-v4 pro-chip-v4">PRO</span>
+                    <h3>Cloud Sync & Multi-Device</h3>
+                    <p>Your data, everywhere. Sync seamlessly between your desktop, tablet, and phone with automated
+                        background processing.</p>
+                    <ul class="feature-list-check-v4">
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Multi-Device Real-time Synchronization</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Offline-First Reliable Architecture</li>
+                        <li><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg> Enterprise-Grade Google Authentication</li>
+                    </ul>
+                </div>
+                <div class="feature-visual-v4">
+                    <div
+                        style="background: linear-gradient(135deg, #111 0%, #000 100%); width: 100%; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none"
+                            stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Contact Section -->
+        <section class="container features-contact-cta">
+            <div class="animate-on-scroll">
+                <h2>Have Questions?</h2>
+                <p>Our support team is ready to help you get the most out of AllSet.</p>
+                <div style="margin-top: 2.5rem;">
+                    <a href="index.html#contact" class="btn btn-primary">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border-color); padding: 4rem 0;">
+        <div class="container" style="text-align: center; color: var(--text-muted);">
+            <p>&copy; 2026 AllSet. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

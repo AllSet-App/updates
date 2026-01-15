@@ -29,12 +29,12 @@ const About = () => {
                 <div className="about-header-content">
                     <div className="logo-wrapper">
                         <img
-                            src={effectiveTheme === 'dark' ? './logo-dark.svg' : './logo.svg'}
-                            alt="AOF Biz Logo"
+                            src={effectiveTheme === 'dark' ? './logo-dark.png' : './logo-light.png'}
+                            alt="AllSet Logo"
                             className="about-logo"
                         />
                     </div>
-                    <h1 className="about-title">AOF Biz</h1>
+                    <h1 className="about-title">AllSet</h1>
                     <p className="about-tagline">Professional Business Management Suite</p>
 
                     <div className="version-badge">
@@ -103,7 +103,7 @@ const About = () => {
 
                 <div className="about-footer">
                     <p>© 2026 Loojabrandings. All rights reserved.</p>
-                    <p className="footer-v">AOF-BIZ-OS-{APP_VERSION}</p>
+                    <p className="footer-v">allset-OS-{APP_VERSION}</p>
                 </div>
             </div>
 

@@ -15,11 +15,11 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
 
   const currentVersion = pkg.version
 
-  const businessName = settings?.businessName || 'AOF Biz - Management App'
-  const businessTagline = settings?.businessTagline || 'From Chaos To Clarity'
+  const businessName = settings?.businessName || 'AllSet'
+  const businessTagline = settings?.businessTagline || 'From Chaos to Clarity'
   const logoSrc = settings?.businessLogo
     ? settings.businessLogo
-    : (effectiveTheme === 'dark' ? './logo-dark.svg' : './logo.svg')
+    : (effectiveTheme === 'dark' ? './logo-dark.png' : './logo-light.png')
 
   // Define which menu items are Pro-only
   const menuItems = [
@@ -112,7 +112,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
           }}>
             <img
               src={logoSrc}
-              alt="AOF Biz Logo"
+              alt="AllSet Logo"
               style={{
                 width: '170px',
                 height: '170px',
@@ -140,7 +140,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   {businessTagline}
                 </p>
               )}
-              {businessName !== 'AOF Biz' && (
+              {businessName !== 'AllSet' && (
                 <p style={{
                   fontSize: '0.6rem',
                   fontWeight: 600,
@@ -150,7 +150,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   opacity: 0.7,
                   marginTop: businessTagline ? '0' : '-0.2rem'
                 }}>
-                  Powered by AOF Biz
+                  Powered by AllSet
                 </p>
               )}
               <div style={{
@@ -384,7 +384,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   </button>
 
                   {/* Help / Documentation */}
-                  <button onClick={() => { window.open('https://aofbiz.github.io/docs.html', '_blank'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                  <button onClick={() => { window.open('https://AllSet.github.io/docs.html', '_blank'); setShowProfileMenu(false); }} style={menuItemStyle}>
                     <LifeBuoy size={18} />
                     Help & Docs
                   </button>
@@ -392,7 +392,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   {/* About */}
                   <button onClick={() => { setActiveView('about'); setShowProfileMenu(false); }} style={menuItemStyle}>
                     <Info size={18} />
-                    About AOF Biz
+                    About AllSet
                   </button>
                 </div>
               </div>

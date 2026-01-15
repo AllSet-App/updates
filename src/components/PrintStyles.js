@@ -40,7 +40,7 @@ export const getPrintStyles = (pageSize = 'A4') => `
       gap: 15px;
     }
 
-    .logo svg {
+    .logo-light.png {
       width: 90px;
       height: 90px;
     }

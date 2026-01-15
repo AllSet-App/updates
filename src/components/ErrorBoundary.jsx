@@ -167,7 +167,7 @@ class ErrorBoundary extends React.Component {
     handleGoHome = () => {
         // Reset state and navigate to dashboard
         this.setState({ hasError: false, error: null, errorInfo: null })
-        localStorage.setItem('aof_active_view', 'dashboard')
+        localStorage.setItem('allset_active_view', 'dashboard')
         window.location.reload()
     }
 

@@ -1,7 +1,7 @@
 
 import Dexie from 'dexie';
 
-export const db = new Dexie('aof_biz_db');
+export const db = new Dexie('allset_db');
 
 db.version(6).stores({
     // Main data

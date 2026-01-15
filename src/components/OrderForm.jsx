@@ -208,7 +208,7 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
     // Attempt to restore drafted data for new orders
     if (!order) {
       try {
-        const draft = sessionStorage.getItem('aof_order_form_draft')
+        const draft = sessionStorage.getItem('allset_order_form_draft')
         if (draft) return JSON.parse(draft)
       } catch (e) {
         console.warn('Failed to restore order draft', e)
@@ -243,12 +243,12 @@ const OrderForm = ({ order, onClose, onSave, checkIsBlacklisted, onBlacklistWarn
   // Draft persistence logic
   useEffect(() => {
     if (!order) {
-      sessionStorage.setItem('aof_order_form_draft', JSON.stringify(formData))
+      sessionStorage.setItem('allset_order_form_draft', JSON.stringify(formData))
     }
   }, [formData, order])
 
   // Clear draft on successful save or close
-  const clearDraft = () => sessionStorage.removeItem('aof_order_form_draft')
+  const clearDraft = () => sessionStorage.removeItem('allset_order_form_draft')
 
   const subtotal = useMemo(() => {
     return (orderItems || []).reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0)

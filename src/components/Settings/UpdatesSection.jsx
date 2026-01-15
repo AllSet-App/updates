@@ -170,7 +170,7 @@ const UpdatesSection = () => {
                     }}>
                         <CheckCircle size={24} />
                         <div>
-                            <p style={{ fontWeight: 700, margin: 0 }}>AOF Biz is up to date</p>
+                            <p style={{ fontWeight: 700, margin: 0 }}>AllSet is up to date</p>
                             <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0 }}>You are running the latest version: v{currentVersion}</p>
                         </div>
                     </div>
@@ -432,7 +432,7 @@ const UpdatesSection = () => {
                     gap: '4px'
                 }}>
                     <p>All your data and settings are protected during the update process.</p>
-                    <p>Update source: AOF Biz Master Server</p>
+                    <p>Update source: AllSet Master Server</p>
                 </div>
             </div>
 
