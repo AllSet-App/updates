@@ -333,11 +333,16 @@ const QuotationManagement = ({ quotations, onUpdateQuotations, orders, onUpdateO
                     }
                 }
             `}</style>
-            <div className="header-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h1 style={{ margin: 0 }}>Quotations</h1>
-                <button className="btn btn-primary" onClick={() => { setViewingQuotation(null); setShowForm(true); }}>
-                    <Plus size={18} /> Add Quotation
-                </button>
+            <div className="page-header">
+                <div className="page-header-info">
+                    <h1>Quotations</h1>
+                    <p>Create and manage quotations for customers</p>
+                </div>
+                <div className="page-header-actions">
+                    <button className="btn btn-primary" onClick={() => { setViewingQuotation(null); setShowForm(true); }}>
+                        <Plus size={18} /> Add Quotation
+                    </button>
+                </div>
             </div>
 
 

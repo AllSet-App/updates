@@ -281,28 +281,18 @@ const ExpenseTracker = ({ expenses, onUpdateExpenses, triggerFormOpen, inventory
         }
       `}</style>
 
-      <div className="header-container expense-tracker-header" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <div>
-          <h1 style={{ marginBottom: '0.5rem' }}>
-            Expense Tracker
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Track and manage business expenses
-          </p>
+      <div className="page-header">
+        <div className="page-header-info">
+          <h1>Expense Tracker</h1>
+          <p>Track and manage business expenses</p>
         </div>
-        <div className="header-actions">
+        <div className="page-header-actions">
           <button
             className="btn btn-primary"
             onClick={() => {
               setEditingExpense(null)
               setShowForm(true)
             }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
             <Plus size={18} />
             Add Expense

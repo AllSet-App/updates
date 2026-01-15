@@ -313,13 +313,13 @@ const Reports = ({ orders, expenses, inventory, onUpdateOrders }) => {
                 }
             `}</style>
 
-            <div className="reports-header-container">
-                <div className="reports-header">
+            <div className="page-header">
+                <div className="page-header-info">
                     <h1>Financial Reports</h1>
                     <p>Comprehensive analytics of your business performance</p>
                 </div>
 
-                <div className="report-controls">
+                <div className="page-header-actions">
                     <CollapsibleDateFilter
                         filterType={filterType}
                         onFilterTypeChange={setFilterType}

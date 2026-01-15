@@ -121,20 +121,34 @@ const Profile = ({ onUpdateSettings }) => {
     const handleResetDefaults = () => {
         showConfirm(
             "Reset Branding?",
-            "This will restore your Business Name, Tagline, and Logo to the application's default branding. This action cannot be undone.",
-            () => {
+            "This will restore your Business Name, Tagline, and Logo to the application's default branding and save automatically. This action cannot be undone.",
+            async () => {
                 const defaults = {
                     businessName: 'AllSet',
                     businessTagline: 'From Chaos to Clarity',
                     businessLogo: null
                 }
-                setSettings(prev => ({ ...prev, ...defaults }))
-                setDetailsChanged(true)
-                addToast('Reset to default branding. Click "Save" to apply.', 'info')
+                const newSettings = { ...settings, ...defaults }
+                setSettings(newSettings)
+
+                try {
+                    const currentSettings = await getSettings() || {}
+                    const finalSettings = {
+                        ...currentSettings,
+                        ...newSettings
+                    }
+                    await saveSettings(finalSettings)
+                    if (onUpdateSettings) onUpdateSettings(finalSettings)
+                    setDetailsChanged(false)
+                    addToast('Reset to default branding and saved successfully', 'success')
+                } catch (error) {
+                    console.error('Failed to auto-save after reset:', error)
+                    addToast('Identity reset but failed to save', 'error')
+                }
                 closeConfirm()
             },
             'warning',
-            'Reset to Defaults'
+            'Reset & Save'
         )
     }
 
@@ -198,8 +212,8 @@ const Profile = ({ onUpdateSettings }) => {
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem' }}>
-                        <div style={{ flex: '1', minWidth: '280px' }}>
+                    <div className="licensing-section-container">
+                        <div className="licensing-info">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
                                 <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
                                     {isProUser ? 'Pro Plan Active' : 'Free Plan'}
@@ -214,7 +228,7 @@ const Profile = ({ onUpdateSettings }) => {
                             </p>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div className="licensing-actions">
                             {isTrialActive ? (
                                 <div style={{ textAlign: 'right' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
@@ -224,7 +238,7 @@ const Profile = ({ onUpdateSettings }) => {
                                 </div>
                             ) : !isProUser && !isTrialExpired && (
                                 <button
-                                    className="btn"
+                                    className="btn btn-trial-mobile"
                                     onClick={activateTrial}
                                     style={{
                                         backgroundColor: 'rgba(var(--accent-rgb), 0.1)',
@@ -272,16 +286,9 @@ const Profile = ({ onUpdateSettings }) => {
 
                 {(!isProUser || isTrialActive) && (
                     <div className="card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+                        <div className="licensing-upgrade-grid">
                             {/* Left Side: How to Upgrade */}
-                            <div style={{
-                                padding: '2rem',
-                                borderRight: '1px solid var(--border-color)',
-                                backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1.5rem'
-                            }}>
+                            <div className="licensing-upgrade-info">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--accent-primary)' }}>
                                     <div style={{ padding: '0.6rem', backgroundColor: 'rgba(var(--accent-rgb), 0.1)', borderRadius: '12px' }}>
                                         <MessageCircle size={24} />
@@ -319,7 +326,7 @@ const Profile = ({ onUpdateSettings }) => {
                             </div>
 
                             {/* Right Side: Identity Verification */}
-                            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div className="licensing-identity-section">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: identityUser ? 'var(--success)' : 'var(--accent-primary)' }}>
                                     <div style={{ padding: '0.6rem', backgroundColor: identityUser ? 'rgba(16, 185, 129, 0.1)' : 'rgba(var(--accent-rgb), 0.1)', borderRadius: '12px' }}>
                                         {identityUser ? <CheckCircle size={24} /> : <Shield size={24} />}
@@ -442,30 +449,17 @@ const Profile = ({ onUpdateSettings }) => {
                 confirmText={confirmModal.confirmText}
             />
 
-            <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '2.5rem' }}>Profile</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', marginTop: '0.4rem' }}>Manage your business identity and account subscription</p>
+            <div className="page-header">
+                <div className="page-header-info">
+                    <h1>Profile</h1>
+                    <p>Manage your business identity and account subscription</p>
                 </div>
-            </header>
+            </div>
 
             <section style={{ marginBottom: '3rem' }}>
                 {/* Full-Width Digital Business Card */}
                 <div style={{ marginBottom: '2rem' }}>
-                    <div style={{
-                        position: 'relative',
-                        padding: '2.5rem',
-                        borderRadius: '32px',
-                        background: effectiveTheme === 'dark'
-                            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
-                            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%)',
-                        border: '1px solid var(--border-color)',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2rem',
-                        overflow: 'hidden'
-                    }}>
+                    <div className="profile-card-container">
                         {/* Card Background Glow */}
                         <div style={{
                             position: 'absolute', top: '-50px', right: '-50px', width: '250px', height: '250px',
@@ -473,62 +467,33 @@ const Profile = ({ onUpdateSettings }) => {
                         }}></div>
 
                         {/* Top Row: Logo & Status */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-                                <div style={{
-                                    width: '100px', height: '100px', borderRadius: '24px',
-                                    backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-                                    boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
-                                }}>
+                        <div className="profile-card-header">
+                            <div className="profile-card-identity">
+                                <div className="profile-card-logo">
                                     {settings.businessLogo ? (
-                                        <img src={settings.businessLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={settings.businessLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     ) : (
-                                        <img src={logoSrc} alt="Default Logo" style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: 0.8 }} />
+                                        <img src={logoSrc} alt="Default Logo" style={{ width: '75%', height: '75%', objectFit: 'contain', opacity: 0.8 }} />
                                     )}
                                 </div>
                                 <div>
-                                    <h3 style={{
-                                        margin: 0, fontSize: '2.2rem', fontWeight: 900,
-                                        color: 'var(--text-primary)', letterSpacing: '-1px', lineHeight: 1.1
-                                    }}>
+                                    <h3 className="profile-card-name">
                                         {settings.businessName || (isFreeUser ? "AllSet" : "Your Business")}
                                     </h3>
-                                    <p style={{
-                                        margin: '8px 0 0', fontSize: '1.1rem', fontStyle: 'italic',
-                                        color: 'var(--text-secondary)', opacity: 0.8
-                                    }}>
+                                    <p className="profile-card-tagline">
                                         {settings.businessTagline || (isFreeUser ? "From Chaos to Clarity" : "Your Brand Tagline")}
                                     </p>
                                 </div>
                             </div>
 
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                padding: '8px 16px', background: 'rgba(16, 185, 129, 0.1)',
-                                border: '1px solid rgba(16, 185, 129, 0.2)',
-                                borderRadius: '100px', color: '#10b981', fontSize: '0.8rem', fontWeight: 800,
-                                textTransform: 'uppercase', letterSpacing: '1px'
-                            }}>
-                                <div style={{
-                                    width: '10px', height: '10px', borderRadius: '50%',
-                                    backgroundColor: '#10b981', boxShadow: '0 0 12px #10b981',
-                                    animation: 'pulse 2s infinite'
-                                }}></div>
+                            <div className="profile-status-badge">
+                                <div className="status-dot"></div>
                                 SYSTEM ONLINE
                             </div>
                         </div>
 
                         {/* Middle Row: Contact & Reach Info */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                            gap: '1.5rem',
-                            padding: '1.5rem',
-                            background: 'rgba(255, 255, 255, 0.02)',
-                            borderRadius: '20px',
-                            border: '1px solid var(--border-color)'
-                        }}>
+                        <div className="profile-card-grid">
                             {/* Address */}
                             <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                                 <MapPin size={18} color="var(--accent-primary)" style={{ marginTop: '3px' }} />
@@ -607,10 +572,7 @@ const Profile = ({ onUpdateSettings }) => {
                         </div>
 
                         {/* Bottom Row: Identity & Socials */}
-                        <div style={{
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem',
-                            paddingTop: '1rem'
-                        }}>
+                        <div className="profile-card-footer">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{
                                     width: '40px', height: '40px', borderRadius: '12px',
@@ -652,70 +614,222 @@ const Profile = ({ onUpdateSettings }) => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
-                    {/* Identity Card */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                <Building2 size={22} color="var(--accent-primary)" /> Identity & Branding
-                            </h2>
-                            {isFreeUser && <ProFeatureBadge />}
-                        </div>
+                <div className="profile-main-content">
+                    <div className="card profile-content-card" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+                        {/* Identity & Branding Section */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h2 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <Building2 size={22} color="var(--accent-primary)" /> Identity & Branding
+                                </h2>
+                                {isFreeUser && <ProFeatureBadge />}
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-                            <div style={{ position: 'relative' }}>
-                                <div style={{
-                                    width: '120px', height: '120px', borderRadius: '24px',
-                                    backgroundColor: 'var(--bg-secondary)', border: '2px dashed var(--border-color)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
-                                }}>
-                                    {settings.businessLogo ? (
-                                        <img src={settings.businessLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <img src={logoSrc} alt="Default Logo" style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: 0.5 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <div style={{
+                                        width: '120px', height: '120px', borderRadius: '24px',
+                                        backgroundColor: 'var(--bg-secondary)', border: '2px dashed var(--border-color)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                                    }}>
+                                        {settings.businessLogo ? (
+                                            <img src={settings.businessLogo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        ) : (
+                                            <img src={logoSrc} alt="Default Logo" style={{ width: '70%', height: '70%', objectFit: 'contain', opacity: 0.5 }} />
+                                        )}
+                                    </div>
+                                    {isProUser && (
+                                        <label style={{
+                                            position: 'absolute', bottom: '-8px', right: '-8px', cursor: 'pointer',
+                                            backgroundColor: 'var(--accent-primary)', color: 'white', padding: '0.5rem',
+                                            borderRadius: '50%', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex'
+                                        }}>
+                                            <Camera size={18} />
+                                            <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                                        </label>
                                     )}
                                 </div>
-                                {isProUser && (
-                                    <label style={{
-                                        position: 'absolute', bottom: '-8px', right: '-8px', cursor: 'pointer',
-                                        backgroundColor: 'var(--accent-primary)', color: 'white', padding: '0.5rem',
-                                        borderRadius: '50%', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex'
-                                    }}>
-                                        <Camera size={18} />
-                                        <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
-                                    </label>
-                                )}
-                            </div>
 
-                            <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Business Name</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. AllSet"
-                                        value={isFreeUser ? "AllSet" : settings.businessName}
-                                        onChange={(e) => handleChange('businessName', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
-                                </div>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label className="form-label">Tagline / Slogan</label>
-                                    <input
-                                        type="text"
-                                        placeholder="From Chaos to Clarity."
-                                        value={isFreeUser ? "From Chaos to Clarity." : settings.businessTagline}
-                                        onChange={(e) => handleChange('businessTagline', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
+                                <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div className="form-group">
+                                        <label className="form-label">Business Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. AllSet"
+                                            value={isFreeUser ? "AllSet" : settings.businessName}
+                                            onChange={(e) => handleChange('businessName', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">Tagline / Slogan</label>
+                                        <input
+                                            type="text"
+                                            placeholder="From Chaos to Clarity."
+                                            value={isFreeUser ? "From Chaos to Clarity." : settings.businessTagline}
+                                            onChange={(e) => handleChange('businessTagline', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Integrated Action Buttons */}
+                        {/* Logistics & Reach Section */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', paddingTop: '2rem', borderTop: '1px solid var(--border-color)' }}>
+                            <h2 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <Phone size={22} color="var(--accent-primary)" /> Logistics & Reach
+                            </h2>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div className="form-group">
+                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        <MapPin size={14} /> Business Address
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter full physical address"
+                                        value={isFreeUser ? "" : settings.businessAddress}
+                                        onChange={(e) => handleChange('businessAddress', e.target.value)}
+                                        disabled={isFreeUser}
+                                        className="form-input"
+                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                    />
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Phone size={14} /> Contact Number
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="07XX XXX XXX"
+                                            value={isFreeUser ? "0750 350 109" : settings.businessPhone}
+                                            onChange={(e) => handleChange('businessPhone', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Mail size={14} /> Business Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            placeholder="hello@yourbusiness.com"
+                                            value={isFreeUser ? "" : settings.businessEmail}
+                                            onChange={(e) => handleChange('businessEmail', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <Globe size={14} /> Website URL
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="https://yourwebsite.com"
+                                            value={isFreeUser ? "" : settings.businessWebsite}
+                                            onChange={(e) => handleChange('businessWebsite', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <MessageCircle size={14} /> WhatsApp Number
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="07XX XXX XXX"
+                                            value={isFreeUser ? "0750 350 109" : settings.businessWhatsapp}
+                                            onChange={(e) => handleChange('businessWhatsapp', e.target.value)}
+                                            disabled={isFreeUser}
+                                            className="form-input"
+                                            style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: '0.5rem' }}>
+                                    <label className="form-label" style={{ marginBottom: '0.75rem' }}>Social Media Links</label>
+                                    <div className="profile-social-grid">
+                                        <div className="profile-social-item">
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <Facebook size={16} color="white" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Facebook URL"
+                                                value={isFreeUser ? "" : settings.socialFb}
+                                                onChange={(e) => handleChange('socialFb', e.target.value)}
+                                                disabled={isFreeUser}
+                                                className="form-input"
+                                                style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                                            />
+                                        </div>
+                                        <div className="profile-social-item">
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <Instagram size={16} color="white" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Instagram URL"
+                                                value={isFreeUser ? "" : settings.socialInsta}
+                                                onChange={(e) => handleChange('socialInsta', e.target.value)}
+                                                disabled={isFreeUser}
+                                                className="form-input"
+                                                style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                                            />
+                                        </div>
+                                        <div className="profile-social-item">
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#FF0000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <Youtube size={16} color="white" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="YouTube URL"
+                                                value={isFreeUser ? "" : settings.socialYoutube}
+                                                onChange={(e) => handleChange('socialYoutube', e.target.value)}
+                                                disabled={isFreeUser}
+                                                className="form-input"
+                                                style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                                            />
+                                        </div>
+                                        <div className="profile-social-item">
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                                                    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.59-1.01V15a6.9 6.9 0 0 1-1.08 3.77 7.009 7.009 0 0 1-9.91.8c-1.39-1.21-2.22-2.91-2.29-4.71a7.013 7.013 0 0 1 4.75-6.79l.57-.18v4.22c-.41.13-.82.28-1.2.49A3.01 3.01 0 0 0 6.01 15c0 1.65 1.35 3 3 3a3 3 0 0 0 3-3V0h.52zm0 0" />
+                                                </svg>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="TikTok URL"
+                                                value={isFreeUser ? "" : settings.socialTiktok}
+                                                onChange={(e) => handleChange('socialTiktok', e.target.value)}
+                                                disabled={isFreeUser}
+                                                className="form-input"
+                                                style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Combined Action Buttons */}
                         <div style={{
                             display: 'flex',
                             justifyContent: 'flex-end',
@@ -730,7 +844,7 @@ const Profile = ({ onUpdateSettings }) => {
                                 className="btn btn-secondary"
                                 style={{ background: 'transparent', fontSize: '0.85rem' }}
                             >
-                                <RefreshCw size={14} /> Reset Defaults
+                                <RefreshCw size={14} /> Reset to Defaults
                             </button>
                             <button
                                 onClick={handleSaveDetails}
@@ -740,156 +854,6 @@ const Profile = ({ onUpdateSettings }) => {
                             >
                                 <Save size={14} /> Save Changes
                             </button>
-                        </div>
-                    </div>
-
-                    {/* Contact Details Card */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <h2 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <Phone size={22} color="var(--accent-primary)" /> Logistics & Reach
-                        </h2>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div className="form-group">
-                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <MapPin size={14} /> Business Address
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter full physical address"
-                                    value={isFreeUser ? "" : settings.businessAddress}
-                                    onChange={(e) => handleChange('businessAddress', e.target.value)}
-                                    disabled={isFreeUser}
-                                    className="form-input"
-                                    style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                />
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <Phone size={14} /> Contact Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="07XX XXX XXX"
-                                        value={isFreeUser ? "0750 350 109" : settings.businessPhone}
-                                        onChange={(e) => handleChange('businessPhone', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <Mail size={14} /> Business Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        placeholder="hello@yourbusiness.com"
-                                        value={isFreeUser ? "" : settings.businessEmail}
-                                        onChange={(e) => handleChange('businessEmail', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <Globe size={14} /> Website URL
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="https://yourwebsite.com"
-                                        value={isFreeUser ? "" : settings.businessWebsite}
-                                        onChange={(e) => handleChange('businessWebsite', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <MessageCircle size={14} /> WhatsApp Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="07XX XXX XXX"
-                                        value={isFreeUser ? "0750 350 109" : settings.businessWhatsapp}
-                                        onChange={(e) => handleChange('businessWhatsapp', e.target.value)}
-                                        disabled={isFreeUser}
-                                        className="form-input"
-                                        style={isFreeUser ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ marginTop: '0.5rem' }}>
-                                <label className="form-label" style={{ marginBottom: '0.75rem' }}>Social Media Links</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Facebook size={16} color="white" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="Facebook URL"
-                                            value={isFreeUser ? "" : settings.socialFb}
-                                            onChange={(e) => handleChange('socialFb', e.target.value)}
-                                            disabled={isFreeUser}
-                                            className="form-input"
-                                            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Instagram size={16} color="white" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="Instagram URL"
-                                            value={isFreeUser ? "" : settings.socialInsta}
-                                            onChange={(e) => handleChange('socialInsta', e.target.value)}
-                                            disabled={isFreeUser}
-                                            className="form-input"
-                                            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#FF0000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Youtube size={16} color="white" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="YouTube URL"
-                                            value={isFreeUser ? "" : settings.socialYoutube}
-                                            onChange={(e) => handleChange('socialYoutube', e.target.value)}
-                                            disabled={isFreeUser}
-                                            className="form-input"
-                                            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                                <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.59-1.01V15a6.9 6.9 0 0 1-1.08 3.77 7.009 7.009 0 0 1-9.91.8c-1.39-1.21-2.22-2.91-2.29-4.71a7.013 7.013 0 0 1 4.75-6.79l.57-.18v4.22c-.41.13-.82.28-1.2.49A3.01 3.01 0 0 0 6.01 15c0 1.65 1.35 3 3 3a3 3 0 0 0 3-3V0h.52zm0 0" />
-                                            </svg>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="TikTok URL"
-                                            value={isFreeUser ? "" : settings.socialTiktok}
-                                            onChange={(e) => handleChange('socialTiktok', e.target.value)}
-                                            disabled={isFreeUser}
-                                            className="form-input"
-                                            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.75rem', fontSize: '0.85rem' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -904,16 +868,8 @@ const Profile = ({ onUpdateSettings }) => {
             </section>
 
             {isFreeUser && (
-                <div style={{
-                    marginTop: '4rem', padding: '2rem', backgroundColor: 'rgba(245, 158, 11, 0.05)',
-                    borderRadius: '20px', border: '1px solid rgba(245, 158, 11, 0.2)',
-                    display: 'flex', gap: '1.5rem', alignItems: 'center'
-                }}>
-                    <div style={{
-                        width: '64px', height: '64px', borderRadius: '50%',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                    }}>
+                <div className="profile-restrictions-banner">
+                    <div className="restrictions-icon-wrapper">
                         <AlertCircle size={32} color="var(--warning)" />
                     </div>
                     <div>

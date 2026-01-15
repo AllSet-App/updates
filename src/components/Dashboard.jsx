@@ -332,43 +332,30 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
 
   return (
     <div className="dashboard-container">
-      <div style={{ marginBottom: window.innerWidth < 600 ? '1.5rem' : '2.5rem' }}>
-        <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={{ marginBottom: '0.25rem' }}>
-              Overview
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-sm)' }}>
-              Real-time business performance metrics
-            </p>
-          </div>
-
-          <div className="header-actions" style={{
-            display: 'flex',
-            gap: '0.75rem',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            width: window.innerWidth < 600 ? '100%' : 'auto'
-          }}>
-            <CollapsibleDateFilter
-              filterType={filterType}
-              onFilterTypeChange={setFilterType}
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-              onRangeChange={setDateRange}
-              align="right"
-              onReset={() => {
-                setFilterType('month')
-                setSelectedMonth(format(new Date(), 'yyyy-MM'))
-                setDateRange({
-                  startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-                  endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
-                })
-              }}
-            />
-          </div>
+      <div className="page-header">
+        <div className="page-header-info">
+          <h1>Overview</h1>
+          <p>Real-time business performance metrics</p>
+        </div>
+        <div className="page-header-actions">
+          <CollapsibleDateFilter
+            filterType={filterType}
+            onFilterTypeChange={setFilterType}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onRangeChange={setDateRange}
+            align="right"
+            onReset={() => {
+              setFilterType('month')
+              setSelectedMonth(format(new Date(), 'yyyy-MM'))
+              setDateRange({
+                startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+                endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
+              })
+            }}
+          />
         </div>
       </div>
 

@@ -1181,290 +1181,282 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <div className="header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <div className="header-title-group">
-            <h1>
-              Order Management
-            </h1>
-            <p style={{ color: 'var(--text-muted)' }}>
-              Manage all customer orders
-            </p>
-          </div>
-          <div className="header-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              className={`btn ${isSelectModeActive ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={handleToggleSelectMode}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              {isSelectModeActive ? 'Exit Select Mode' : 'Select'}
-            </button>
-
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setEditingOrder(null)
-                setShowForm(true)
-              }}
-            >
-              <Plus size={18} />
-              Add New Order
-            </button>
-          </div>
+      <div className="page-header">
+        <div className="page-header-info">
+          <h1>Order Management</h1>
+          <p>Manage all customer orders</p>
         </div>
-
-        {/* Filters */}
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          marginBottom: '1rem'
-        }}>
-          <div style={{ position: 'relative', flex: '1', minWidth: '200px' }}>
-            <Search size={18} style={{
-              position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--text-muted)'
-            }} />
-            <input
-              type="text"
-              placeholder="Search by order #, customer, phone, or tracking..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                paddingLeft: '2.5rem'
-              }}
-            />
-          </div>
-          <CustomDropdown
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 'auto', minWidth: '150px' }}
-          />
-          <CustomDropdown
-            options={PAYMENT_OPTIONS}
-            value={paymentFilter}
-            onChange={setPaymentFilter}
-            style={{ width: 'auto', minWidth: '150px' }}
-          />
-          <CustomDropdown
-            options={SORT_OPTIONS}
-            value={sortField}
-            onChange={setSortField}
-            style={{ width: 'auto', minWidth: '180px' }}
-            placeholder="Sort by..."
-          />
+        <div className="page-header-actions">
           <button
-            onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-            className="btn btn-secondary"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '40px',
-              padding: '0.5rem',
-              cursor: 'pointer'
-            }}
-            title={sortDirection === 'asc' ? 'Ascending (Click to change to Descending)' : 'Descending (Click to change to Ascending)'}
+            className={`btn ${isSelectModeActive ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={handleToggleSelectMode}
           >
-            {sortDirection === 'asc' ? (
-              <ChevronUp size={20} />
-            ) : (
-              <ChevronDown size={20} />
-            )}
+            {isSelectModeActive ? 'Exit Select Mode' : 'Select'}
           </button>
-
-
-          {/* Date Filter Button with Dropdown */}
-          <CollapsibleDateFilter
-            filterType={filterType}
-            onFilterTypeChange={setFilterType}
-            selectedMonth={selectedMonth}
-            onMonthChange={setSelectedMonth}
-            startDate={startDate}
-            endDate={endDate}
-            onRangeChange={({ startDate: newStart, endDate: newEnd }) => {
-              if (newStart) setStartDate(newStart)
-              if (newEnd) setEndDate(newEnd)
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setEditingOrder(null)
+              setShowForm(true)
             }}
-            onReset={() => {
+          >
+            <Plus size={18} />
+            Add New Order
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        marginBottom: '1rem'
+      }}>
+        <div style={{ position: 'relative', flex: '1', minWidth: '200px' }}>
+          <Search size={18} style={{
+            position: 'absolute',
+            left: '0.75rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--text-muted)'
+          }} />
+          <input
+            type="text"
+            placeholder="Search by order #, customer, phone, or tracking..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              paddingLeft: '2.5rem'
+            }}
+          />
+        </div>
+        <CustomDropdown
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          style={{ width: 'auto', minWidth: '150px' }}
+        />
+        <CustomDropdown
+          options={PAYMENT_OPTIONS}
+          value={paymentFilter}
+          onChange={setPaymentFilter}
+          style={{ width: 'auto', minWidth: '150px' }}
+        />
+        <CustomDropdown
+          options={SORT_OPTIONS}
+          value={sortField}
+          onChange={setSortField}
+          style={{ width: 'auto', minWidth: '180px' }}
+          placeholder="Sort by..."
+        />
+        <button
+          onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+          className="btn btn-secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: '40px',
+            padding: '0.5rem',
+            cursor: 'pointer'
+          }}
+          title={sortDirection === 'asc' ? 'Ascending (Click to change to Descending)' : 'Descending (Click to change to Ascending)'}
+        >
+          {sortDirection === 'asc' ? (
+            <ChevronUp size={20} />
+          ) : (
+            <ChevronDown size={20} />
+          )}
+        </button>
+
+
+        {/* Date Filter Button with Dropdown */}
+        <CollapsibleDateFilter
+          filterType={filterType}
+          onFilterTypeChange={setFilterType}
+          selectedMonth={selectedMonth}
+          onMonthChange={setSelectedMonth}
+          startDate={startDate}
+          endDate={endDate}
+          onRangeChange={({ startDate: newStart, endDate: newEnd }) => {
+            if (newStart) setStartDate(newStart)
+            if (newEnd) setEndDate(newEnd)
+          }}
+          onReset={() => {
+            setFilterType('month')
+            setSelectedMonth(format(new Date(), 'yyyy-MM'))
+            setStartDate(format(startOfMonth(new Date()), 'yyyy-MM-dd'))
+            setEndDate(format(endOfMonth(new Date()), 'yyyy-MM-dd'))
+          }}
+          align="right"
+        />
+
+        {(searchTerm !== '' || statusFilter !== 'all' || paymentFilter !== 'all' || scheduledDeliveriesOnly || sortField !== 'status' || sortDirection !== 'asc' || filterType !== 'month' || selectedMonth !== format(new Date(), 'yyyy-MM')) && (
+          <button
+            onClick={() => {
+              setSearchTerm('')
+              setStatusFilter('all')
+              setPaymentFilter('all')
+              setScheduledDeliveriesOnly(false)
+              setSortField('status')
+              setSortDirection('asc')
               setFilterType('month')
               setSelectedMonth(format(new Date(), 'yyyy-MM'))
               setStartDate(format(startOfMonth(new Date()), 'yyyy-MM-dd'))
               setEndDate(format(endOfMonth(new Date()), 'yyyy-MM-dd'))
             }}
-            align="right"
-          />
-
-          {(searchTerm !== '' || statusFilter !== 'all' || paymentFilter !== 'all' || scheduledDeliveriesOnly || sortField !== 'status' || sortDirection !== 'asc' || filterType !== 'month' || selectedMonth !== format(new Date(), 'yyyy-MM')) && (
-            <button
-              onClick={() => {
-                setSearchTerm('')
-                setStatusFilter('all')
-                setPaymentFilter('all')
-                setScheduledDeliveriesOnly(false)
-                setSortField('status')
-                setSortDirection('asc')
-                setFilterType('month')
-                setSelectedMonth(format(new Date(), 'yyyy-MM'))
-                setStartDate(format(startOfMonth(new Date()), 'yyyy-MM-dd'))
-                setEndDate(format(endOfMonth(new Date()), 'yyyy-MM-dd'))
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: 'none',
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05))',
-                color: 'var(--danger)',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}
-              title="Clear all filters"
-            >
-              <X size={16} /> Clear Filters
-            </button>
-          )}
-        </div>
-
-        {/* Select Mode Selection */}
-        {isSelectModeActive && (
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            marginBottom: '1rem',
-            padding: '0.75rem',
-            backgroundColor: 'var(--bg-secondary)',
-            borderRadius: 'var(--radius)'
-          }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-              Selection Mode Active:
-            </span>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input
-                type="radio"
-                name="selectMode"
-                value="manual"
-                checked={selectMode === 'manual'}
-                onChange={(e) => {
-                  setSelectMode(e.target.value)
-                  setSelectedOrders(new Set())
-                }}
-              />
-              <span style={{ fontSize: '0.875rem' }}>Manual</span>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input
-                type="radio"
-                name="selectMode"
-                value="status"
-                checked={selectMode === 'status'}
-                onChange={(e) => {
-                  setSelectMode(e.target.value)
-                  if (e.target.value === 'status') {
-                    // In status mode: selection is derived from filters; clear manual overrides
-                    setSelectedOrders(new Set())
-                    setManuallyDeselectedOrders(new Set())
-                  }
-                }}
-              />
-              <span style={{ fontSize: '0.875rem' }}>By Status:</span>
-            </label>
-            {selectMode === 'status' && (
-              <>
-                <CustomDropdown
-                  options={STATUS_OPTIONS.filter(o => o.value !== 'pendingDispatch')}
-                  value={orderStatusSelectFilter}
-                  onChange={(val) => {
-                    setOrderStatusSelectFilter(val)
-                    setSelectedOrders(new Set())
-                    setManuallyDeselectedOrders(new Set())
-                  }}
-                  style={{ width: 'auto', minWidth: '150px' }}
-                />
-                <CustomDropdown
-                  options={PAYMENT_OPTIONS}
-                  value={paymentStatusSelectFilter}
-                  onChange={(val) => {
-                    setPaymentStatusSelectFilter(val)
-                    setSelectedOrders(new Set())
-                    setManuallyDeselectedOrders(new Set())
-                  }}
-                  style={{ width: 'auto', minWidth: '150px' }}
-                />
-              </>
-            )}
-            {isSelectModeActive && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
-                {getAllSelectedOrders().length} order(s) selected
-              </span>
-            )}
-            {(selectedOrders.size > 0 || (selectMode === 'status' && getStatusSelectedOrders().length > 0)) && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-                <button
-                  className="btn btn-secondary"
-                  onClick={handleExport}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                  <Download size={18} />
-                  Export to XLSX
-                </button>
-                <CustomDropdown
-                  options={BULK_STATUS_OPTIONS}
-                  value=""
-                  onChange={handleBulkOrderStatusChange}
-                  style={{ width: 'auto', minWidth: '150px' }}
-                  placeholder="Change Order Status..."
-                />
-                <CustomDropdown
-                  options={[
-                    { value: 'Pending', label: 'Pending' },
-                    { value: 'Paid', label: 'Paid' },
-                    ...(settings?.curfox?.enabled ? [{ value: 'curfox_dispatch', label: 'Dispatch (Curfox)' }] : [])
-                  ]}
-                  value=""
-                  onChange={(val) => {
-                    val === 'curfox_dispatch'
-                      ? handleBulkCurfoxDispatch()
-                      : handleBulkPaymentStatusChange(val)
-                  }}
-                  style={{ width: 'auto', minWidth: '150px' }}
-                  placeholder="Change Payment Status..."
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Selection Helper Text */}
-        {isSelectModeActive && selectMode === 'manual' && (
-          <div style={{
-            marginBottom: '1rem',
-            padding: '0.5rem 0.75rem',
-            backgroundColor: 'var(--bg-secondary)',
-            borderRadius: 'var(--radius)',
-            fontSize: '0.875rem',
-            color: 'var(--text-muted)'
-          }}>
-            {selectMode === 'status' ? (
-              <>Orders matching the selected status filters are auto-selected. You can manually select or deselect any order. {getAllSelectedOrders().length} order(s) selected.</>
-            ) : (
-              <>Click on rows to select. {selectedOrders.size} order(s) selected.</>
-            )}
-          </div>
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              border: 'none',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05))',
+              color: 'var(--danger)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            }}
+            title="Clear all filters"
+          >
+            <X size={16} /> Clear Filters
+          </button>
         )}
       </div>
+
+      {/* Select Mode Selection */}
+      {isSelectModeActive && (
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '1rem',
+          padding: '0.75rem',
+          backgroundColor: 'var(--bg-secondary)',
+          borderRadius: 'var(--radius)'
+        }}>
+          <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+            Selection Mode Active:
+          </span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="selectMode"
+              value="manual"
+              checked={selectMode === 'manual'}
+              onChange={(e) => {
+                setSelectMode(e.target.value)
+                setSelectedOrders(new Set())
+              }}
+            />
+            <span style={{ fontSize: '0.875rem' }}>Manual</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="selectMode"
+              value="status"
+              checked={selectMode === 'status'}
+              onChange={(e) => {
+                setSelectMode(e.target.value)
+                if (e.target.value === 'status') {
+                  // In status mode: selection is derived from filters; clear manual overrides
+                  setSelectedOrders(new Set())
+                  setManuallyDeselectedOrders(new Set())
+                }
+              }}
+            />
+            <span style={{ fontSize: '0.875rem' }}>By Status:</span>
+          </label>
+          {selectMode === 'status' && (
+            <>
+              <CustomDropdown
+                options={STATUS_OPTIONS.filter(o => o.value !== 'pendingDispatch')}
+                value={orderStatusSelectFilter}
+                onChange={(val) => {
+                  setOrderStatusSelectFilter(val)
+                  setSelectedOrders(new Set())
+                  setManuallyDeselectedOrders(new Set())
+                }}
+                style={{ width: 'auto', minWidth: '150px' }}
+              />
+              <CustomDropdown
+                options={PAYMENT_OPTIONS}
+                value={paymentStatusSelectFilter}
+                onChange={(val) => {
+                  setPaymentStatusSelectFilter(val)
+                  setSelectedOrders(new Set())
+                  setManuallyDeselectedOrders(new Set())
+                }}
+                style={{ width: 'auto', minWidth: '150px' }}
+              />
+            </>
+          )}
+          {isSelectModeActive && (
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              {getAllSelectedOrders().length} order(s) selected
+            </span>
+          )}
+          {(selectedOrders.size > 0 || (selectMode === 'status' && getStatusSelectedOrders().length > 0)) && (
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleExport}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <Download size={18} />
+                Export to XLSX
+              </button>
+              <CustomDropdown
+                options={BULK_STATUS_OPTIONS}
+                value=""
+                onChange={handleBulkOrderStatusChange}
+                style={{ width: 'auto', minWidth: '150px' }}
+                placeholder="Change Order Status..."
+              />
+              <CustomDropdown
+                options={[
+                  { value: 'Pending', label: 'Pending' },
+                  { value: 'Paid', label: 'Paid' },
+                  ...(settings?.curfox?.enabled ? [{ value: 'curfox_dispatch', label: 'Dispatch (Curfox)' }] : [])
+                ]}
+                value=""
+                onChange={(val) => {
+                  val === 'curfox_dispatch'
+                    ? handleBulkCurfoxDispatch()
+                    : handleBulkPaymentStatusChange(val)
+                }}
+                style={{ width: 'auto', minWidth: '150px' }}
+                placeholder="Change Payment Status..."
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Selection Helper Text */}
+      {isSelectModeActive && selectMode === 'manual' && (
+        <div style={{
+          marginBottom: '1rem',
+          padding: '0.5rem 0.75rem',
+          backgroundColor: 'var(--bg-secondary)',
+          borderRadius: 'var(--radius)',
+          fontSize: '0.875rem',
+          color: 'var(--text-muted)'
+        }}>
+          {selectMode === 'status' ? (
+            <>Orders matching the selected status filters are auto-selected. You can manually select or deselect any order. {getAllSelectedOrders().length} order(s) selected.</>
+          ) : (
+            <>Click on rows to select. {selectedOrders.size} order(s) selected.</>
+          )}
+        </div>
+      )}
 
       {/* Orders Table (Desktop) */}
       <div className="card desktop-view" style={{ padding: 0, overflow: 'hidden' }}>
@@ -2089,16 +2081,18 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
       </div>
 
       {/* Pagination Controls */}
-      {filteredOrders.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(filteredOrders.length / itemsPerPage)}
-          onPageChange={setCurrentPage}
-          totalItems={filteredOrders.length}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={setItemsPerPage}
-        />
-      )}
+      {
+        filteredOrders.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredOrders.length / itemsPerPage)}
+            onPageChange={setCurrentPage}
+            totalItems={filteredOrders.length}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
+        )
+      }
 
 
       <style>{`
@@ -2113,9 +2107,6 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
           .modal-content {
              padding: 1rem !important;
              max-width: 95vw !important;
-          }
-          .main-content {
-            padding: 0.75rem !important;
           }
         }
         
@@ -2138,90 +2129,98 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
         }
       `}</style>
 
-      {showForm && (
-        <OrderForm
-          order={editingOrder}
-          onClose={() => {
-            setShowForm(false)
-            setEditingOrder(null)
-          }}
-          onSave={handleSaveOrder}
-          checkIsBlacklisted={(number) => {
-            if (!number) return 0
-            const cleanNumber = (number || '').replace(/\D/g, '')
-            if (cleanNumber.length < 5) return 0
+      {
+        showForm && (
+          <OrderForm
+            order={editingOrder}
+            onClose={() => {
+              setShowForm(false)
+              setEditingOrder(null)
+            }}
+            onSave={handleSaveOrder}
+            checkIsBlacklisted={(number) => {
+              if (!number) return 0
+              const cleanNumber = (number || '').replace(/\D/g, '')
+              if (cleanNumber.length < 5) return 0
 
-            return orders.filter(o => {
-              const last9 = cleanNumber.slice(-9)
-              const oPhone = (o.phone || '').replace(/\D/g, '')
-              const oWhatsapp = (o.whatsapp || '').replace(/\D/g, '')
-              const match = oPhone.endsWith(last9) || oWhatsapp.endsWith(last9)
-              return match && o.status === 'returned'
-            }).length
-          }}
-          onBlacklistWarning={(number, count) => {
-            showConfirm(
-              '⚠️ High Return Risk',
-              `This client has ${count} previously returned order(s). Do you want to check them?`,
-              () => {
-                // On Confirm: Close form and view returned orders
-                setShowForm(false)
-                setEditingOrder(null)
-                const cleanNumber = (number || '').replace(/\D/g, '')
-                const searchKey = cleanNumber.length >= 9 ? cleanNumber.slice(-9) : cleanNumber
-                setSearchTerm(searchKey)
-                setStatusFilter('returned')
-                addToast(`Filtering returned orders for ${number}`, 'info')
-              },
-              'warning', // Type
-              'View Returned Orders' // Confirm Button Text
-            )
-          }}
-        />
-      )}
+              return orders.filter(o => {
+                const last9 = cleanNumber.slice(-9)
+                const oPhone = (o.phone || '').replace(/\D/g, '')
+                const oWhatsapp = (o.whatsapp || '').replace(/\D/g, '')
+                const match = oPhone.endsWith(last9) || oWhatsapp.endsWith(last9)
+                return match && o.status === 'returned'
+              }).length
+            }}
+            onBlacklistWarning={(number, count) => {
+              showConfirm(
+                '⚠️ High Return Risk',
+                `This client has ${count} previously returned order(s). Do you want to check them?`,
+                () => {
+                  // On Confirm: Close form and view returned orders
+                  setShowForm(false)
+                  setEditingOrder(null)
+                  const cleanNumber = (number || '').replace(/\D/g, '')
+                  const searchKey = cleanNumber.length >= 9 ? cleanNumber.slice(-9) : cleanNumber
+                  setSearchTerm(searchKey)
+                  setStatusFilter('returned')
+                  addToast(`Filtering returned orders for ${number}`, 'info')
+                },
+                'warning', // Type
+                'View Returned Orders' // Confirm Button Text
+              )
+            }}
+          />
+        )
+      }
 
-      {showDispatchModal && editingOrder && (
-        <DispatchModal
-          order={editingOrder}
-          onClose={() => {
-            setShowDispatchModal(false)
-            setEditingOrder(null)
-          }}
-          onSave={handleSaveOrder}
-        />
-      )}
+      {
+        showDispatchModal && editingOrder && (
+          <DispatchModal
+            order={editingOrder}
+            onClose={() => {
+              setShowDispatchModal(false)
+              setEditingOrder(null)
+            }}
+            onSave={handleSaveOrder}
+          />
+        )
+      }
 
-      {showViewModal && viewingOrder && (
-        <ViewOrderModal
-          order={viewingOrder}
-          customerOrderCount={getCustomerOrderCount(viewingOrder)}
-          onClose={() => {
-            setShowViewModal(false)
-            setViewingOrder(null)
-          }}
-          onSave={handleSaveOrder}
-          onRequestTrackingNumber={(orderForTracking, targetStatus = 'Packed') => {
-            openTrackingModalForOrder(orderForTracking, targetStatus)
-          }}
-          onRequestDispatch={(orderForDispatch) => {
-            setEditingOrder(orderForDispatch)
-            setShowDispatchModal(true)
-          }}
-        />
-      )}
+      {
+        showViewModal && viewingOrder && (
+          <ViewOrderModal
+            order={viewingOrder}
+            customerOrderCount={getCustomerOrderCount(viewingOrder)}
+            onClose={() => {
+              setShowViewModal(false)
+              setViewingOrder(null)
+            }}
+            onSave={handleSaveOrder}
+            onRequestTrackingNumber={(orderForTracking, targetStatus = 'Packed') => {
+              openTrackingModalForOrder(orderForTracking, targetStatus)
+            }}
+            onRequestDispatch={(orderForDispatch) => {
+              setEditingOrder(orderForDispatch)
+              setShowDispatchModal(true)
+            }}
+          />
+        )
+      }
 
-      {showTrackingModal && trackingOrder && (
-        <TrackingNumberModal
-          order={trackingOrder}
-          targetStatus={trackingTargetStatus}
-          onClose={() => {
-            setShowTrackingModal(false)
-            setTrackingOrder(null)
-            setTrackingTargetStatus('Packed')
-          }}
-          onSave={handleSaveOrder}
-        />
-      )}
+      {
+        showTrackingModal && trackingOrder && (
+          <TrackingNumberModal
+            order={trackingOrder}
+            targetStatus={trackingTargetStatus}
+            onClose={() => {
+              setShowTrackingModal(false)
+              setTrackingOrder(null)
+              setTrackingTargetStatus('Packed')
+            }}
+            onSave={handleSaveOrder}
+          />
+        )
+      }
 
       <ConfirmationModal
         isOpen={modalConfig.isOpen}
@@ -2241,69 +2240,75 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
 
       {/* Waybill Entry Modal */}
-      {showWaybillModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '400px' }}>
-            <div className="modal-header">
-              <h2 className="modal-title">Enter Waybill ID</h2>
-              <button className="modal-close" onClick={() => setShowWaybillModal(false)}>
-                <X size={20} />
-              </button>
+      {
+        showWaybillModal && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '400px' }}>
+              <div className="modal-header">
+                <h2 className="modal-title">Enter Waybill ID</h2>
+                <button className="modal-close" onClick={() => setShowWaybillModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const trackingNumber = e.target.trackingNumber.value
+                if (trackingNumber && waybillTargetOrder) {
+                  const updated = { ...waybillTargetOrder, status: 'Packed', trackingNumber }
+                  const updatedOrders = orders.map(o => o.id === updated.id ? updated : o)
+                  await saveOrders(updatedOrders)
+                  onUpdateOrders(updatedOrders)
+                  setShowWaybillModal(false)
+                  setWaybillTargetOrder(null)
+                  addToast('Order Packed & Waybill Saved', 'success')
+                }
+              }}>
+                <div className="form-group">
+                  <label className="form-label">Waybill / Sticker ID *</label>
+                  <input
+                    name="trackingNumber"
+                    className="form-input"
+                    required
+                    autoFocus
+                    placeholder="Scan or type Waybill ID..."
+                  />
+                  <small style={{ color: 'var(--text-muted)' }}>Scan the barcode on the physical sticker.</small>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                  <button type="submit" className="btn btn-primary">Save & Pack</button>
+                </div>
+              </form>
             </div>
-            <form onSubmit={async (e) => {
-              e.preventDefault()
-              const trackingNumber = e.target.trackingNumber.value
-              if (trackingNumber && waybillTargetOrder) {
-                const updated = { ...waybillTargetOrder, status: 'Packed', trackingNumber }
-                const updatedOrders = orders.map(o => o.id === updated.id ? updated : o)
-                await saveOrders(updatedOrders)
-                onUpdateOrders(updatedOrders)
-                setShowWaybillModal(false)
-                setWaybillTargetOrder(null)
-                addToast('Order Packed & Waybill Saved', 'success')
-              }
-            }}>
-              <div className="form-group">
-                <label className="form-label">Waybill / Sticker ID *</label>
-                <input
-                  name="trackingNumber"
-                  className="form-input"
-                  required
-                  autoFocus
-                  placeholder="Scan or type Waybill ID..."
-                />
-                <small style={{ color: 'var(--text-muted)' }}>Scan the barcode on the physical sticker.</small>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                <button type="submit" className="btn btn-primary">Save & Pack</button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Dispatch Progress Overlay */}
-      {isDispatching && (dispatchProgress.total > 0) && (
-        <div className="modal-overlay" style={{ zIndex: 9999 }}>
-          <div className="modal-content" style={{ maxWidth: '300px', textAlign: 'center', padding: '2rem' }}>
-            <Loader size={32} className="spin" style={{ margin: '0 auto 1rem', color: 'var(--accent-primary)' }} />
-            <h3>Dispatching to Curfox...</h3>
-            <p>{dispatchProgress.current} / {dispatchProgress.total}</p>
+      {
+        isDispatching && (dispatchProgress.total > 0) && (
+          <div className="modal-overlay" style={{ zIndex: 9999 }}>
+            <div className="modal-content" style={{ maxWidth: '300px', textAlign: 'center', padding: '2rem' }}>
+              <Loader size={32} className="spin" style={{ margin: '0 auto 1rem', color: 'var(--accent-primary)' }} />
+              <h3>Dispatching to Curfox...</h3>
+              <p>{dispatchProgress.current} / {dispatchProgress.total}</p>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
       {/* Curfox Tracking Modal */}
-      {showTrackingStatusModal && trackingStatusOrder && (
-        <CurfoxTrackingModal
-          order={trackingStatusOrder}
-          onSave={handleSaveOrder}
-          onClose={() => {
-            setShowTrackingStatusModal(false)
-            setTrackingStatusOrder(null)
-          }}
-        />
-      )}
-    </div>
+      {
+        showTrackingStatusModal && trackingStatusOrder && (
+          <CurfoxTrackingModal
+            order={trackingStatusOrder}
+            onSave={handleSaveOrder}
+            onClose={() => {
+              setShowTrackingStatusModal(false)
+              setTrackingStatusOrder(null)
+            }}
+          />
+        )
+      }
+    </div >
   )
 }
 

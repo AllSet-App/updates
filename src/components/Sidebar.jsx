@@ -114,8 +114,8 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
               src={logoSrc}
               alt="AllSet Logo"
               style={{
-                width: '170px',
-                height: '170px',
+                width: '130px',
+                height: '130px',
                 objectFit: 'contain'
               }}
             />
@@ -255,14 +255,14 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
             <div style={{
               position: 'absolute',
               bottom: '100%',
-              left: '1rem',
-              right: '1rem',
-              marginBottom: '0.75rem',
-              backgroundColor: effectiveTheme === 'dark' ? '#0a0a0a' : '#ffffff', // Solid background matching sidebar tone
-              border: '1px solid var(--border-color)',
-              borderRadius: '16px',
-              boxShadow: '0 4px 25px rgba(0,0,0,0.5)',
-              overflow: 'hidden',
+              left: '0.5rem',
+              right: '0.5rem',
+              marginBottom: '0',
+              backgroundColor: effectiveTheme === 'dark' ? '#1a1a1a' : '#ffffff',
+              border: `1px solid rgba(var(--accent-rgb), ${effectiveTheme === 'dark' ? '0.2' : '0.1'})`,
+              borderRadius: '16px 16px 0 0',
+              boxShadow: effectiveTheme === 'dark' ? '0 8px 32px rgba(0,0,0,0.6)' : '0 4px 25px rgba(0,0,0,0.1)',
+              borderBottom: 'none',
               display: 'flex',
               flexDirection: 'column',
               zIndex: 200,
@@ -283,12 +283,13 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                         src={logoSrc}
                         alt="Profile"
                         style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          objectFit: 'contain',
                           border: '1px solid var(--border-color)',
-                          backgroundColor: '#fff'
+                          backgroundColor: effectiveTheme === 'dark' ? '#000' : '#fff',
+                          padding: '5px'
                         }}
                       />
                     ) : (
@@ -323,13 +324,13 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
               <div style={{ padding: '0.5rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   {/* Profile */}
-                  <button onClick={() => { setActiveView('profile'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                  <button onClick={() => { setActiveView('profile'); setShowProfileMenu(false); if (window.innerWidth <= 768) setSidebarOpen(false); }} style={menuItemStyle}>
                     <User size={18} />
                     Profile
                   </button>
 
                   {/* Settings */}
-                  <button onClick={() => { setActiveView('settings'); setShowProfileMenu(false); }} style={menuItemStyle} data-tab="settings">
+                  <button onClick={() => { setActiveView('settings'); setShowProfileMenu(false); if (window.innerWidth <= 768) setSidebarOpen(false); }} style={menuItemStyle} data-tab="settings">
                     <Settings size={18} />
                     Settings
                   </button>
@@ -378,7 +379,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   </div>
 
                   {/* Contact Support */}
-                  <button onClick={() => { setActiveView('contact'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                  <button onClick={() => { setActiveView('contact'); setShowProfileMenu(false); if (window.innerWidth <= 768) setSidebarOpen(false); }} style={menuItemStyle}>
                     <Phone size={18} />
                     Contact Support
                   </button>
@@ -390,7 +391,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                   </button>
 
                   {/* About */}
-                  <button onClick={() => { setActiveView('about'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                  <button onClick={() => { setActiveView('about'); setShowProfileMenu(false); if (window.innerWidth <= 768) setSidebarOpen(false); }} style={menuItemStyle}>
                     <Info size={18} />
                     About AllSet
                   </button>
@@ -435,10 +436,12 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
             style={{
               padding: '1rem 1.5rem',
               paddingBottom: 'calc(1rem + var(--safe-area-bottom))',
-              backgroundColor: showProfileMenu ? 'var(--bg-secondary)' : 'transparent',
-              borderTop: '1px solid var(--border-color)',
+              backgroundColor: showProfileMenu ? `rgba(var(--accent-rgb), ${effectiveTheme === 'dark' ? '0.15' : '0.1'})` : 'transparent',
+              borderTop: showProfileMenu ? `1px solid rgba(var(--accent-rgb), ${effectiveTheme === 'dark' ? '0.2' : '0.1'})` : '1px solid var(--border-color)',
+              borderLeft: showProfileMenu ? `1px solid rgba(var(--accent-rgb), ${effectiveTheme === 'dark' ? '0.2' : '0.1'})` : 'none',
+              borderRight: showProfileMenu ? `1px solid rgba(var(--accent-rgb), ${effectiveTheme === 'dark' ? '0.2' : '0.1'})` : 'none',
               cursor: 'pointer',
-              transition: 'background-color 0.2s ease',
+              transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
@@ -457,12 +460,13 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, onAdd
                     src={logoSrc}
                     alt="Profile"
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '6px',
+                      objectFit: 'contain',
                       border: '1px solid var(--border-color)',
-                      backgroundColor: '#fff'
+                      backgroundColor: effectiveTheme === 'dark' ? '#000' : '#fff',
+                      padding: '3px'
                     }}
                   />
                 ) : (

@@ -351,9 +351,11 @@ const Inventory = ({ inventory, onUpdateInventory, initialFilter }) => {
         }
       `}</style>
 
-      <div className="inventory-header" style={{ marginBottom: '2rem' }}>
-        <h1 style={{ marginBottom: '0.5rem' }}>Inventory</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Manage and monitor your stock levels</p>
+      <div className="page-header">
+        <div className="page-header-info">
+          <h1>Inventory</h1>
+          <p>Manage and monitor your stock levels</p>
+        </div>
       </div>
 
       {/* --- Restock Modal --- */}

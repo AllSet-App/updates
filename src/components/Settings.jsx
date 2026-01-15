@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Settings as SettingsIcon, Save, AlertTriangle, Plus, Trash2, Edit2, Edit, Package, Search,
   ChevronDown, ChevronUp, Download, Upload, Trash, MessageCircle, X, LogOut, Database,
@@ -141,14 +141,10 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
 
   return (
     <div>
-      <div className="header-container settings-header flex-between mb-8">
-        <div>
-          <h1>
-            Settings
-          </h1>
-          <p className="text-muted text-sm">
-            Configure your application settings
-          </p>
+      <div className="page-header">
+        <div className="page-header-info">
+          <h1>Settings</h1>
+          <p>Configure your application settings</p>
         </div>
       </div>
 
@@ -247,7 +243,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Monitor size={16} /> Theme Mode
                     </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+                    <div className="settings-options-grid grid-theme-mode">
                       {[
                         { id: 'light', label: 'Light', icon: Sun },
                         { id: 'dark', label: 'Dark', icon: Moon },
@@ -259,22 +255,11 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                           <button
                             key={t.id}
                             onClick={() => setTheme(t.id)}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '0.75rem',
-                              padding: '1.25rem',
-                              borderRadius: '12px',
-                              border: isActive ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                              backgroundColor: isActive ? 'rgba(255, 46, 54, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              color: isActive ? 'var(--text-primary)' : 'var(--text-muted)'
-                            }}
+                            className={`settings-option-card ${isActive ? 'active' : ''}`}
+                            style={{ gap: '0.6rem' }}
                           >
-                            <Icon size={24} color={isActive ? 'var(--accent-primary)' : 'var(--text-muted)'} />
-                            <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>
+                            <Icon size={22} color={isActive ? 'var(--accent-primary)' : 'var(--text-muted)'} />
+                            <span style={{ fontWeight: isActive ? 600 : 400 }}>
                               {t.label}
                             </span>
                           </button>
@@ -287,7 +272,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <Edit size={16} /> Font Personality
                     </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+                    <div className="settings-options-grid grid-font-personality">
                       {[
                         { id: 'modern', label: 'Modern', description: 'Clean & Tech-focused', font: "'Inter', sans-serif" },
                         { id: 'professional', label: 'Professional', description: 'Balanced & Friendly', font: "'Poppins', sans-serif" },
@@ -299,30 +284,18 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                           <button
                             key={f.id}
                             onClick={() => setFontFamily(f.id)}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-start',
-                              gap: '0.4rem',
-                              padding: '1.25rem',
-                              borderRadius: '12px',
-                              border: isActive ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                              backgroundColor: isActive ? 'rgba(255, 46, 54, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              textAlign: 'left',
-                              width: '100%'
-                            }}
+                            className={`settings-option-card font-card ${isActive ? 'active' : ''}`}
                           >
                             <span style={{
                               fontSize: '1.125rem',
                               fontWeight: 700,
                               color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-                              fontFamily: f.font
+                              fontFamily: f.font,
+                              marginBottom: '2px'
                             }}>
                               {f.label}
                             </span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400, opacity: 0.8 }}>
                               {f.description}
                             </span>
                           </button>
@@ -335,7 +308,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <TrendingUp size={16} /> Font Size Scale
                     </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                    <div className="settings-options-grid grid-font-size">
                       {[
                         { id: 'small', label: 'Small', percentage: '88%' },
                         { id: 'normal', label: 'Normal', percentage: '100%' },
@@ -346,21 +319,10 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                           <button
                             key={s.id}
                             onClick={() => setFontSize(s.id)}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: '0.25rem',
-                              padding: '0.75rem',
-                              borderRadius: '12px',
-                              border: isActive ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                              backgroundColor: isActive ? 'rgba(255, 46, 54, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              color: isActive ? 'var(--text-primary)' : 'var(--text-muted)'
-                            }}
+                            className={`settings-option-card ${isActive ? 'active' : ''}`}
+                            style={{ gap: '2px' }}
                           >
-                            <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>{s.label}</span>
+                            <span style={{ fontWeight: isActive ? 600 : 400 }}>{s.label}</span>
                             <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>{s.percentage}</span>
                           </button>
                         )
@@ -374,9 +336,10 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                       <Zap size={16} /> Design Personality (Color Palette)
                     </p>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                    <div className="settings-options-grid grid-palettes" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
                       {Object.values(PALETTES).map((p) => {
                         const isActive = paletteId === p.id
+                        const rgb = p.color ? `${parseInt(p.color.slice(1, 3), 16)}, ${parseInt(p.color.slice(3, 5), 16)}, ${parseInt(p.color.slice(5, 7), 16)}` : '0,0,0'
                         return (
                           <button
                             key={p.id}
@@ -389,7 +352,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                               borderRadius: '12px',
                               border: isActive ? `2px solid ${p.color}` : '1px solid var(--border-color)',
                               backgroundColor: isActive
-                                ? `rgba(${parseInt(p.color.slice(1, 3), 16)}, ${parseInt(p.color.slice(3, 5), 16)}, ${parseInt(p.color.slice(5, 7), 16)}, 0.15)`
+                                ? `rgba(${rgb}, 0.15)`
                                 : 'rgba(255, 255, 255, 0.02)',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
@@ -406,7 +369,7 @@ const Settings = ({ orders = [], expenses = [], inventory = [], onDataImported, 
                               justifyContent: 'center',
                               color: '#fff',
                               boxShadow: isActive
-                                ? `0 4px 12px rgba(${parseInt(p.color.slice(1, 3), 16)}, ${parseInt(p.color.slice(3, 5), 16)}, ${parseInt(p.color.slice(5, 7), 16)}, 0.4)`
+                                ? `0 4px 12px rgba(${rgb}, 0.4)`
                                 : '0 4px 10px rgba(0,0,0,0.1)'
                             }}>
                               {isActive && <Check size={18} />}
@@ -2671,52 +2634,25 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
 
 
 // General Configuration Component
+// General Configuration Component
 const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
-  const [businessName, setBusinessName] = useState(settings?.businessName || 'AllSet')
-  const [businessTagline, setBusinessTagline] = useState(settings?.businessTagline || 'From Chaos to Clarity')
-  const [businessLogo, setBusinessLogo] = useState(settings?.businessLogo || null)
   const [defaultDeliveryCharge, setDefaultDeliveryCharge] = useState(settings?.general?.defaultDeliveryCharge ?? 400)
   const [quotationExpiryDays, setQuotationExpiryDays] = useState(settings?.general?.quotationExpiryDays ?? 7)
   const [defaultPageSize, setDefaultPageSize] = useState(settings?.general?.defaultPageSize ?? 'A4')
   const [isSaving, setIsSaving] = useState(false)
 
-  const fileInputRef = useRef(null)
-
   useEffect(() => {
-    if (settings) {
-      setBusinessName(settings.businessName || 'AllSet')
-      setBusinessTagline(settings.businessTagline || 'From Chaos to Clarity')
-      setBusinessLogo(settings.businessLogo || null)
-      if (settings.general) {
-        setDefaultDeliveryCharge(settings.general.defaultDeliveryCharge ?? 400)
-        setQuotationExpiryDays(settings.general.quotationExpiryDays ?? 7)
-        setDefaultPageSize(settings.general.defaultPageSize ?? 'A4')
-      }
+    if (settings && settings.general) {
+      setDefaultDeliveryCharge(settings.general.defaultDeliveryCharge ?? 400)
+      setQuotationExpiryDays(settings.general.quotationExpiryDays ?? 7)
+      setDefaultPageSize(settings.general.defaultPageSize ?? 'A4')
     }
   }, [settings])
-
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('Logo file size should be less than 2MB', 'error')
-        return
-      }
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setBusinessLogo(reader.result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const handleSave = async () => {
     setIsSaving(true)
     const updatedSettings = {
       ...settings,
-      businessName: businessName.trim() || 'AllSet',
-      businessTagline: businessTagline.trim() || 'From Chaos to Clarity',
-      businessLogo: businessLogo,
       general: {
         ...settings?.general,
         defaultDeliveryCharge: Number(defaultDeliveryCharge),
@@ -2728,7 +2664,7 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
     const success = await saveSettings(updatedSettings)
     if (success) {
       setSettings(updatedSettings)
-      showToast('Business configuration saved successfully', 'success')
+      showToast('Configuration saved successfully', 'success')
       window.dispatchEvent(new Event('settingsUpdated'))
     } else {
       showToast('Failed to save settings', 'error')
@@ -2738,141 +2674,63 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
 
   return (
     <div>
-      {/* Business Identity Section */}
-      <div style={{ marginBottom: '2.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '2rem' }}>
+      <div style={{ marginBottom: '1.5rem' }}>
         <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Building2 size={18} color="var(--accent-primary)" />
-          Business Identity
+          <SettingsIcon size={18} color="var(--accent-primary)" />
+          Operational Settings
         </h4>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div className="form-group">
-              <label className="form-label">Business Name</label>
-              <input
-                type="text"
-                className="form-input"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="AllSet"
-              />
-              <small style={{ color: 'var(--text-muted)' }}>This appears at the top of your sidebar.</small>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Business Slogan / Tagline</label>
-              <input
-                type="text"
-                className="form-input"
-                value={businessTagline}
-                onChange={(e) => setBusinessTagline(e.target.value)}
-                placeholder="Powering your business growth"
-              />
-              <small style={{ color: 'var(--text-muted)' }}>Displayed elegantly below your business name.</small>
-            </div>
-          </div>
-
-          <div className="form-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', border: '2px dashed var(--border-color)', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
-            <label className="form-label" style={{ marginBottom: '1rem', alignSelf: 'flex-start' }}>Business Logo</label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '12px',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                border: '1px solid var(--border-color)',
-                position: 'relative',
-                transition: 'transform 0.2s ease'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {businessLogo ? (
-                <img src={businessLogo} alt="Logo Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              ) : (
-                <Upload size={32} color="var(--text-muted)" />
-              )}
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '0.65rem', textAlign: 'center', padding: '4px' }}>
-                Change Logo
-              </div>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div className="form-group">
+            <label className="form-label">Default Delivery Charge (Rs)</label>
             <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept="image/*"
-              onChange={handleLogoChange}
+              type="number"
+              className="form-input"
+              value={defaultDeliveryCharge}
+              onChange={(e) => setDefaultDeliveryCharge(e.target.value)}
+              placeholder="400"
             />
-            {businessLogo && (
-              <button
-                className="btn btn-sm btn-ghost"
-                style={{ marginTop: '0.75rem', color: 'var(--danger)', fontSize: '0.75rem' }}
-                onClick={() => setBusinessLogo(null)}
-              >
-                Reset to Default
-              </button>
-            )}
-            <small style={{ color: 'var(--text-muted)', marginTop: '0.5rem', textAlign: 'center' }}>Square PNG/SVG works best.</small>
+            <small style={{ color: 'var(--text-muted)' }}>Applied to new orders and quotations.</small>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Quotation Expiry (Days)</label>
+            <input
+              type="number"
+              className="form-input"
+              value={quotationExpiryDays}
+              onChange={(e) => setQuotationExpiryDays(e.target.value)}
+              placeholder="7"
+            />
+            <small style={{ color: 'var(--text-muted)' }}>Default validity period for quotations.</small>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Default Print Page Size</label>
+            <select
+              className="form-input"
+              value={defaultPageSize}
+              onChange={(e) => setDefaultPageSize(e.target.value)}
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <option value="A4" style={{ color: '#000' }}>A4 (Standard)</option>
+              <option value="A5" style={{ color: '#000' }}>A5 (Smaller)</option>
+              <option value="Letter" style={{ color: '#000' }}>Letter</option>
+            </select>
+            <small style={{ color: 'var(--text-muted)' }}>Sets the default layout for PDF & Print documents.</small>
           </div>
         </div>
-      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-        <div className="form-group">
-          <label className="form-label">Default Delivery Charge (Rs)</label>
-          <input
-            type="number"
-            className="form-input"
-            value={defaultDeliveryCharge}
-            onChange={(e) => setDefaultDeliveryCharge(e.target.value)}
-            placeholder="400"
-          />
-          <small style={{ color: 'var(--text-muted)' }}>Applied to new orders and quotations.</small>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Quotation Expiry (Days)</label>
-          <input
-            type="number"
-            className="form-input"
-            value={quotationExpiryDays}
-            onChange={(e) => setQuotationExpiryDays(e.target.value)}
-            placeholder="7"
-          />
-          <small style={{ color: 'var(--text-muted)' }}>Default validity period for quotations.</small>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Default Print Page Size</label>
-          <select
-            className="form-input"
-            value={defaultPageSize}
-            onChange={(e) => setDefaultPageSize(e.target.value)}
-            style={{ backgroundColor: 'transparent' }}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+          <button
+            onClick={handleSave}
+            className="btn btn-primary"
+            disabled={isSaving}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            <option value="A4" style={{ color: '#000' }}>A4 (Standard)</option>
-            <option value="A5" style={{ color: '#000' }}>A5 (Smaller)</option>
-            <option value="Letter" style={{ color: '#000' }}>Letter</option>
-          </select>
-          <small style={{ color: 'var(--text-muted)' }}>Sets the default layout for PDF & Print documents.</small>
+            {isSaving ? 'Saving...' : <><Save size={18} /> Save Configuration</>}
+          </button>
         </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-        <button
-          onClick={handleSave}
-          className="btn btn-primary"
-          disabled={isSaving}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          {isSaving ? 'Saving...' : <><Save size={18} /> Save Configuration</>}
-        </button>
       </div>
     </div>
   )

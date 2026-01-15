@@ -7,11 +7,11 @@ const Contact = () => {
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
-            <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>Contact Support</h1>
-                <p style={{ color: 'var(--text-muted)' }}>
-                    Need help? We're here for you. Reach out to us for any issues or to upgrade your plan.
-                </p>
+            <div className="page-header">
+                <div className="page-header-info">
+                    <h1>Contact Support</h1>
+                    <p>Need help? We're here for you. Reach out to us for any issues or to upgrade your plan.</p>
+                </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
