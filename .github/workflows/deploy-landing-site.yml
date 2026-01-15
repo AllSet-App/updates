@@ -22,10 +22,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "❌ Error: API_TOKEN_GITHUB secret is empty or missing!"
+            exit 1
+          fi
           cd landing-site
           git init
-          git config user.name "GitHub Action"
+          git config user.name "AllSet-App"
           git config user.email "action@github.com"
+          git checkout -b main
           git add .
           git commit -m "Deploy: Manual update from updates repo"
-          git push --force https://$GH_TOKEN@github.com/AllSet-App/allset-app.github.io.git main
+          echo "Pushing to allset-app.github.io..."
+          git push --force https://x-access-token:${GH_TOKEN}@github.com/AllSet-App/allset-app.github.io.git main
