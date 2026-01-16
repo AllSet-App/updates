@@ -22,19 +22,11 @@ const masterClient = createClient(MASTER_SUPABASE_URL, MASTER_SUPABASE_ANON_KEY)
  */
 export const signInWithGoogle = async () => {
     const isElectron = !!window.electronAPI
+    const isNative = Capacitor.isNativePlatform() // TRUE for Android/iOS APK/IPA
+    const isWeb = !isElectron && !isNative // TRUE for Browsers (Chrome, Safari, etc.)
+
     const protocol = window.location.protocol
     const hostname = window.location.hostname
-
-    // AGGRESSIVE WEB DETECTION
-    const isWeb = !isElectron && (
-        Capacitor.getPlatform() === 'web' ||
-        protocol === 'http:' ||
-        protocol === 'https:' ||
-        hostname === 'localhost' ||
-        hostname === '127.0.0.1'
-    )
-
-    const isNative = Capacitor.isNativePlatform() && !isWeb
 
     let redirectTo = window.location.origin
     let flowType = undefined
