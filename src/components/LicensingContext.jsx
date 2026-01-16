@@ -144,11 +144,18 @@ export const LicensingProvider = ({ children }) => {
                         }
                     }
                 } else {
-                    // 3. No Identity User Found -> KILL Guest Session
-                    console.log('Licensing: No identity user found. Resetting guest mode.')
-                    setUserMode(null)
-                    setIdentityUser(null)
-                    setLicenseStatus('free')
+                    // 3. No Identity User Found
+                    const authIntent = localStorage.getItem('allset_auth_intent') || sessionStorage.getItem('allset_auth_intent')
+
+                    // If we are on native and have a pending intent, wait for the handleAuthUrl event
+                    if (authIntent && Capacitor.isNativePlatform()) {
+                        console.log('Licensing: No identity yet, but auth intent found. Skipping guest-kill to allow deep link to process.')
+                    } else {
+                        console.log('Licensing: No identity user found. Enforcing login (Killing Guest Session).')
+                        setUserMode(null)
+                        setIdentityUser(null)
+                        setLicenseStatus('free')
+                    }
                 }
             } catch (err) {
                 console.error('Licensing check failed:', err)

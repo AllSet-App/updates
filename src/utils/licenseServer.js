@@ -36,8 +36,10 @@ export const signInWithGoogle = async () => {
         flowType = 'pkce'
     } else if (isElectron) {
         redirectTo = 'allset://auth-callback'
+        flowType = undefined // Keep implicit for Electron
     } else if (isNative) {
         redirectTo = 'com.aofbiz.app://auth-callback'
+        flowType = 'pkce' // Switch to PKCE for Mobile (more reliable for deep links)
     }
 
     // DIAGNOSTIC ALERT
@@ -115,16 +117,25 @@ export const getIdentityUser = async () => {
 export const handleAuthCallback = async (url) => {
     if (!url) return null
 
-    // Extract access_token and refresh_token from hash/query
-    const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1])
-    const accessToken = params.get('access_token')
-    const refreshToken = params.get('refresh_token')
+    // Extract access_token, refresh_token or PKCE code
+    // We check both the fragment (#) and the query (?) because different browsers/platforms handle them differently
+    const urlObj = new URL(url.replace('#', '?'))
+    const accessToken = urlObj.searchParams.get('access_token')
+    const refreshToken = urlObj.searchParams.get('refresh_token')
+    const code = urlObj.searchParams.get('code')
 
     if (accessToken && refreshToken) {
+        // Path A: Implicit Flow (Fragment tokens)
         const { data, error } = await masterClient.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
         })
+        if (error) throw error
+        return { user: data.user, session: data.session }
+    } else if (code) {
+        // Path B: PKCE Flow (Exchange code for tokens)
+        // This requires the verifier to be in the client's current storage
+        const { data, error } = await masterClient.auth.exchangeCodeForSession(code)
         if (error) throw error
         return { user: data.user, session: data.session }
     }
