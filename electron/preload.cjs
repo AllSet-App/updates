@@ -95,6 +95,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     /**
+     * Save a base64 PDF to a temp file and open it.
+     */
+    savePdfToTemp: (base64Data, fileName) => {
+        return ipcRenderer.invoke('save-pdf-to-temp', { base64Data, fileName })
+    },
+
+    /**
      * Platform identifier.
      */
     platform: 'electron'

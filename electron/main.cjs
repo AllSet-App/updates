@@ -443,3 +443,19 @@ ipcMain.handle('install-update', async () => {
     return { success: false, error: err.message };
   }
 });
+
+// IPC Handler: Save PDF to Temp and Open
+ipcMain.handle('save-pdf-to-temp', async (event, { base64Data, fileName }) => {
+  const tempDir = os.tmpdir();
+  const filePath = path.join(tempDir, fileName);
+  const pdfBuffer = Buffer.from(base64Data, 'base64');
+
+  try {
+    fs.writeFileSync(filePath, pdfBuffer);
+    await shell.openPath(filePath);
+    return { success: true, path: filePath };
+  } catch (err) {
+    console.error('Failed to save or open PDF:', err);
+    return { success: false, error: err.message };
+  }
+});
