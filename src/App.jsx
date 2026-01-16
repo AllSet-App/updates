@@ -33,7 +33,7 @@ import MandatoryUpdateGracePopup from './components/MandatoryUpdateGracePopup'
 
 // Inner App component that uses licensing context
 function AppContent() {
-  const { userMode, isLoading: licensingLoading, resetSelection, isTrialActive, timeLeft } = useLicensing()
+  const { userMode, isLoading: licensingLoading, resetSelection, logout, isTrialActive, timeLeft } = useLicensing()
   const { effectiveTheme } = useTheme()
   const { addToast } = useToast()
   const updateManager = useUpdateManager()
@@ -225,8 +225,8 @@ function AppContent() {
   }, [])
 
   const handleLogout = () => {
-    // For local app, "Logout" means going back to Mode Selection
-    resetSelection()
+    // Call the robust logout that clears both local and server sessions
+    logout()
   }
 
   const handleDataImported = (data) => {

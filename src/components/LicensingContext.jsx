@@ -89,6 +89,8 @@ export const LicensingProvider = ({ children }) => {
             try {
                 // 1. Check if we have a Google Identity
                 const user = await getIdentityUser()
+                const intendedMode = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
+
                 if (user) {
                     // 2. Check Pro status
                     const result = await checkLicenseStatus(user.email)
@@ -97,24 +99,32 @@ export const LicensingProvider = ({ children }) => {
                         // User is Pro - unlock everything
                         setIdentityUser(user)
                         setLicenseStatus('pro')
-                        setUserMode('pro')
+
+                        // ONLY auto-upgrade to pro mode if they haven't explicitly chosen 'free'
+                        if (intendedMode !== 'free') {
+                            setUserMode('pro')
+                        }
                         setAuthError(null)
                     } else {
                         // User is NOT Pro - check if they are trying to access Pro or just using Free
-                        const intendedMode = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
+                        const authIntent = localStorage.getItem('allset_auth_intent') || sessionStorage.getItem('allset_auth_intent')
 
                         // Check for valid trial
                         const hasActiveTrial = updateTrialTime()
 
-                        if (intendedMode === 'pro') {
+                        if (authIntent === 'trial') {
+                            await activateTrial(user)
+                            localStorage.removeItem('allset_auth_intent')
+                            sessionStorage.removeItem('allset_auth_intent')
+                        } else if (intendedMode === 'pro') {
                             if (hasActiveTrial) {
                                 // Allow Pro access via Trial
                                 setIdentityUser(user)
-                                setLicenseStatus('free') // Still free on server, but locally trial
+                                setLicenseStatus('free')
                                 setAuthError(null)
                                 setUserMode('pro')
                             } else {
-                                // Trying to access Pro - REJECT
+                                // Trying to access Pro without license or trial - REJECT
                                 await logUnauthorizedAttempt(user.email)
                                 await signOutIdentity()
                                 setIdentityUser(null)
@@ -122,12 +132,18 @@ export const LicensingProvider = ({ children }) => {
                                 setUserMode(null)
                             }
                         } else {
-                            // Using Free mode - ALLOW but collect lead
+                            // Default to Free mode (either intended or fallback)
+                            // Even if a trial exists, they chose FREE or were redirected here
                             await registerFreeUser(user)
                             setIdentityUser(user)
                             setLicenseStatus('free')
                             setAuthError(null)
                             setUserMode('free')
+
+                            if (authIntent === 'free') {
+                                localStorage.removeItem('allset_auth_intent')
+                                sessionStorage.removeItem('allset_auth_intent')
+                            }
                         }
                     }
                 } else {
@@ -160,7 +176,7 @@ export const LicensingProvider = ({ children }) => {
                         setAuthError(null)
                     } else {
                         const intendedMode = localStorage.getItem('allset_user_mode') || sessionStorage.getItem('allset_user_mode')
-                        const authIntent = sessionStorage.getItem('allset_auth_intent')
+                        const authIntent = localStorage.getItem('allset_auth_intent') || sessionStorage.getItem('allset_auth_intent')
 
                         // Check for valid existing trial
                         const hasActiveTrial = updateTrialTime()
@@ -168,6 +184,7 @@ export const LicensingProvider = ({ children }) => {
                         if (authIntent === 'trial') {
                             await activateTrial(user)
                             setAuthError(null)
+                            localStorage.removeItem('allset_auth_intent')
                             sessionStorage.removeItem('allset_auth_intent')
                             // activateTrial sets userMode to 'pro' internally
                         } else if (intendedMode === 'pro') {
@@ -190,6 +207,11 @@ export const LicensingProvider = ({ children }) => {
                             setLicenseStatus('free')
                             setAuthError(null)
                             setUserMode('free') // FORCE UI update
+
+                            if (authIntent === 'free') {
+                                localStorage.removeItem('allset_auth_intent')
+                                sessionStorage.removeItem('allset_auth_intent')
+                            }
                         }
                     }
                 }
@@ -256,11 +278,20 @@ export const LicensingProvider = ({ children }) => {
     }
 
     const logout = async () => {
-        await signOutIdentity()
-        setIdentityUser(null)
-        setLicenseStatus('free')
-        setAuthError(null)
-        // Don't reset userMode automatically so user can still browse local
+        setIsLoading(true)
+        try {
+            await signOutIdentity()
+            setIdentityUser(null)
+            setLicenseStatus('free')
+            setAuthError(null)
+            setUserMode(null) // Kick back to selection screen
+            localStorage.removeItem('allset_user_mode')
+            sessionStorage.removeItem('allset_user_mode')
+        } catch (err) {
+            console.error('Logout failed:', err)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const activateTrial = async (user = null) => {
@@ -286,9 +317,18 @@ export const LicensingProvider = ({ children }) => {
     // Derivative states for UI - Strictly controlled
     // A user is Pro ONLY if they chose 'pro' mode AND (they have a license OR trial is active)
     const isProUser = userMode === 'pro' && (licenseStatus === 'pro' || timeLeft > 0)
-    const isFreeUser = userMode === 'free' || !isProUser
-    const isTrialActive = timeLeft > 0 && licenseStatus !== 'pro'
-    const isTrialExpired = localStorage.getItem('allset_trial_start') && timeLeft <= 0 && licenseStatus !== 'pro'
+
+    // A user is Free if they chose 'free' mode OR they chose 'pro' but don't have access
+    const isFreeUser = userMode === 'free' || (userMode === 'pro' && licenseStatus !== 'pro' && timeLeft <= 0)
+
+    // Trial is ONLY active if:
+    // 1. They are in pro mode
+    // 2. They don't have a full license
+    // 3. Time is remaining
+    // 4. They actually have a trial start record
+    const isTrialActive = userMode === 'pro' && licenseStatus !== 'pro' && timeLeft > 0 && !!localStorage.getItem('allset_trial_start')
+
+    const isTrialExpired = userMode === 'pro' && licenseStatus !== 'pro' && timeLeft <= 0 && !!localStorage.getItem('allset_trial_start')
 
     const [session, setSession] = useState(null)
 

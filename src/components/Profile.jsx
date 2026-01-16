@@ -385,6 +385,10 @@ const Profile = ({ onUpdateSettings }) => {
                                             <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                                 {licenseStatus === 'pro' ? (
                                                     <div style={{ color: 'var(--success)', fontWeight: 600 }}>Pro status is active for this account.</div>
+                                                ) : isTrialActive ? (
+                                                    <div style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Trial status is active. Accessing Pro features.</div>
+                                                ) : isTrialExpired ? (
+                                                    <div style={{ color: 'var(--danger)', fontWeight: 600 }}>Trial has expired. Upgrade to continue using Pro features.</div>
                                                 ) : (
                                                     <div>Your account has Free status. Contact sales to upgrade.</div>
                                                 )}

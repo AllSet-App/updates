@@ -21,18 +21,31 @@ const masterClient = createClient(MASTER_SUPABASE_URL, MASTER_SUPABASE_ANON_KEY)
  * Perform Google Sign-In with platform-specific logic.
  */
 export const signInWithGoogle = async () => {
-    // Determine the correct redirect URL
-    // If we're in Electron, use the custom protocol
-    // If we're in web, use the current origin
+    const platform = Capacitor.getPlatform()
     const isElectron = !!window.electronAPI
-    const isMobile = Capacitor.isNativePlatform()
+    const isNative = Capacitor.isNativePlatform()
 
+    // Determine the correct redirect URL
     let redirectTo = window.location.origin
-    if (isElectron) {
+
+    // ULTRA-ROBUST ENVIRONMENT DETECTION
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const isStandardWeb = window.location.protocol === 'http:' || window.location.protocol === 'https:'
+    const isElectronEnv = !!window.electronAPI
+    const isNativeEnv = Capacitor.isNativePlatform()
+
+    // Priority: Web (if protocol is standard) > Electron > Native
+    if (isStandardWeb || isLocalhost) {
+        redirectTo = window.location.origin
+    } else if (isElectronEnv) {
         redirectTo = 'allset://auth-callback'
-    } else if (isMobile) {
-        redirectTo = 'com.allset.app://auth-callback'
+    } else if (isNativeEnv) {
+        redirectTo = 'com.aofbiz.app://auth-callback'
+    } else {
+        redirectTo = window.location.origin
     }
+
+    console.error(`[AUTH DIAGNOSTIC] Host: ${window.location.hostname}, Proto: ${window.location.protocol}, isWeb: ${isStandardWeb}, isElectron: ${isElectronEnv}, isNative: ${isNativeEnv} => Using Redirect: ${redirectTo}`)
 
     const { data, error } = await masterClient.auth.signInWithOAuth({
         provider: 'google',
@@ -65,7 +78,7 @@ export const checkLicenseStatus = async (email) => {
             .from('licenses')
             .select('*')
             .eq('email', email)
-            .single()
+            .maybeSingle()
 
         if (error && error.code !== 'PGRST116') { // PGRST116 is "No rows found"
             console.error('License check error:', error)

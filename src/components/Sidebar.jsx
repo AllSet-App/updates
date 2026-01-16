@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { LayoutDashboard, ShoppingBag, Package, DollarSign, Settings, Menu, X, Plus, Pencil, FileText, BarChart3, Crown, Sun, Moon, LogOut, User, ChevronRight, ChevronLeft, HelpCircle, Phone, LifeBuoy, Info, Bell, MessageSquare, Check, Circle, AlertTriangle, Trash2, Clock, ArrowDown } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, DollarSign, Settings, Menu, X, Plus, Pencil, FileText, BarChart3, Crown, Sun, Moon, LogOut, User, ChevronRight, ChevronLeft, HelpCircle, Phone, LifeBuoy, Info, Bell, MessageSquare, Check, Circle, AlertTriangle, Trash2, Clock, ArrowDown, Zap } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { useLicensing } from './LicensingContext'
 import { ProFeatureBadge } from './ProFeatureLock'
