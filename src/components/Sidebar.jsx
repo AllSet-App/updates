@@ -10,6 +10,7 @@ import { useUpdateManager } from '../hooks/useUpdateManager'
 import CustomDropdown from './Common/CustomDropdown'
 import CustomDateTimePicker from './Common/CustomDateTimePicker'
 import { format, isToday, isTomorrow, isThisYear } from 'date-fns'
+import { openExternalUrl } from '../utils/platform'
 import pkg from '../../package.json'
 
 const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, sidebarExpanded, setSidebarExpanded, onAddOrder, onAddExpense, onLogout, settings }) => {
@@ -1220,7 +1221,7 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, setSidebarOpen, sideb
                   </button>
 
                   {/* Help / Documentation */}
-                  <button onClick={() => { window.open('https://AllSet.github.io/docs.html', '_blank'); setShowProfileMenu(false); }} style={menuItemStyle}>
+                  <button onClick={() => { openExternalUrl('https://AllSet.github.io/docs.html'); setShowProfileMenu(false); }} style={menuItemStyle}>
                     <LifeBuoy size={18} />
                     Help & Docs
                   </button>

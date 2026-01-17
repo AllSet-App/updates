@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Phone, Mail, MessageCircle, Shield, ArrowRight, AlertTriangle, Send, User, ChevronDown } from 'lucide-react'
 import { useTheme } from './ThemeContext'
 import { getIdentityUser } from '../utils/licenseServer'
+import { openExternalUrl } from '../utils/platform'
 
 const WhatsAppIcon = ({ size = 20, color = 'currentColor' }) => (
     <svg
@@ -44,17 +45,7 @@ const Contact = () => {
     const developerEmail = 'aofbizhelp@gmail.com'
 
     const openExternal = (url) => {
-        if (window.electronAPI) {
-            window.electronAPI.openExternal(url)
-        } else {
-            // Use window.location.href for mailto to avoid empty tabs
-            // Use window.open for regular web links
-            if (url.startsWith('mailto:')) {
-                window.location.href = url
-            } else {
-                window.open(url, '_blank')
-            }
-        }
+        openExternalUrl(url)
     }
 
     const handleInquirySubmit = (e) => {

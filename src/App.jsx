@@ -11,6 +11,7 @@ import Profile from './components/Profile'
 import ModeSelectionScreen from './components/ModeSelectionScreen'
 import About from './components/About'
 import { getOrders, getExpenses, getInventory, getProducts, getQuotations, getSettings } from './utils/storage'
+import { openExternalUrl } from './utils/platform'
 import { Loader2 } from 'lucide-react'
 
 import { ToastProvider } from './components/Toast/ToastContext'
@@ -301,7 +302,7 @@ function AppContent() {
         setActiveView('contact')
         break
       case 'help':
-        window.open('https://AllSet.github.io/docs.html', '_blank')
+        openExternalUrl('https://AllSet.github.io/docs.html')
         break
       case 'about':
         setActiveView('about')

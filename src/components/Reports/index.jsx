@@ -358,7 +358,7 @@ const Reports = ({ orders, expenses, inventory, onUpdateOrders }) => {
                                 </button>
                                 <div style={{ height: '1px', background: 'var(--border-color)', margin: '4px 0' }}></div>
                                 <button className="export-item" onClick={handlePrint}>
-                                    <Printer size={16} style={{ color: '#ec4899' }} /> Print / PDF
+                                    <Printer size={16} style={{ color: '#ec4899' }} /> Print
                                 </button>
                             </div>
                         )}

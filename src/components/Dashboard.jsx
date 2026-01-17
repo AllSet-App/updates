@@ -455,7 +455,7 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
           value={totalOrdersThisMonth}
           icon={ShoppingBag}
           color="var(--accent-primary)"
-          subtitle={`Ads: ${adsCount} | Organic: ${organicCount}`}
+          subtitle={isFreeUser ? "Includes Ads & Organic" : `Ads: ${adsCount} | Organic: ${organicCount}`}
           trend={ordersTrend}
           onClick={() => onNavigate && onNavigate('orders')}
           disabled={totalOrdersThisMonth === 0}
@@ -695,18 +695,33 @@ const Dashboard = ({ orders, expenses, inventory = [], products, onNavigate }) =
         </div>
 
         {/* Source Pie Chart */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <PieChartIcon size={18} color="var(--success)" />
-            Order Sources
-          </h3>
-          <BaseDonutChart
-            data={sourceData}
-            centerLabel="Total Orders"
-            centerValue={totalOrdersCount}
-            height={300}
-            tooltipFormatter={(val) => val}
-          />
+        <div style={{ position: 'relative' }}>
+          <div className="card" style={{
+            padding: '1.5rem',
+            backgroundColor: isFreeUser ? 'rgba(255, 255, 255, 0.02)' : undefined,
+            opacity: isFreeUser ? 0.7 : 1,
+            height: '100%'
+          }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <PieChartIcon size={18} color="var(--success)" />
+              Order Sources
+              <ProFeatureBadge size={14} />
+            </h3>
+            {!isFreeUser ? (
+              <BaseDonutChart
+                data={sourceData}
+                centerLabel="Total Orders"
+                centerValue={totalOrdersCount}
+                height={300}
+                tooltipFormatter={(val) => val}
+              />
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                <Crown size={32} style={{ marginBottom: '1rem', opacity: 0.5, color: 'var(--accent-primary)' }} />
+                <p>Order source distribution is a Pro feature</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Top Selling Products Chart */}

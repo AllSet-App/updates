@@ -12,6 +12,7 @@ import ConfirmationModal from './ConfirmationModal'
 import { saveOrders, getProducts, getSettings } from '../utils/storage'
 import { deleteOrderItemImage } from '../utils/fileStorage'
 import { formatWhatsAppNumber, generateWhatsAppMessage } from '../utils/whatsapp'
+import { openExternalUrl } from '../utils/platform'
 import * as XLSX from 'xlsx'
 import { useToast } from './Toast/ToastContext'
 import { curfoxService } from '../utils/curfox'
@@ -1166,7 +1167,7 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
 
     // Remove + from the number for wa.me URL
     const numberForUrl = formattedNumber.replace('+', '')
-    window.open(`https://wa.me/${numberForUrl}?text=${encodedMessage}`, '_blank')
+    openExternalUrl(`https://wa.me/${numberForUrl}?text=${encodedMessage}`)
   }
 
   const getStatusColor = (status) => {
@@ -1614,7 +1615,10 @@ const OrderManagement = ({ orders, onUpdateOrders, triggerFormOpen, initialFilte
                           </div>
 
                           {order.whatsapp && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--whatsapp-brand)', marginTop: '0.25rem' }}>
+                            <div
+                              onClick={(e) => { e.stopPropagation(); openExternalUrl(`https://wa.me/${order.whatsapp.replace(/\D/g, '')}`); }}
+                              style={{ cursor: 'pointer', fontSize: '0.75rem', color: 'var(--whatsapp-brand)', marginTop: '0.25rem' }}
+                            >
                               {formatWhatsAppNumber(order.whatsapp)}
                             </div>
                           )}

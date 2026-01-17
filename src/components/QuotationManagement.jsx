@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Plus, Search, Edit, Trash2, Repeat, Loader, MessageCircle, FileText, Eye, X, Crown, Filter, ChevronUp, ChevronDown, Calendar } from 'lucide-react'
 import { saveQuotations, getQuotations, deleteQuotation, getProducts, getSettings } from '../utils/storage'
 import { formatWhatsAppNumber, generateWhatsAppMessage } from '../utils/whatsapp'
+import { openExternalUrl } from '../utils/platform'
 import { useLicensing } from './LicensingContext'
 import { useToast } from './Toast/ToastContext'
 import ProFeatureLock from './ProFeatureLock'
@@ -296,8 +297,7 @@ const QuotationManagement = ({ quotations, onUpdateQuotations, orders, onUpdateO
         const encodedMessage = encodeURIComponent(message);
         const numberForUrl = formattedNumber.replace('+', '')
         const whatsappUrl = `https://wa.me/${numberForUrl}?text=${encodedMessage}`;
-
-        window.open(whatsappUrl, '_blank');
+        openExternalUrl(whatsappUrl);
         addToast('WhatsApp message initiated.', 'info');
     };
 
@@ -485,7 +485,10 @@ const QuotationManagement = ({ quotations, onUpdateQuotations, orders, onUpdateO
                                             <td style={{ padding: '0.75rem 1rem' }}>
                                                 <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{q.customerName}</div>
                                                 {q.whatsapp && (
-                                                    <div style={{ fontSize: '0.75rem', color: '#25D366', marginTop: '0.25rem' }}>
+                                                    <div
+                                                        onClick={() => openExternalUrl(`https://wa.me/${q.whatsapp.replace(/\D/g, '')}`)}
+                                                        style={{ cursor: 'pointer', fontSize: '0.75rem', color: '#25D366', marginTop: '0.25rem' }}
+                                                    >
                                                         {q.whatsapp}
                                                     </div>
                                                 )}

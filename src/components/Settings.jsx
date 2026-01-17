@@ -12,6 +12,7 @@ import { saveSupabaseCredentials, testSupabaseConnection, clearSupabaseCredentia
 import { fullSync, getLastSyncTime } from '../utils/syncEngine'
 import { curfoxService } from '../utils/curfox'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
+import { openExternalUrl } from '../utils/platform'
 
 import { generateTrackingNumbersFromRange, getSettings, saveSettings, getOrders, getTrackingNumbers, saveTrackingNumbers, getProducts, getOrderCounter, saveOrderCounter, exportAllData, importAllData, clearAllData, importAllDataFromObject } from '../utils/storage'
 import { toTitleCase } from '../utils/textUtils'
@@ -2461,7 +2462,8 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
                   </button>
                 </div>
               </div>
-              <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleConnect} disabled={isLoading}>
+              <button className="btn btn-primary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} onClick={handleConnect} disabled={isLoading}>
+                {isLoading ? <RefreshCw size={18} className="animate-spin" /> : <Cloud size={18} />}
                 {isLoading ? 'Connecting...' : 'Connect Supabase'}
               </button>
             </div>
@@ -2500,14 +2502,25 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Last Handshake</div>
               <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{lastSynced ? new Date(lastSynced).toLocaleString() : 'Not synced yet'}</div>
             </div>
-            <button
-              className="btn btn-primary btn-sm"
-              style={{ width: '100%', padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              onClick={handleManualSync}
-              disabled={isSyncing || isAutoSyncing || !isOnline}
-            >
-              <RefreshCw size={14} className={isSyncing || isAutoSyncing ? 'spin' : ''} style={{ marginRight: '0.5rem' }} /> {isSyncing || isAutoSyncing ? 'Syncing...' : 'Sync Now'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1, padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={handleManualSync}
+                disabled={isSyncing || isAutoSyncing || !isOnline}
+              >
+                <RefreshCw size={14} className={isSyncing || isAutoSyncing ? 'animate-spin' : ''} style={{ marginRight: '0.5rem' }} /> {isSyncing || isAutoSyncing ? 'Syncing...' : 'Sync Now'}
+              </button>
+              {(isSyncing || isAutoSyncing) && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => { setIsSyncing(false); showToast('Sync state reset', 'info'); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0 1rem' }}
+                >
+                  <X size={14} /> Cancel
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -2676,9 +2689,21 @@ const SupabaseCloudHub = ({ settings, setSettings, orders, expenses, inventory, 
           >
             <LogOut size={16} /> <span style={{ textDecoration: 'underline' }}>Disconnect</span>
           </button>
-          <button className="btn btn-primary" onClick={handleBackupNow} disabled={isUploading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Upload size={16} /> {isUploading ? 'Uploading...' : 'Backup Now'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            {(isUploading || isRestoring) && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => { setIsUploading(false); setIsRestoring(false); }}
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Cancel
+              </button>
+            )}
+            <button className="btn btn-primary" onClick={handleBackupNow} disabled={isUploading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {isUploading ? <RefreshCw size={16} className="animate-spin" /> : <Upload size={16} />}
+              {isUploading ? 'Uploading...' : 'Backup Now'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2771,7 +2796,7 @@ const GeneralConfiguration = ({ settings, setSettings, showToast }) => {
               <option value="A5" style={{ color: '#000' }}>A5 (Smaller)</option>
               <option value="Letter" style={{ color: '#000' }}>Letter</option>
             </select>
-            <small style={{ color: 'var(--text-muted)' }}>Sets the default layout for PDF & Print documents.</small>
+            <small style={{ color: 'var(--text-muted)' }}>Sets the default layout for Print documents.</small>
           </div>
         </div>
 

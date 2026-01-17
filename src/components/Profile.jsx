@@ -11,6 +11,7 @@ import { useToast } from './Toast/ToastContext'
 import { getSettings, saveSettings } from '../utils/storage'
 import { ProFeatureBadge } from './ProFeatureLock'
 import ConfirmationModal from './ConfirmationModal'
+import { openExternalUrl } from '../utils/platform'
 
 const Profile = ({ onUpdateSettings }) => {
     const {
@@ -184,7 +185,7 @@ const Profile = ({ onUpdateSettings }) => {
 
         const handleWhatsApp = () => {
             const message = encodeURIComponent("I'd like to purchase an AllSet PRO license for my Google account.")
-            window.open(`https://wa.me/94750350109?text=${message}`, '_blank')
+            openExternalUrl(`https://wa.me/94750350109?text=${message}`)
         }
 
         const formatTimeLeft = (ms) => {

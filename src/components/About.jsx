@@ -2,6 +2,7 @@ import { Info, ShieldCheck, Globe, Mail, Zap, ExternalLink, Award, CheckCircle }
 import { useLicensing } from './LicensingContext'
 import { useTheme } from './ThemeContext'
 import pkg from '../../package.json'
+import { openExternalUrl } from '../utils/platform'
 import { useState, useEffect } from 'react'
 
 const About = () => {
@@ -12,15 +13,11 @@ const About = () => {
     const RELEASE_DATE = 'January 2026'
 
 
-    const openExternal = (url) => {
-        if (window.electronAPI) {
-            window.electronAPI.openExternal(url)
-        } else {
-            window.open(url, '_blank')
-        }
-    }
-
     const trialDaysLeft = Math.ceil(timeLeft / (24 * 60 * 60 * 1000))
+
+    const openExternal = (url) => {
+        openExternalUrl(url)
+    }
 
     return (
         <div className="about-container animate-fade-in">

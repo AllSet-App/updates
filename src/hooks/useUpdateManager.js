@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { getLatestUpdate } from '../services/updateService'
+import { openExternalUrl } from '../utils/platform'
 import pkg from '../../package.json'
 
 export const useUpdateManager = () => {
@@ -97,7 +98,7 @@ export const useUpdateManager = () => {
 
         // If it's an APK or we are not in Electron, open in browser
         if (useApk || !window.electronAPI) {
-            window.open(downloadUrl, '_blank')
+            openExternalUrl(downloadUrl)
             if (useApk && window.electronAPI) {
                 // If we are in Electron but downloading APK, just keep status as available
                 return
