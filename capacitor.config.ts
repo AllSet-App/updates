@@ -6,8 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Live reload - REMOVE THIS FOR PRODUCTION BUILD
-    url: 'http://192.168.1.103:3000',
-    cleartext: true,
+    // url: 'http://192.168.1.103:3000',
+    // cleartext: true,
     // Allow external URLs (for Supabase)
     allowNavigation: ['*.supabase.co', '*.supabase.com']
   },
