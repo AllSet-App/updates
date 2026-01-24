@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { getCurrentUser, onAuthStateChange, isSupabaseConfigured, getSyncUserId } from '../utils/supabaseClient'
-import { pushToCloud, deleteFromCloud, queueSyncAction, subscribeToRealtimeChanges } from '../utils/syncEngine'
+import { pushToCloud, deleteFromCloud, queueSyncAction, subscribeToRealtimeChanges, deltaSync, fullSync } from '../utils/syncEngine'
 
 const SyncContext = createContext(null)
 
@@ -98,6 +98,67 @@ export const SyncProvider = ({ children }) => {
             }
         }
     }, [user, isConfigured])
+
+    // FOREGROUND SYNC: When app comes back from background, pull any missed changes
+    useEffect(() => {
+        if (!isConfigured) return
+
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                console.log('SyncContext: App came to foreground, syncing...')
+                try {
+                    const syncId = await getSyncUserId()
+                    if (syncId) {
+                        await deltaSync(syncId)
+                    }
+                } catch (err) {
+                    console.error('SyncContext: Foreground sync error:', err)
+                }
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [isConfigured])
+
+    // PERIODIC SYNC: Fallback polling every 60 seconds to catch missed realtime events
+    useEffect(() => {
+        if (!isConfigured) return
+
+        const intervalId = setInterval(async () => {
+            try {
+                const syncId = await getSyncUserId()
+                if (syncId) {
+                    console.log('SyncContext: Periodic delta sync...')
+                    await deltaSync(syncId)
+                }
+            } catch (err) {
+                console.error('SyncContext: Periodic sync error:', err)
+            }
+        }, 60000) // Every 60 seconds
+
+        return () => clearInterval(intervalId)
+    }, [isConfigured])
+
+    // ONLINE STATUS: When device comes back online, do a full sync
+    useEffect(() => {
+        if (!isConfigured) return
+
+        const handleOnline = async () => {
+            console.log('SyncContext: Device came online, syncing...')
+            try {
+                const syncId = await getSyncUserId()
+                if (syncId) {
+                    await fullSync(syncId)
+                }
+            } catch (err) {
+                console.error('SyncContext: Online sync error:', err)
+            }
+        }
+
+        window.addEventListener('online', handleOnline)
+        return () => window.removeEventListener('online', handleOnline)
+    }, [isConfigured])
 
     // Process sync queue with debouncing
     const processSyncQueue = useCallback(async () => {

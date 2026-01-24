@@ -269,6 +269,51 @@ export const fullSync = async (userId) => {
 }
 
 /**
+ * Perform a delta sync: only pull changes since last sync time.
+ * More efficient than full sync, used for periodic background polling.
+ */
+export const deltaSync = async (userId) => {
+    try {
+        const supabase = await getSupabase()
+        if (!supabase || !userId) return { success: false, error: 'Not configured' }
+
+        const lastSyncTime = await getLastSyncTime()
+        const results = { pulled: {} }
+        let totalPulled = 0
+
+        console.log('Sync: Delta sync from', lastSyncTime || 'beginning')
+
+        for (const tableName of SYNC_TABLES) {
+            try {
+                const { success, data } = await pullFromCloud(tableName, userId, lastSyncTime)
+                if (success && data.length > 0) {
+                    results.pulled[tableName] = data.length
+                    await mergeCloudData(tableName, data)
+                    totalPulled += data.length
+                    // Dispatch event for UI updates
+                    window.dispatchEvent(new Event(`sync:${tableName}`))
+                }
+            } catch (err) {
+                console.error(`Delta sync error for ${tableName}:`, err)
+            }
+        }
+
+        // Update last sync time
+        await updateLastSyncTime()
+
+        if (totalPulled > 0) {
+            console.log(`Sync: Delta sync pulled ${totalPulled} records`, results)
+            window.dispatchEvent(new Event('ordersUpdated'))
+        }
+
+        return { success: true, results, totalPulled }
+    } catch (error) {
+        console.error('Delta sync failed:', error)
+        return { success: false, error: error.message }
+    }
+}
+
+/**
  * Get local data from a Dexie table.
  */
 const getLocalData = async (tableName) => {
@@ -361,6 +406,7 @@ export const getLastSyncTime = async () => {
 
 /**
  * Subscribe to realtime changes from Supabase.
+ * Creates per-table subscriptions with automatic reconnection.
  * Returns an unsubscribe function.
  */
 export const subscribeToRealtimeChanges = async (userId, onDataChange) => {
@@ -368,25 +414,54 @@ export const subscribeToRealtimeChanges = async (userId, onDataChange) => {
         const supabase = await getSupabase()
         if (!supabase || !userId) return null
 
-        const channel = supabase
-            .channel('db-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    filter: `user_id=eq.${userId}`
-                },
-                (payload) => {
-                    handleRealtimeEvent(payload)
-                }
-            )
-            .subscribe((status) => {
-                console.log('Sync: Realtime subscription status:', status)
-            })
+        const channels = []
+        const SUPABASE_TABLES = Object.values(TABLE_MAP)
 
+        // Subscribe to each table explicitly (required by Supabase Realtime)
+        for (const tableName of SUPABASE_TABLES) {
+            const channel = supabase
+                .channel(`sync:${tableName}:${userId}`)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: tableName,  // CRITICAL: Must specify table name
+                        filter: `user_id=eq.${userId}`
+                    },
+                    (payload) => {
+                        handleRealtimeEvent(payload)
+                        if (onDataChange) onDataChange(payload)
+                    }
+                )
+                .subscribe((status, err) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log(`Sync: Realtime connected for ${tableName}`)
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        console.error(`Sync: Realtime disconnected for ${tableName}:`, err)
+                        // Attempt to reconnect after 5 seconds
+                        setTimeout(async () => {
+                            console.log(`Sync: Attempting to reconnect ${tableName}...`)
+                            try {
+                                await channel.subscribe()
+                            } catch (e) {
+                                console.error(`Sync: Reconnection failed for ${tableName}:`, e)
+                            }
+                        }, 5000)
+                    }
+                })
+
+            channels.push(channel)
+        }
+
+        console.log(`Sync: Subscribed to ${channels.length} tables for realtime updates`)
+
+        // Return cleanup function
         return () => {
-            supabase.removeChannel(channel)
+            console.log('Sync: Cleaning up realtime subscriptions')
+            channels.forEach(channel => {
+                supabase.removeChannel(channel)
+            })
         }
     } catch (error) {
         console.error('Error subscribing to realtime:', error)
