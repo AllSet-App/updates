@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { getLatestUpdate } from '../services/updateService'
-import { openExternalUrl } from '../utils/platform'
+import { openExternalUrl, isCapacitor } from '../utils/platform'
 import pkg from '../../package.json'
 
 export const useUpdateManager = () => {
@@ -12,6 +12,7 @@ export const useUpdateManager = () => {
     const [deadline, setDeadline] = useState(null)
     const [timeRemaining, setTimeRemaining] = useState(null)
     const [isBlocked, setIsBlocked] = useState(false)
+    const [downloadedFilePath, setDownloadedFilePath] = useState(null)
 
     const currentVersion = pkg.version
 
@@ -96,14 +97,54 @@ export const useUpdateManager = () => {
             return
         }
 
-        // If it's an APK or we are not in Electron, open in browser
+        // If it's an APK or we are not in Electron, check for Capacitor or Web
         if (useApk || !window.electronAPI) {
-            openExternalUrl(downloadUrl)
-            if (useApk && window.electronAPI) {
-                // If we are in Electron but downloading APK, just keep status as available
-                return
+            if (isCapacitor()) {
+                // Capacitor Mobile Download & Install Flow
+                try {
+                    setStatus('downloading')
+                    setProgress(0)
+
+                    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+                    const { FileOpener } = await import('@capawesome-team/capacitor-file-opener')
+
+                    const fileName = downloadUrl.split('/').pop() || 'update.apk'
+
+                    // 1. Download the file
+                    const downloadResult = await Filesystem.downloadFile({
+                        url: downloadUrl,
+                        path: fileName,
+                        directory: Directory.Cache,
+                        progress: true
+                    })
+
+                    // Handle progress if the plugin provides it via listener (standard Capacitor way)
+                    // Note: Filesystem.addListener('downloadFileProgress', ...) is used in some versions
+                    // but for simplicity and reliability in this specific v8 environment, 
+                    // we'll assume the downloadFile call handles the heavy lifting.
+
+                    setStatus('ready')
+                    setProgress(100)
+                    setDownloadedFilePath(downloadResult.path)
+
+                    // 2. Trigger installation immediately
+                    await FileOpener.openFile({
+                        path: downloadResult.path
+                    })
+                } catch (err) {
+                    console.error('Capacitor Download/Install error:', err)
+                    setError('Failed to download or install update.')
+                    setStatus('error')
+                }
+            } else {
+                // Web Browser flow
+                openExternalUrl(downloadUrl)
+                if (useApk && window.electronAPI) {
+                    // If we are in Electron but downloading APK, just keep status as available
+                    return
+                }
+                setStatus('ready')
             }
-            setStatus('ready')
         } else {
             // Electron EXE flow
             setStatus('downloading')
@@ -151,11 +192,21 @@ export const useUpdateManager = () => {
         return () => clearInterval(interval)
     }, [deadline])
 
-    const installUpdate = useCallback(() => {
+    const installUpdate = useCallback(async () => {
         if (window.electronAPI) {
             window.electronAPI.installUpdate()
+        } else if (isCapacitor() && downloadedFilePath) {
+            try {
+                const { FileOpener } = await import('@capawesome-team/capacitor-file-opener')
+                await FileOpener.openFile({
+                    path: downloadedFilePath
+                })
+            } catch (err) {
+                console.error('File opener error:', err)
+                setError('Failed to open installer. Please try again.')
+            }
         }
-    }, [])
+    }, [downloadedFilePath])
 
     const cancelDownload = useCallback(async () => {
         if (window.electronAPI) {
